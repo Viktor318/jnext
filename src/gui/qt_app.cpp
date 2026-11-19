@@ -1,4 +1,5 @@
 #include "gui/qt_app.h"
+#include "gui/ui_language.h"
 #include "gui/main_window.h"
 #include "gui/desktop_color_scheme.h"   // GH #363
 #include "gui/mac_fullscreen.h"         // GH #404
@@ -274,6 +275,8 @@ bool QtApp::init(int argc, char* argv[]) {
     // GH #404 — macOS only (no-op elsewhere); before QApplication builds the menus.
     mac_fullscreen::init();
     qapp_ = new QApplication(qt_argc_, qt_argv_);
+    // startup.language: before the first widget, so every text is built translated.
+    ui_language::install(*qapp_);
 
     // Task 63 (issue #9) — identify the display path once. Which Qt platform
     // plugin is live (xcb vs wayland vs offscreen) changes how timer callbacks

@@ -36,9 +36,10 @@ list(FILTER SOURCES EXCLUDE REGEX "${JNEXT_GENERATED_DIR_REGEX}")
 if(NOT JNEXT_CRT_GL_AVAILABLE)
     list(FILTER SOURCES EXCLUDE REGEX "/(crt_gl_overlay|crtemu_impl)\\.cpp$")
 endif()
-add_library(jnext_gui STATIC ${SOURCES})
+add_library(jnext_gui STATIC ${SOURCES} translations/jnext_i18n.qrc)
 
-set_target_properties(jnext_gui PROPERTIES AUTOMOC ON)
+# AUTORCC compiles the interface translations (gui/ui_language.cpp) in.
+set_target_properties(jnext_gui PROPERTIES AUTOMOC ON AUTORCC ON)
 
 target_link_libraries(jnext_gui PUBLIC
     Qt${JNEXT_QT_MAJOR}::Widgets

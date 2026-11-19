@@ -17,6 +17,7 @@
 // explicit-file-path IniFormat constructor used throughout.
 
 #include "gui/app_config.h"
+#include "gui/ui_language.h"
 
 #include "platform/config_keys.h"
 #include "debug/debug_keymap.h"
@@ -27,6 +28,7 @@
 #include <QDateTime>
 #include <QFile>
 #include <QRegularExpression>
+#include <QCoreApplication>
 #include <QSettings>
 #include <QSet>
 #include <QTemporaryDir>
@@ -1750,6 +1752,63 @@ static void test_sd_card2(QTemporaryDir& dir) {
               raw.value("sd_card2_path").toString() == QStringLiteral("/home/user/sd/second, card.img"));
 }
 
+// AC-102..104 (hungarian-ui): startup.language, the interface language.
+// Oracle: the key row (auto|en|hu; an unknown word keeps Auto), ui_language.h's
+// contract (Auto follows the first system UI language) and the catalogue
+// compiled in from src/gui/translations (a known Preferences text in Hungarian).
+static void test_ui_language(QTemporaryDir& dir) {
+    set_group("AC-LANG");
+    using ui_language::Choice;
+    const bool resolve_ok =
+        ui_language::resolve(Choice::Auto, {QStringLiteral("hu-HU"), QStringLiteral("en-US")}) == "hu" &&
+        ui_language::resolve(Choice::Auto, {QStringLiteral("hu")}) == "hu" &&
+        ui_language::resolve(Choice::Auto, {QStringLiteral("en-US"), QStringLiteral("hu-HU")}) == "en" &&
+        ui_language::resolve(Choice::Auto, {QStringLiteral("es-ES")}) == "en" &&
+        ui_language::resolve(Choice::Auto, {}) == "en" &&
+        ui_language::resolve(Choice::English, {QStringLiteral("hu-HU")}) == "en" &&
+        ui_language::resolve(Choice::Hungarian, {QStringLiteral("es-ES")}) == "hu";
+    check("AC-102", "ui_language::resolve(): Auto gives hu only when the FIRST system UI language is Hungarian, "
+                    "en otherwise (none given included); English and Hungarian ignore the system",
+          resolve_ok);
+
+    const bool def = AppConfigData().ui_language == Choice::Auto;
+    const QString ph = fresh_ini_path(dir, "lang-hu");
+    { QSettings w(ph, QSettings::IniFormat); w.setValue("startup/language", "HU"); w.sync(); }
+    AppConfig h(ph);
+    h.load();
+    const QString pu = fresh_ini_path(dir, "lang-unknown");
+    { QSettings w(pu, QSettings::IniFormat); w.setValue("startup/language", "de"); w.sync(); }
+    AppConfig u(pu);
+    u.load();
+    const QString ps = fresh_ini_path(dir, "lang-save");
+    { AppConfig w(ps); w.data().ui_language = Choice::English; w.save(); }
+    const QString saved_word = QSettings(ps, QSettings::IniFormat).value("startup/language").toString();
+    AppConfigData before;
+    AppConfigData merged = before;
+    merge_cli_assignments(merged, {{ config_keys::KeyId::StartupLanguage, {}, "hu" }});
+    const bool only_lang = merged.ui_language == Choice::Hungarian &&
+                           merged.window_scale == before.window_scale && merged.silent == before.silent;
+    check("AC-103", "ui_language defaults to Auto; a file with language=HU loads Hungarian and =de loads Auto; "
+                    "save() writes language=en for English; merge_cli_assignments() changes only that field",
+          def && h.data().ui_language == Choice::Hungarian && u.data().ui_language == Choice::Auto &&
+              saved_word == "en" && only_lang,
+          saved_word.toStdString());
+
+    int argc = 1;
+    char arg0[] = "app_config_test";
+    char* argv[] = {arg0, nullptr};
+    QCoreApplication app(argc, argv);
+    ui_language::set_session_choice(Choice::Hungarian);
+    const QString got = ui_language::install(app);
+    const QString text = QCoreApplication::translate("PreferencesDialog", "Language:");
+    const QString qt_text = QCoreApplication::translate("QPlatformTheme", "Cancel");
+    ui_language::set_session_choice(Choice::Auto);
+    check("AC-104", "with Hungarian chosen, install() loads the compiled-in catalogues: jnext's "
+                    "(PreferencesDialog \"Language:\" -> \"Nyelv:\") and Qt's (QPlatformTheme \"Cancel\" -> \"Mégse\")",
+          got == "hu" && text == QString::fromUtf8("Nyelv:") && qt_text == QString::fromUtf8("Mégse"),
+          (got + " | " + text + " | " + qt_text).toStdString());
+}
+
 int main() {
     QTemporaryDir dir;
     if (!dir.isValid()) {
@@ -1782,6 +1841,7 @@ int main() {
     test_source_dirs(dir);
     test_source_scheme(dir);
     test_sd_card2(dir);
+    test_ui_language(dir);
 
     std::printf("\n");
     for (const auto& r : g_results) {

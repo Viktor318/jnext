@@ -1389,6 +1389,10 @@ The entries say which frontends use the key: the Qt window, the SDL-only build
 :   Seconds of a plain Next start run at maximum speed, 0 = off;
     **\--fast-boot**. The Qt window and the SDL-only build.
 
+`startup.language` *auto|en|hu*
+:   Language of the window and the debugger, auto = the system's. Read at
+    start-up. The Qt window.
+
 `startup.when_slow_prefer` *audio|video*
 :   What a host too slow for real time sacrifices; **\--when-slow-prefer**. The
     Qt window and the SDL-only build.

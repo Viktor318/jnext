@@ -31,6 +31,13 @@ static_assert(config_keys::word_at(config_keys::info(KeyId::StartupWhenSlowPrefe
               config_keys::word_at(config_keys::info(KeyId::StartupWhenSlowPrefer).values,
                   static_cast<int>(audio_pacing::WhenSlowPrefer::Video)) == "video",
               "config_keys when_slow_prefer words must follow the enum order");
+static_assert(config_keys::word_at(config_keys::info(KeyId::StartupLanguage).values,
+                  static_cast<int>(ui_language::Choice::Auto)) == "auto" &&
+              config_keys::word_at(config_keys::info(KeyId::StartupLanguage).values,
+                  static_cast<int>(ui_language::Choice::English)) == "en" &&
+              config_keys::word_at(config_keys::info(KeyId::StartupLanguage).values,
+                  static_cast<int>(ui_language::Choice::Hungarian)) == "hu",
+              "config_keys language words must follow the ui_language::Choice order");
 static_assert(config_keys::word_at(config_keys::info(KeyId::ScreenshotQuickFormat).values,
                   static_cast<int>(ScreenshotFormat::Png)) == "png" &&
               config_keys::word_at(config_keys::info(KeyId::ScreenshotQuickFormat).values,
@@ -65,6 +72,13 @@ QString machine_type_to_key(MachineType t) {
 // Issue #35 — on-disk spelling of the degradation policy. Deliberately the
 // same two words the CLI accepts, so `--when-slow-prefer video` and
 // `when_slow_prefer=video` are one vocabulary rather than two.
+// startup.language: the table's own word for the choice.
+QString ui_language_to_key(ui_language::Choice c) {
+    const std::string_view w = config_keys::word_at(
+        config_keys::info(KeyId::StartupLanguage).values, static_cast<int>(c));
+    return QString::fromLatin1(w.data(), static_cast<qsizetype>(w.size()));
+}
+
 QString when_slow_prefer_to_key(audio_pacing::WhenSlowPrefer p) {
     const std::string_view w = config_keys::word_at(
         config_keys::info(KeyId::StartupWhenSlowPrefer).values, static_cast<int>(p));
@@ -144,6 +158,11 @@ void merge_cli_assignments(AppConfigData& d, const std::vector<config_keys::Assi
         case KeyId::SourceColourScheme: {
             const int i = config_keys::word_index(config_keys::info(KeyId::SourceColourScheme).values, a.text);
             if (i >= 0) d.source_scheme = static_cast<SourceScheme>(i);
+            break;
+        }
+        case KeyId::StartupLanguage: {
+            const int i = config_keys::word_index(config_keys::info(KeyId::StartupLanguage).values, a.text);
+            if (i >= 0) d.ui_language = static_cast<ui_language::Choice>(i);
             break;
         }
         default: break;   // not a Qt-window-only key: main.cpp applied it elsewhere
@@ -251,6 +270,15 @@ void AppConfig::load() {
         if (ok && fast_boot_s >= config_keys::info(KeyId::StartupFastBootSeconds).lo
                && fast_boot_s <= config_keys::info(KeyId::StartupFastBootSeconds).hi)
             data_.fast_boot_seconds = fast_boot_s;
+
+        // startup.language: one of the table's words; anything else keeps Auto.
+        {
+            const QString lang = settings_.value(N(KeyId::StartupLanguage),
+                ui_language_to_key(data_.ui_language)).toString().trimmed().toLower();
+            const int i = config_keys::word_index(
+                config_keys::info(KeyId::StartupLanguage).values, lang.toStdString());
+            if (i >= 0) data_.ui_language = static_cast<ui_language::Choice>(i);
+        }
 
         const int scale = settings_.value(
             N(KeyId::StartupWindowScale), data_.window_scale).toInt(&ok);
@@ -449,6 +477,7 @@ void AppConfig::save() const {
     settings_.setValue(N(KeyId::StartupCpuSpeed), static_cast<int>(data_.cpu_speed));
     settings_.setValue(N(KeyId::StartupEmulatorSpeedPercent), data_.emulator_speed_percent);
     settings_.setValue(N(KeyId::StartupFastBootSeconds), data_.fast_boot_seconds);
+    settings_.setValue(N(KeyId::StartupLanguage), ui_language_to_key(data_.ui_language));
     settings_.setValue(N(KeyId::StartupWindowScale), data_.window_scale);
     settings_.setValue(N(KeyId::StartupCrtFilter), data_.crt_filter);
     settings_.setValue(N(KeyId::StartupCrtShader), data_.crt_shader);

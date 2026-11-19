@@ -238,7 +238,7 @@ int main() {
             config_keys::word_index("audio|video", "vide") != -1 || config_keys::word_index("audio|video", "") != -1)
             bad += "word_index ";
         check("SETK-10", "for every Word and Machine key each listed word is accepted in upper case and canonicalises to itself; nonsense is refused",
-              bad.empty() && n == 7, bad + " keys=" + std::to_string(n));
+              bad.empty() && n == 8, bad + " keys=" + std::to_string(n));
     }
 
     // SETK-11

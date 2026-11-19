@@ -12,6 +12,7 @@
 #include "platform/audio_pacing.h"
 #include "platform/config_keys.h"
 #include "platform/fast_boot.h"
+#include "gui/ui_language.h"
 #include "platform/pointer_capture.h"
 #include "platform/source_scheme.h"
 #include "core/screenshot.h"
@@ -46,6 +47,10 @@ struct AppConfigData {
 
     // GH #499 - seconds of a plain Next start run at maximum speed (0 = off). A launch setting.
     int         fast_boot_seconds      = fast_boot::DEFAULT_SECONDS;
+
+    // The language of the window and the debugger (startup.language). A launch
+    // setting: read before the first window exists (gui/ui_language.h).
+    ui_language::Choice ui_language   = ui_language::Choice::Auto;
 
     // Host-side gain applied after the emulated hardware mix. Unlike
     // `silent`, this can be changed live from Preferences. The CLI option

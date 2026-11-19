@@ -76,6 +76,7 @@
 #include "gui/sdcard_download_dialog.h"
 #include "gui/main_window.h"
 #include "gui/app_config.h"
+#include "gui/ui_language.h"
 #include "gui/emulator_widget.h"      // crt_shader_built_in() for --crt
 #include "gui/qt_ctrl_is_command.h"   // GH #417 debugger-key --set
 #else
@@ -586,6 +587,7 @@ int main(int argc, char* argv[]) {
         case KeyId::ScreenshotQuickDir:
         case KeyId::ScreenshotQuickFormat:
         case KeyId::SourceColourScheme:
+        case KeyId::StartupLanguage:
             qt_assignments.push_back(a);   // merged into the Qt session's copy (merge_cli_assignments)
             break;
         case KeyId::StartupSilent:
@@ -1986,6 +1988,8 @@ int main(int argc, char* argv[]) {
         // over the saved values. gui_app_config is this function's copy and is
         // never saved; MainWindow loads its own.
         merge_cli_assignments(gui_app_config.data(), qt_assignments);
+        // startup.language of this run, for every QApplication from here on (gui/ui_language.h).
+        ui_language::set_session_choice(gui_app_config.data().ui_language);
         if (cpu_speed_opt) gui_app_config.data().cpu_speed = static_cast<CpuSpeed>(*cpu_speed_opt);
 #ifdef ENABLE_DEBUGGER   // without the debugger there is nothing to bind: the warning above says so
         if (!debug_key_assignments.empty()) {

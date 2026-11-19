@@ -1,0 +1,11 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<!-- The interface translations (gui/ui_language.cpp). jnext_<lang>.qm is
+     made from jnext_<lang>.ts by lrelease (tools/hu/update-translations.sh);
+     qtbase_<lang>.qm is Qt's own catalogue, copied from the Qt 6.8.3
+     translations directory (LGPL-3.0, like the Qt libraries). -->
+<qresource prefix="/i18n">
+    <file>jnext_hu.qm</file>
+    <file>qtbase_hu.qm</file>
+</qresource>
+</RCC>

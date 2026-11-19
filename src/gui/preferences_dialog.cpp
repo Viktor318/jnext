@@ -78,6 +78,7 @@ PreferencesDialog::PreferencesDialog(const AppConfigData& current, QWidget* pare
     cpu_speed_combo_->setCurrentIndex(cpu_speed_combo_->findData(static_cast<int>(current.cpu_speed)));
     emu_speed_spin_->setValue(current.emulator_speed_percent);
     fast_boot_spin_->setValue(current.fast_boot_seconds);
+    language_combo_->setCurrentIndex(language_combo_->findData(static_cast<int>(current.ui_language)));
     when_slow_combo_->setCurrentIndex(
         when_slow_combo_->findData(static_cast<int>(current.when_slow_prefer)));
     mouse_release_combo_->setCurrentIndex(
@@ -206,6 +207,23 @@ QWidget* PreferencesDialog::build_startup_tab() {
            "Any key returns to normal speed. Not used when a program is loaded at start. "
            "Takes effect at the next start."));
     form->addRow(tr("Fast boot:"), fast_boot_spin_);
+
+    // startup.language - a launch setting like Fast boot: the window and the
+    // debugger are built in one language, so a change shows at the next start.
+    // The language names are written in their own language, as is usual in a
+    // language list, and are not translated.
+    language_combo_ = new QComboBox(tab);
+    language_combo_->setObjectName(QStringLiteral("languageCombo"));
+    language_combo_->addItem(tr("Automatic (system language)"),
+                             static_cast<int>(ui_language::Choice::Auto));
+    language_combo_->addItem(QStringLiteral("English"),
+                             static_cast<int>(ui_language::Choice::English));
+    language_combo_->addItem(QStringLiteral("Magyar"),
+                             static_cast<int>(ui_language::Choice::Hungarian));
+    language_combo_->setToolTip(
+        tr("The language of the menus, dialogs and the debugger. "
+           "Takes effect at the next start."));
+    form->addRow(tr("Language:"), language_combo_);
 
     scale_combo_ = new QComboBox(tab);
     for (int s = EmulatorWidget::MIN_SCALE; s <= EmulatorWidget::MAX_SCALE; ++s)
@@ -670,6 +688,7 @@ AppConfigData PreferencesDialog::collect() const {
     cfg.cpu_speed    = static_cast<CpuSpeed>(cpu_speed_combo_->currentData().toInt());
     cfg.emulator_speed_percent = emu_speed_spin_->value();
     cfg.fast_boot_seconds = fast_boot_spin_->value();
+    cfg.ui_language = static_cast<ui_language::Choice>(language_combo_->currentData().toInt());
     cfg.when_slow_prefer = static_cast<audio_pacing::WhenSlowPrefer>(
         when_slow_combo_->currentData().toInt());
     cfg.window_scale = scale_combo_->currentData().toInt();
