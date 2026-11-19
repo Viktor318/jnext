@@ -181,28 +181,28 @@ inline QString tr_(const char* s) { return QCoreApplication::translate("host_sho
 
 inline QString pause_tooltip(bool m = kQtCtrlIsCommand)
 {
-    return tr_("Pause / resume emulation (%1 or Pause)").arg(text(Action::Pause, m));
+    return tr_(QT_TRANSLATE_NOOP("host_shortcuts", "Pause / resume emulation (%1 or Pause)")).arg(text(Action::Pause, m));
 }
 inline QString quick_screenshot_note(bool m = kQtCtrlIsCommand)
 {
-    return tr_("Quick Screenshot (%1) writes jnext-<date>-<time> into that "
+    return tr_(QT_TRANSLATE_NOOP("host_shortcuts", "Quick Screenshot (%1) writes jnext-<date>-<time> into that "
                "directory with no dialog, and names the file in the status bar. "
                "A .SCR records only the classic ULA screen memory - Layer 2, the "
-               "tilemap and the sprites are not in it.")
+               "tilemap and the sprites are not in it."))
         .arg(text(Action::QuickScreenshot, m));
 }
 inline QString debugger_tooltip(bool m = kQtCtrlIsCommand)
 {
-    return tr_("Toggle Debugger (%1)").arg(text(Action::Debugger, m));
+    return tr_(QT_TRANSLATE_NOOP("host_shortcuts", "Toggle Debugger (%1)")).arg(text(Action::Debugger, m));
 }
 inline QString script_capture_tooltip(bool m = kQtCtrlIsCommand)
 {
-    return tr_("Capture the screen at the next frame (%1 does the same while recording)")
+    return tr_(QT_TRANSLATE_NOOP("host_shortcuts", "Capture the screen at the next frame (%1 does the same while recording)"))
         .arg(script_text(8, m));
 }
 inline QString script_recording_text(const QString& what, bool m = kQtCtrlIsCommand)
 {
-    return tr_("Recording to %1 (%2 captures).").arg(what, script_text(8, m));
+    return tr_(QT_TRANSLATE_NOOP("host_shortcuts", "Recording to %1 (%2 captures).")).arg(what, script_text(8, m));
 }
 
 /// The guest scancode of a Qt modifier key (SDL_SCANCODE_UNKNOWN: none).

@@ -76,7 +76,7 @@
     </message>
     <message>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Eltávolítás</translation>
     </message>
     <message>
         <source>Breakpoints enabled</source>
@@ -208,11 +208,11 @@
     <name>CrtGlOverlay</name>
     <message>
         <source>the effect could not be built on this graphics driver</source>
-        <translation type="unfinished"></translation>
+        <translation>a hatás ezzel a grafikus meghajtóval nem építhető fel</translation>
     </message>
     <message>
         <source>no usable graphics context is available</source>
-        <translation type="unfinished"></translation>
+        <translation>nincs használható grafikus környezet</translation>
     </message>
 </context>
 <context>
@@ -311,11 +311,11 @@
     </message>
     <message>
         <source>&amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Fájl</translation>
     </message>
     <message>
         <source>Reload Last File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Az utolsó fájl újratöltése</translation>
     </message>
     <message>
         <source>&amp;Debug</source>
@@ -431,7 +431,7 @@
     </message>
     <message>
         <source>&amp;Rewind</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Visszatekerés</translation>
     </message>
     <message>
         <source>&amp;Enable Rewind</source>
@@ -668,7 +668,7 @@
     </message>
     <message>
         <source>Audio</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Hang</translation>
     </message>
     <message>
         <source>Script</source>
@@ -778,479 +778,492 @@
     <name>EmulatorWidget</name>
     <message>
         <source>no usable graphics context is available</source>
-        <translation type="unfinished"></translation>
+        <translation>nincs használható grafikus környezet</translation>
     </message>
 </context>
 <context>
     <name>MainWindow</name>
     <message>
         <source>CRT Effect</source>
-        <translation type="unfinished"></translation>
+        <translation>CRT-hatás</translation>
     </message>
     <message>
         <source>The CRT effect cannot run on this computer: %1.
 
 The display continues with the software Scanlines.</source>
-        <translation type="unfinished"></translation>
+        <translation>A CRT-hatás ezen a gépen nem futtatható: %1.
+
+A kép a szoftveres pásztázósorokkal megy tovább.</translation>
     </message>
     <message>
         <source>The CRT effect cannot run on this computer: %1.
 
 The display continues without it.</source>
-        <translation type="unfinished"></translation>
+        <translation>A CRT-hatás ezen a gépen nem futtatható: %1.
+
+A kép nélküle megy tovább.</translation>
     </message>
     <message>
         <source>Source search path</source>
-        <translation type="unfinished"></translation>
+        <translation>Forráskeresési útvonal</translation>
     </message>
     <message>
         <source>The directory &quot;%1&quot; contains &apos;%2&apos;, which separates directories in the saved list, so it is not saved. It stays searched for this session.</source>
-        <translation type="unfinished"></translation>
+        <translation>A(z) „%1” mappa nevében „%2” van, ez a mentett listában a mappák elválasztójele, ezért nem mentődik el. Ebben a munkamenetben továbbra is keres benne.</translation>
     </message>
     <message>
         <source>&amp;Automatic (first free controller)</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Automatikus (az első szabad kontroller)</translation>
     </message>
     <message>
         <source>Cursor &amp;Keys + Space</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Kurzorbillentyűk + Szóköz</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Nincs</translation>
     </message>
     <message>
         <source>&amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Fájl</translation>
     </message>
     <message>
         <source>&amp;Load NEX File...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;NEX-fájl betöltése…</translation>
     </message>
     <message>
         <source>Reload Last File</source>
-        <translation type="unfinished"></translation>
+        <translation>Az utolsó fájl újratöltése</translation>
     </message>
     <message>
         <source>Recent &amp;Files</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Legutóbbi fájlok</translation>
     </message>
     <message>
         <source>&amp;Insert SD Card Image...</source>
-        <translation type="unfinished"></translation>
+        <translation>SD-kártyakép &amp;behelyezése…</translation>
     </message>
     <message>
         <source>&amp;Eject SD Card</source>
-        <translation type="unfinished"></translation>
+        <translation>SD-kártya k&amp;iadása</translation>
     </message>
     <message>
         <source>Insert Second SD Card Image...</source>
-        <translation type="unfinished"></translation>
+        <translation>Második SD-kártyakép behelyezése…</translation>
     </message>
     <message>
         <source>Eject Second SD Card</source>
-        <translation type="unfinished"></translation>
+        <translation>Második SD-kártya kiadása</translation>
     </message>
     <message>
         <source>Record MPEG&amp;4 Video...</source>
-        <translation type="unfinished"></translation>
+        <translation>MPEG&amp;4-videó felvétele…</translation>
     </message>
     <message>
         <source>FFmpeg is required for video recording but was not found in PATH.
 Install FFmpeg, make sure it is on your PATH, and restart jnext.
 See https://ffmpeg.org/download.html</source>
-        <translation type="unfinished"></translation>
+        <translation>A videófelvételhez FFmpeg kell, de a PATH-ban nincs meg.
+Telepítse az FFmpeget, vegye fel a PATH-ba, és indítsa újra a jnextet.
+Lásd: https://ffmpeg.org/download.html</translation>
     </message>
     <message>
         <source>Sto&amp;p MPEG4 Recording</source>
-        <translation type="unfinished"></translation>
+        <translation>MPEG4-felvétel le&amp;állítása</translation>
     </message>
     <message>
         <source>Play &amp;RZX Recording...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;RZX-felvétel lejátszása…</translation>
     </message>
     <message>
         <source>Record R&amp;ZX...</source>
-        <translation type="unfinished"></translation>
+        <translation>R&amp;ZX-felvétel…</translation>
     </message>
     <message>
         <source>Stop RZX Recordin&amp;g</source>
-        <translation type="unfinished"></translation>
+        <translation>RZX-felvétel leállítá&amp;sa</translation>
     </message>
     <message>
         <source>Save &amp;Screenshot...</source>
-        <translation type="unfinished"></translation>
+        <translation>Képernyőkép &amp;mentése…</translation>
     </message>
     <message>
         <source>PNG Images (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>PNG-képek (*.png)</translation>
     </message>
     <message>
         <source>ZX Screen Dumps (*.scr)</source>
-        <translation type="unfinished"></translation>
+        <translation>ZX képernyőképek (*.scr)</translation>
     </message>
     <message>
         <source>Save Screenshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Képernyőkép mentése</translation>
     </message>
     <message>
         <source>All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Minden fájl (*)</translation>
     </message>
     <message>
         <source>Quic&amp;k Screenshot</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Gyors képernyőkép</translation>
     </message>
     <message>
         <source>Save S&amp;napshot...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Pillanatkép mentése…</translation>
     </message>
     <message>
         <source>Quick Save Snapshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Gyors mentés (pillanatkép)</translation>
     </message>
     <message>
         <source>Quick Load Snapshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Gyors betöltés (pillanatkép)</translation>
     </message>
     <message>
         <source>&amp;Quit</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Kilépés</translation>
     </message>
     <message>
         <source>&amp;Machine</source>
-        <translation type="unfinished"></translation>
+        <translation>Gép</translation>
     </message>
     <message>
         <source>&amp;Power Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Hidegindítás</translation>
     </message>
     <message>
         <source>&amp;Soft Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Ú&amp;jraindítás</translation>
     </message>
     <message>
         <source>P&amp;ause</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Szünet</translation>
     </message>
     <message>
         <source>Machine &amp;Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Gép&amp;típus</translation>
     </message>
     <message>
         <source>CP&amp;U Speed</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Processzorsebesség</translation>
     </message>
     <message>
         <source>&amp;Emulator Speed</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Emuláció sebessége</translation>
     </message>
     <message>
         <source>&amp;Custom...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Egyéni…</translation>
     </message>
     <message>
         <source>Emulator Speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Emuláció sebessége</translation>
     </message>
     <message>
         <source>Speed (%):</source>
-        <translation type="unfinished"></translation>
+        <translation>Sebesség (%):</translation>
     </message>
     <message>
         <source>POK T&amp;rainers...</source>
-        <translation type="unfinished"></translation>
+        <translation>POK-t&amp;rainerek…</translation>
     </message>
     <message>
         <source>&amp;Input</source>
-        <translation type="unfinished"></translation>
+        <translation>Be&amp;menet</translation>
     </message>
     <message>
         <source>Joy &amp;1 Source (port 0x1F)</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;1. joystick forrása (0x1F port)</translation>
     </message>
     <message>
         <source>Joy &amp;2 Source (port 0x37)</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;2. joystick forrása (0x37 port)</translation>
     </message>
     <message>
         <source>Capture &amp;Mouse</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Egér befogása</translation>
     </message>
     <message>
         <source>T&amp;ape</source>
-        <translation type="unfinished"></translation>
+        <translation>K&amp;azetta</translation>
     </message>
     <message>
         <source>&amp;Open Tape File...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Kazettafájl megnyitása…</translation>
     </message>
     <message>
         <source>&amp;Eject Tape</source>
-        <translation type="unfinished"></translation>
+        <translation>Kazetta k&amp;iadása</translation>
     </message>
     <message>
         <source>&amp;Rewind</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Visszatekerés</translation>
     </message>
     <message>
         <source>&amp;Fast Load</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Gyorstöltés</translation>
     </message>
     <message>
         <source>Auto Play/Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatikus lejátszás/leállítás</translation>
     </message>
     <message>
         <source>Start &amp;Saving...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Mentés indítása…</translation>
     </message>
     <message>
         <source>Save to a TAP, TZX or WAV file: SAVEs and the tape output are appended</source>
-        <translation type="unfinished"></translation>
+        <translation>Mentés TAP-, TZX- vagy WAV-fájlba: a SAVE-ek és a kazettakimenet a fájl végére kerülnek</translation>
     </message>
     <message>
         <source>Stop Sa&amp;ving</source>
-        <translation type="unfinished"></translation>
+        <translation>Mentés &amp;leállítása</translation>
     </message>
     <message>
         <source>De&amp;bug</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Hibakeresés</translation>
     </message>
     <message>
         <source>Magic &amp;Breakpoint</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Mágikus töréspont</translation>
     </message>
     <message>
         <source>Enable magic breakpoints (ED FF / FD 00 / DD 01)</source>
-        <translation type="unfinished"></translation>
+        <translation>Mágikus töréspontok engedélyezése (ED FF / FD 00 / DD 01)</translation>
     </message>
     <message>
         <source>&amp;View</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Nézet</translation>
     </message>
     <message>
         <source>Scale %1x</source>
-        <translation type="unfinished"></translation>
+        <translation>Nagyítás: %1x</translation>
     </message>
     <message>
         <source>&amp;Fullscreen</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Teljes képernyő</translation>
     </message>
     <message>
         <source>CRT Scan&amp;lines</source>
-        <translation type="unfinished"></translation>
+        <translation>CRT &amp;pásztázósorok</translation>
     </message>
     <message>
         <source>CRT Soft Scanlines</source>
-        <translation type="unfinished"></translation>
+        <translation>CRT lágy pásztázósorok</translation>
     </message>
     <message>
         <source>CRT TV</source>
-        <translation type="unfinished"></translation>
+        <translation>CRT tévé</translation>
     </message>
     <message>
         <source>CRT PC Monitor</source>
-        <translation type="unfinished"></translation>
+        <translation>CRT PC-monitor</translation>
     </message>
     <message>
         <source>Soft scanlines only, drawn by the GPU</source>
-        <translation type="unfinished"></translation>
+        <translation>Csak lágy pásztázósorok, a videókártya rajzolja</translation>
     </message>
     <message>
         <source>Curved glass, bloom, scanlines and shadow mask, drawn by the GPU</source>
-        <translation type="unfinished"></translation>
+        <translation>Ívelt üveg, ragyogás, pásztázósorok és árnyékmaszk, a videókártya rajzolja</translation>
     </message>
     <message>
         <source>&amp;Debugger</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Hibakereső</translation>
     </message>
     <message>
         <source>Setti&amp;ngs</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Beállítások</translation>
     </message>
     <message>
         <source>&amp;Preferences...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Beállítások…</translation>
     </message>
     <message>
         <source>&amp;Help</source>
-        <translation type="unfinished"></translation>
+        <translation>Súgó</translation>
     </message>
     <message>
         <source>&amp;About JNEXT...</source>
-        <translation type="unfinished"></translation>
+        <translation>A JNEXT &amp;névjegye…</translation>
     </message>
     <message>
         <source>Main</source>
-        <translation type="unfinished"></translation>
+        <translation>Fő</translation>
     </message>
     <message>
         <source>Power Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Hidegindítás</translation>
     </message>
     <message>
         <source>Soft Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Újraindítás</translation>
     </message>
     <message>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>Betöltés</translation>
     </message>
     <message>
         <source>Screenshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Képernyőkép</translation>
     </message>
     <message>
         <source>NMI</source>
-        <translation type="unfinished"></translation>
+        <translation>NMI</translation>
     </message>
     <message>
         <source>Multiface NMI (F9)</source>
-        <translation type="unfinished"></translation>
+        <translation>Multiface NMI (F9)</translation>
     </message>
     <message>
         <source>FPS: -- emu / -- shown</source>
-        <translation type="unfinished"></translation>
+        <translation>FPS: -- emulált / -- megjelenített</translation>
     </message>
     <message>
         <source>emu:   emulated frames per second (how fast the machine is simulated)
 shown: frames per second that actually reached the screen
 
 &apos;shown&apos; below &apos;emu&apos; means frames are not being presented - deliberately (audio catch-up, speed &gt; 1x) or otherwise. Run with --log-level platform=info for the full cadence breakdown.</source>
-        <translation type="unfinished"></translation>
+        <translation>emulált: emulált képkocka másodpercenként (milyen gyorsan fut a gép szimulációja)
+megjelenített: ennyi képkocka jutott ki ténylegesen a képernyőre másodpercenként
+
+Ha a megjelenített kevesebb az emuláltnál, képkockák maradnak ki – szándékosan (a hang utolérése, 1×-nél nagyobb sebesség) vagy más okból. A részletes ütemezésért indítsa ezzel: --log-level platform=info.</translation>
     </message>
     <message>
         <source>3.5 MHz</source>
-        <translation type="unfinished"></translation>
+        <translation>3.5 MHz</translation>
     </message>
     <message>
         <source>ZX Next</source>
-        <translation type="unfinished"></translation>
+        <translation>ZX Next</translation>
     </message>
     <message>
         <source>Tape: none</source>
-        <translation type="unfinished"></translation>
+        <translation>Kazetta: nincs</translation>
     </message>
     <message>
         <source>1x</source>
-        <translation type="unfinished"></translation>
+        <translation>1x</translation>
     </message>
     <message>
         <source>ESP: on</source>
-        <translation type="unfinished"></translation>
+        <translation>ESP: be</translation>
     </message>
     <message>
         <source>Paused</source>
-        <translation type="unfinished"></translation>
+        <translation>Szünet</translation>
     </message>
     <message>
         <source>SD: none</source>
-        <translation type="unfinished"></translation>
+        <translation>SD: nincs</translation>
     </message>
     <message>
         <source>--no-sdcard: no SD card, no NextZXOS and no ROMs</source>
-        <translation type="unfinished"></translation>
+        <translation>--no-sdcard: nincs SD-kártya, NextZXOS és ROM</translation>
     </message>
     <message>
         <source>Requested emulation speed: %1%</source>
-        <translation type="unfinished"></translation>
+        <translation>Kért emulációs sebesség: %1%</translation>
     </message>
     <message>
         <source>
 100%% = %1 fps (this machine&apos;s true refresh rate)</source>
-        <translation type="unfinished"></translation>
+        <translation>
+100%% = %1 kép/s (a gép valódi képfrissítése)</translation>
     </message>
     <message>
         <source>
 Actually achieved: %1%</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Ténylegesen elért: %1%</translation>
     </message>
     <message>
         <source>
 
 The host is not keeping up. The figure in brackets is what it managed.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+
+A számítógép nem bírja a tempót. A zárójeles szám azt mutatja, mennyit sikerült elérnie.</translation>
     </message>
     <message>
         <source>(empty)</source>
-        <translation type="unfinished"></translation>
+        <translation>(üres)</translation>
     </message>
     <message>
         <source>&amp;Clear Recent Files</source>
-        <translation type="unfinished"></translation>
+        <translation>A legutóbbi fájlok &amp;törlése</translation>
     </message>
     <message>
         <source>Open File</source>
-        <translation type="unfinished"></translation>
+        <translation>Fájl megnyitása</translation>
     </message>
     <message>
         <source>Open &quot;%1&quot;?</source>
-        <translation type="unfinished"></translation>
+        <translation>Megnyitja a(z) „%1” fájlt?</translation>
     </message>
     <message>
         <source>Whatever is running now will be lost.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ami most fut, elvész.</translation>
     </message>
     <message>
         <source>Open</source>
-        <translation type="unfinished"></translation>
+        <translation>Megnyitás</translation>
     </message>
     <message>
         <source>Recent file no longer exists, removed from the list: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>A legutóbbi fájl már nem létezik, kikerült a listából: %1</translation>
     </message>
     <message>
         <source>Load Program</source>
-        <translation type="unfinished"></translation>
+        <translation>Program betöltése</translation>
     </message>
     <message>
         <source>Open POK File</source>
-        <translation type="unfinished"></translation>
+        <translation>POK-fájl megnyitása</translation>
     </message>
     <message>
         <source>POK Trainers (*.pok *.POK);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>POK-trainerek (*.pok *.POK);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Cannot load POK file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>A POK-fájl nem tölthető be: %1</translation>
     </message>
     <message>
         <source>POK Trainers</source>
-        <translation type="unfinished"></translation>
+        <translation>POK-trainerek</translation>
     </message>
     <message>
         <source>Trainers for this program: Machine &gt; POK Trainers...</source>
-        <translation type="unfinished"></translation>
+        <translation>Trainerek ehhez a programhoz: Gép &gt; POK-trainerek…</translation>
     </message>
     <message>
         <source>Load from Archive</source>
-        <translation type="unfinished"></translation>
+        <translation>Betöltés archívumból</translation>
     </message>
     <message>
         <source>%1 holds several programs. Load which one?</source>
-        <translation type="unfinished"></translation>
+        <translation>A(z) %1 több programot tartalmaz. Melyiket töltse be?</translation>
     </message>
     <message>
         <source>Play RZX Recording</source>
-        <translation type="unfinished"></translation>
+        <translation>RZX-felvétel lejátszása</translation>
     </message>
     <message>
         <source>Cannot play %1: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>A(z) %1 nem játszható le: %2.</translation>
     </message>
     <message>
         <source>it is not a NEX file (it does not start with the &quot;Next&quot; header)</source>
-        <translation type="unfinished"></translation>
+        <translation>nem NEX-fájl (nem a „Next” fejléccel kezdődik)</translation>
     </message>
     <message>
         <source>it is not a NEX file and its extension is not one JNEXT loads (.nex, .jns, .sna, .szx, .z80, .tap, .tzx, .wav, .rzx, .zip); a .pok trainer file opens from Machine &gt; POK Trainers</source>
-        <translation type="unfinished"></translation>
+        <translation>nem NEX-fájl, és a kiterjesztése sem olyan, amit a JNEXT betölt (.nex, .jns, .sna, .szx, .z80, .tap, .tzx, .wav, .rzx, .zip); a .pok trainerfájl a Gép &gt; POK-trainerek menüből nyitható meg</translation>
     </message>
     <message>
         <source>Experimental NEX V1.3</source>
-        <translation type="unfinished"></translation>
+        <translation>Kísérleti NEX V1.3</translation>
     </message>
     <message>
         <source>&apos;%1&apos; is NEX version %2.
@@ -1258,182 +1271,193 @@ The host is not keeping up. The figure in brackets is what it managed.</source>
 NEX V1.3 is an EXPERIMENTAL format and is NOT supported in any way: it may load incorrectly, misbehave, or not work at all, and no support is provided for it.
 
 Load it anyway?</source>
-        <translation type="unfinished"></translation>
+        <translation>A(z) „%1” %2-es verziójú NEX-fájl.
+
+A NEX V1.3 KÍSÉRLETI formátum, és semmilyen támogatást NEM kap: hibásan töltődhet be, rendellenesen működhet vagy egyáltalán nem működik, és nincs hozzá segítség.
+
+Betölti mégis?</translation>
     </message>
     <message>
         <source>Proceed (unsupported)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tovább (nem támogatott)</translation>
     </message>
     <message>
         <source>Snapshot restored - %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Pillanatkép visszaállítva – %1</translation>
     </message>
     <message>
         <source>Load Failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Sikertelen betöltés</translation>
     </message>
     <message>
         <source>Could not load:
 %1
 
 The file is missing, unreadable or not a valid file of its type; the log has the details.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült betölteni:
+%1
+
+A fájl hiányzik, nem olvasható, vagy nem érvényes a típusának megfelelően; a részletek a naplóban.</translation>
     </message>
     <message>
         <source>Insert SD Card Image</source>
-        <translation type="unfinished"></translation>
+        <translation>SD-kártyakép behelyezése</translation>
     </message>
     <message>
         <source>Disk Images (*.img *.bin *.raw);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Lemezképek (*.img *.bin *.raw);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Insert Second SD Card Image</source>
-        <translation type="unfinished"></translation>
+        <translation>Második SD-kártyakép behelyezése</translation>
     </message>
     <message>
         <source>Second SD Card</source>
-        <translation type="unfinished"></translation>
+        <translation>Második SD-kártya</translation>
     </message>
     <message>
         <source>SD Card</source>
-        <translation type="unfinished"></translation>
+        <translation>SD-kártya</translation>
     </message>
     <message>
         <source>The second SD card cannot be changed now: %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>A második SD-kártya most nem cserélhető: %1.</translation>
     </message>
     <message>
         <source>The SD card cannot be changed now: %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Az SD-kártya most nem cserélhető: %1.</translation>
     </message>
     <message>
         <source>Second SD card ejected</source>
-        <translation type="unfinished"></translation>
+        <translation>A második SD-kártya kiadva</translation>
     </message>
     <message>
         <source>SD card ejected</source>
-        <translation type="unfinished"></translation>
+        <translation>SD-kártya kiadva</translation>
     </message>
     <message>
         <source>Second SD card inserted: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Második SD-kártya behelyezve: %1</translation>
     </message>
     <message>
         <source>SD card inserted: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>SD-kártya behelyezve: %1</translation>
     </message>
     <message>
         <source>Second SD card change failed: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>A második SD-kártya cseréje sikertelen: %1</translation>
     </message>
     <message>
         <source>SD card change failed: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Az SD-kártya cseréje sikertelen: %1</translation>
     </message>
     <message>
         <source>The second SD card could not be changed: %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>A második SD-kártyát nem sikerült kicserélni: %1.</translation>
     </message>
     <message>
         <source>The SD card could not be changed: %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Az SD-kártyát nem sikerült kicserélni: %1.</translation>
     </message>
     <message>
         <source>About JNEXT</source>
-        <translation type="unfinished"></translation>
+        <translation>A JNEXT névjegye</translation>
     </message>
     <message>
         <source>&lt;h3&gt;JNEXT %1&lt;/h3&gt;&lt;p&gt;ZX Spectrum Next Emulator&lt;/p&gt;&lt;p&gt;A line-accurate emulator of the ZX Spectrum Next computer, based on the official FPGA VHDL sources.&lt;/p&gt;&lt;p&gt;Written in C++17 with Qt 6 and SDL3.&lt;/p&gt;&lt;p&gt;&amp;copy; Copyright 2026 Jorge Gonzalez Villalonga &amp;lt;zx@jogv.es&amp;gt;&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;JNEXT %1&lt;/h3&gt;&lt;p&gt;ZX Spectrum Next emulátor&lt;/p&gt;&lt;p&gt;A ZX Spectrum Next számítógép soronként pontos emulátora, a hivatalos FPGA VHDL-forrás alapján.&lt;/p&gt;&lt;p&gt;C++17-ben írva, Qt 6-tal és SDL3-mal.&lt;/p&gt;&lt;p&gt;&amp;copy; Copyright 2026 Jorge Gonzalez Villalonga &amp;lt;zx@jogv.es&amp;gt;&lt;/p&gt;&lt;p&gt;Magyar változat: Viktor318/jnext (hungarian-ui)&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Open Tape File</source>
-        <translation type="unfinished"></translation>
+        <translation>Kazettafájl megnyitása</translation>
     </message>
     <message>
         <source>Tape Files (*.tap *.tzx *.wav);;TAP Files (*.tap);;TZX Files (*.tzx);;WAV Files (*.wav);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Kazettafájlok (*.tap *.tzx *.wav);;TAP-fájlok (*.tap);;TZX-fájlok (*.tzx);;WAV-fájlok (*.wav);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Save to Tape File</source>
-        <translation type="unfinished"></translation>
+        <translation>Mentés kazettafájlba</translation>
     </message>
     <message>
         <source>TZX Files (*.tzx);;WAV Files (*.wav);;TAP Files (*.tap)</source>
-        <translation type="unfinished"></translation>
+        <translation>TZX-fájlok (*.tzx);;WAV-fájlok (*.wav);;TAP-fájlok (*.tap)</translation>
     </message>
     <message>
         <source>Tape saving cannot start while an RZX recording or playback runs: its SAVE trap skips the ROM routine, which a recording cannot replay.</source>
-        <translation type="unfinished"></translation>
+        <translation>A kazettára mentés nem indulhat, amíg RZX-felvétel vagy -lejátszás fut: a SAVE-csapda átugorja a ROM-rutint, ezt egy felvétel nem tudja visszajátszani.</translation>
     </message>
     <message>
         <source>Cannot save to %1.
 
 The file cannot be written, or it already exists and is not a tape of that format.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem lehet ide menteni: %1.
+
+A fájl nem írható, vagy már létezik, és nem ilyen formátumú kazetta.</translation>
     </message>
     <message>
         <source>Finish saving to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>A mentés befejezése ide: %1</translation>
     </message>
     <message>
         <source>Tape: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Kazetta: %1</translation>
     </message>
     <message>
         <source>Tape: %1 [%2/%3]</source>
-        <translation type="unfinished"></translation>
+        <translation>Kazetta: %1 [%2/%3]</translation>
     </message>
     <message>
         <source>ESP: on (any host)</source>
-        <translation type="unfinished"></translation>
+        <translation>ESP: be (bármely gép)</translation>
     </message>
     <message>
         <source>ESP: on (%1 allowed)</source>
-        <translation type="unfinished"></translation>
+        <translation>ESP: be (%1 engedélyezett)</translation>
     </message>
     <message>
         <source>The emulated ESP-01 WiFi module is enabled: the running program can open outbound TCP connections.
 Loopback, link-local and cloud-metadata addresses are always refused.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Az emulált ESP-01 WiFi-modul be van kapcsolva: a futó program kimenő TCP-kapcsolatokat nyithat.
+A loopback, a link-local és a felhős metaadat-címek mindig tiltottak.
+</translation>
     </message>
     <message>
         <source>No --esp-allow given, so any other host may be named.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nincs --esp-allow megadva, így bármely más gép megadható.</translation>
     </message>
     <message>
         <source>Allowed hosts:</source>
-        <translation type="unfinished"></translation>
+        <translation>Engedélyezett gépek:</translation>
     </message>
     <message>
         <source>ESP: REFUSED %1</source>
-        <translation type="unfinished"></translation>
+        <translation>ESP: ELUTASÍTVA %1</translation>
     </message>
     <message>
         <source>ESP: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>ESP: %1</translation>
     </message>
     <message>
         <source>ESP: failed %1</source>
-        <translation type="unfinished"></translation>
+        <translation>ESP: sikertelen %1</translation>
     </message>
     <message>
         <source>ESP: closed %1</source>
-        <translation type="unfinished"></translation>
+        <translation>ESP: lezárva %1</translation>
     </message>
     <message>
         <source>ESP: FAULT</source>
-        <translation type="unfinished"></translation>
+        <translation>ESP: HIBA</translation>
     </message>
     <message>
         <source>Emulated ESP-01 connection history (most recent last):</source>
-        <translation type="unfinished"></translation>
+        <translation>Az emulált ESP-01 kapcsolatainak előzményei (a legutóbbi a végén):</translation>
     </message>
     <message>
         <source>Recording Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Felvételi hiba</translation>
     </message>
     <message>
         <source>FFmpeg is not installed or not found in PATH.
@@ -1442,58 +1466,66 @@ Video recording needs the ffmpeg command available on your PATH.
 
 Downloads and per-platform instructions:
   https://ffmpeg.org/download.html</source>
-        <translation type="unfinished"></translation>
+        <translation>Az FFmpeg nincs telepítve, vagy nincs a PATH-ban.
+
+A videófelvételhez az ffmpeg parancsnak elérhetőnek kell lennie a PATH-ban.
+
+Letöltés és útmutató rendszerenként:
+  https://ffmpeg.org/download.html</translation>
     </message>
     <message>
         <source>Record MPEG4 Video</source>
-        <translation type="unfinished"></translation>
+        <translation>MPEG4-videó felvétele</translation>
     </message>
     <message>
         <source>MP4 Video (*.mp4);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>MP4-videó (*.mp4);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Failed to start recording.
 Make sure FFmpeg is installed and available in PATH.</source>
-        <translation type="unfinished"></translation>
+        <translation>A felvétel nem indult el.
+Ellenőrizze, hogy az FFmpeg telepítve van és elérhető a PATH-ban.</translation>
     </message>
     <message>
         <source>Recording...</source>
-        <translation type="unfinished"></translation>
+        <translation>Felvétel…</translation>
     </message>
     <message>
         <source>Encoding video...</source>
-        <translation type="unfinished"></translation>
+        <translation>Videó kódolása…</translation>
     </message>
     <message>
         <source>Recording saved</source>
-        <translation type="unfinished"></translation>
+        <translation>Felvétel mentve</translation>
     </message>
     <message>
         <source>FFmpeg encoding failed. Check console output for details.</source>
-        <translation type="unfinished"></translation>
+        <translation>Az FFmpeg kódolás sikertelen. A részletek a konzolkimenetben.</translation>
     </message>
     <message>
         <source>RZX Recording</source>
-        <translation type="unfinished"></translation>
+        <translation>RZX-felvétel</translation>
     </message>
     <message>
         <source>Record RZX File</source>
-        <translation type="unfinished"></translation>
+        <translation>RZX-fájl felvétele</translation>
     </message>
     <message>
         <source>RZX Files (*.rzx);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>RZX-fájlok (*.rzx);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>An RZX recording to %1 is already running.
 
 Stop it first (File &gt; Stop RZX Recording).</source>
-        <translation type="unfinished"></translation>
+        <translation>Már fut egy RZX-felvétel ide: %1.
+
+Előbb állítsa le (Fájl &gt; RZX-felvétel leállítása).</translation>
     </message>
     <message>
         <source>An RZX recording is playing. Input cannot be recorded during playback, so wait for it to finish.</source>
-        <translation type="unfinished"></translation>
+        <translation>RZX-felvétel játszódik le. Lejátszás közben a bemenet nem rögzíthető, várja meg a végét.</translation>
     </message>
     <message>
         <source>RZX recording is not available on a ZX Spectrum Next.
@@ -1501,153 +1533,167 @@ Stop it first (File &gt; Stop RZX Recording).</source>
 An RZX carries a snapshot of the machine it starts from, and the formats it can carry describe a 48K, 128K, Pentagon or +3 Spectrum - none of them holds the Next&apos;s extra RAM, NextREGs, Layer 2, tilemap, sprites or Copper.
 
 Switch to Machine &gt; Machine Type &gt; 48K, 128K, Pentagon or +3 and record there. Playing a Next recording made by an older JNEXT still works, with a warning that it may not replay faithfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>ZX Spectrum Nexten nem készíthető RZX-felvétel.
+
+Az RZX a kiinduló gép pillanatképét viszi magával, és a benne használható formátumok 48K, 128K, Pentagon vagy +3 Spectrumot írnak le – egyikben sincs hely a Next többlet-RAM-jának, a NextREG-eknek, a Layer 2-nek, a tilemapnek, a sprite-oknak és a Coppernek.
+
+Váltson Gép &gt; Géptípus &gt; 48K, 128K, Pentagon vagy +3 gépre, és ott vegyen fel. Egy régebbi JNEXT-tel készült Next-felvétel lejátszása továbbra is működik, azzal a figyelmeztetéssel, hogy talán nem pontosan játszódik vissza.</translation>
     </message>
     <message>
         <source>Tape saving is on (--tape-save, or Tape &gt; Start Saving), and it cannot be combined with RZX recording or playback: its SAVE trap skips the ROM routine, which a recording cannot replay.
 
 Stop it first (Tape &gt; Stop Saving).</source>
-        <translation type="unfinished"></translation>
+        <translation>A kazettára mentés be van kapcsolva (--tape-save vagy Kazetta &gt; Mentés indítása), és ez nem fér össze az RZX-felvétellel vagy -lejátszással: a SAVE-csapda átugorja a ROM-rutint, ezt egy felvétel nem tudja visszajátszani.
+
+Előbb állítsa le (Kazetta &gt; Mentés leállítása).</translation>
     </message>
     <message>
         <source>Cannot record to %1:
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem lehet ide felvenni: %1:
+%2</translation>
     </message>
     <message>
         <source>see the log for details</source>
-        <translation type="unfinished"></translation>
+        <translation>a részletek a naplóban</translation>
     </message>
     <message>
         <source>Recording RZX to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>RZX-felvétel ide: %1</translation>
     </message>
     <message>
         <source>No RZX recording is running</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem fut RZX-felvétel</translation>
     </message>
     <message>
         <source>RZX recording saved to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>RZX-felvétel mentve ide: %1</translation>
     </message>
     <message>
         <source>The RZX recording could not be written to %1, and is lost.
 
 See the log for details.</source>
-        <translation type="unfinished"></translation>
+        <translation>Az RZX-felvételt nem sikerült ide írni: %1, ezért elveszett.
+
+A részletek a naplóban.</translation>
     </message>
     <message>
         <source>The reset ended the RZX recording; it was saved to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Az újraindítás befejezte az RZX-felvételt; mentve ide: %1</translation>
     </message>
     <message>
         <source>The reset ended the RZX recording, and it could not be written to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Az újraindítás befejezte az RZX-felvételt, és nem sikerült ide írni: %1</translation>
     </message>
     <message>
         <source>The reset ended the RZX recording, and it could not be written to %1, so it is lost.
 
 See the log for details.</source>
-        <translation type="unfinished"></translation>
+        <translation>Az újraindítás befejezte az RZX-felvételt, és nem sikerült ide írni: %1, ezért elveszett.
+
+A részletek a naplóban.</translation>
     </message>
     <message>
         <source>Play RZX File</source>
-        <translation type="unfinished"></translation>
+        <translation>RZX-fájl lejátszása</translation>
     </message>
     <message>
         <source>Cannot play %1: an RZX recording must have the .rzx extension.</source>
-        <translation type="unfinished"></translation>
+        <translation>A(z) %1 nem játszható le: az RZX-felvétel kiterjesztése csak .rzx lehet.</translation>
     </message>
     <message>
         <source>Screenshot saved: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Képernyőkép mentve: %1</translation>
     </message>
     <message>
         <source>Screenshot Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Képernyőkép-hiba</translation>
     </message>
     <message>
         <source>Failed to save screenshot to:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült menteni a képernyőképet ide:
+%1</translation>
     </message>
     <message>
         <source>Could not create a screenshot file in:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült képernyőképfájlt létrehozni itt:
+%1</translation>
     </message>
     <message>
         <source>Spectrum Files (*.nex *.jns *.sna *.szx *.z80 *.tap *.tzx *.wav *.rzx *.zip);;NEX Files (*.nex);;jnext Snapshots (*.jns);;SNA Snapshots (*.sna);;SZX Snapshots (*.szx);;Z80 Snapshots (*.z80);;TAP Files (*.tap);;TZX Files (*.tzx);;WAV Files (*.wav);;RZX Recordings (*.rzx);;ZIP Archives (*.zip);;POK Trainers (*.pok);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Spectrum-fájlok (*.nex *.jns *.sna *.szx *.z80 *.tap *.tzx *.wav *.rzx *.zip);;NEX-fájlok (*.nex);;jnext-pillanatképek (*.jns);;SNA-pillanatképek (*.sna);;SZX-pillanatképek (*.szx);;Z80-pillanatképek (*.z80);;TAP-fájlok (*.tap);;TZX-fájlok (*.tzx);;WAV-fájlok (*.wav);;RZX-felvételek (*.rzx);;ZIP-archívumok (*.zip);;POK-trainerek (*.pok);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>jnext snapshot (*.jns);;Spectrum snapshot (*.sna);;ZX-State snapshot (*.szx);;NEX program (*.nex);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>jnext-pillanatkép (*.jns);;Spectrum-pillanatkép (*.sna);;ZX-State pillanatkép (*.szx);;NEX-program (*.nex);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Spectrum snapshot (*.sna);;jnext snapshot (*.jns);;ZX-State snapshot (*.szx);;NEX program (*.nex);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Spectrum-pillanatkép (*.sna);;jnext-pillanatkép (*.jns);;ZX-State pillanatkép (*.szx);;NEX-program (*.nex);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Snapshot save failed: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>A pillanatkép mentése sikertelen: %1</translation>
     </message>
     <message>
         <source>Save Snapshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Pillanatkép mentése</translation>
     </message>
     <message>
         <source>Could not create a snapshot file in:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült pillanatképfájlt létrehozni itt:
+%1</translation>
     </message>
     <message>
         <source>Quick Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Gyors mentés</translation>
     </message>
     <message>
         <source>Quick saved: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Gyors mentés kész: %1</translation>
     </message>
     <message>
         <source>Quick Load: no snapshot in %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Gyors betöltés: nincs pillanatkép itt: %1</translation>
     </message>
     <message>
         <source>Quick Load: refused %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Gyors betöltés: elutasítva %1: %2</translation>
     </message>
     <message>
         <source>Quick loading: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Gyors betöltés: %1</translation>
     </message>
     <message>
         <source>Cannot load %1: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>A(z) %1 nem tölthető be: %2.</translation>
     </message>
     <message>
         <source>Paused mid-frame: advanced to the next frame boundary to save from.</source>
-        <translation type="unfinished"></translation>
+        <translation>A szünet képkocka közben volt: a mentéshez a következő képkockahatárig lépett tovább.</translation>
     </message>
     <message>
         <source>Snapshot saved: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Pillanatkép mentve: %1</translation>
     </message>
     <message>
         <source>Snapshot saver returned an empty buffer; nothing written.</source>
-        <translation type="unfinished"></translation>
+        <translation>A pillanatkép-mentő üres puffert adott vissza; semmi nem íródott ki.</translation>
     </message>
     <message>
         <source>Failed to open &apos;%1&apos; for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>A(z) „%1” nem nyitható meg írásra</translation>
     </message>
     <message>
         <source>Short write to &apos;%1&apos; (%2 of %3 bytes)</source>
-        <translation type="unfinished"></translation>
+        <translation>Hiányos írás ide: „%1” (%3 bájtból %2)</translation>
     </message>
     <message>
         <source>Change Machine Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Géptípus váltása</translation>
     </message>
     <message>
         <source>Switching to %1 restarts the emulator - anything currently running will be lost.
@@ -1655,23 +1701,59 @@ See the log for details.</source>
 Restart now?
 
 (Choosing No keeps the machine running and applies the new machine type the next time jnext starts.)</source>
-        <translation type="unfinished"></translation>
+        <translation>A(z) %1 gépre váltás újraindítja az emulátort – ami most fut, elvész.
+
+Újraindítja most?
+
+(A Nem választásakor a gép tovább fut, és az új géptípus a jnext következő indításakor lép életbe.)</translation>
     </message>
     <message>
         <source>Confine the host pointer so the Kempston mouse can move freely (click the screen to capture, %1 to release)</source>
-        <translation type="unfinished"></translation>
+        <translation>A gazdagép egérmutatójának befogása, hogy a Kempston egér szabadon mozogjon (befogás: kattintás a képre, elengedés: %1)</translation>
     </message>
     <message>
         <source> - %1 to release mouse</source>
-        <translation type="unfinished"></translation>
+        <translation> – egér elengedése: %1</translation>
     </message>
     <message>
         <source>Mouse captured - %1 to release</source>
-        <translation type="unfinished"></translation>
+        <translation>Egér befogva – elengedés: %1</translation>
     </message>
     <message>
         <source>Mouse released</source>
-        <translation type="unfinished"></translation>
+        <translation>Egér elengedve</translation>
+    </message>
+    <message>
+        <source>7 MHz</source>
+        <translation>7 MHz</translation>
+    </message>
+    <message>
+        <source>14 MHz</source>
+        <translation>14 MHz</translation>
+    </message>
+    <message>
+        <source>28 MHz</source>
+        <translation>28 MHz</translation>
+    </message>
+    <message>
+        <source>0.5x (50%)</source>
+        <translation>0.5x (50%)</translation>
+    </message>
+    <message>
+        <source>1x (100%)</source>
+        <translation>1x (100%)</translation>
+    </message>
+    <message>
+        <source>2x (200%)</source>
+        <translation>2x (200%)</translation>
+    </message>
+    <message>
+        <source>4x (400%)</source>
+        <translation>4x (400%)</translation>
+    </message>
+    <message>
+        <source>FPS: %1 emu / %2 shown</source>
+        <translation>FPS: %1 emulált / %2 megjelenített</translation>
     </message>
 </context>
 <context>
@@ -1774,7 +1856,7 @@ Restart now?
     </message>
     <message>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Betöltés</translation>
     </message>
     <message>
         <source>Load failed: %1: not a file</source>
@@ -1866,7 +1948,7 @@ Restart now?
     </message>
     <message>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tallózás…</translation>
     </message>
     <message>
         <source>Save refused: </source>
@@ -1901,299 +1983,300 @@ Restart now?
     <name>PokDialog</name>
     <message>
         <source>POK Trainers</source>
-        <translation type="unfinished"></translation>
+        <translation>POK-trainerek</translation>
     </message>
     <message>
         <source>Trainer</source>
-        <translation type="unfinished"></translation>
+        <translation>Trainer</translation>
     </message>
     <message>
         <source>Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Állapot</translation>
     </message>
     <message>
         <source>Open POK File...</source>
-        <translation type="unfinished"></translation>
+        <translation>POK-fájl megnyitása…</translation>
     </message>
     <message>
         <source>Apply</source>
-        <translation type="unfinished"></translation>
+        <translation>Alkalmazás</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Eltávolítás</translation>
     </message>
     <message>
         <source>(no name)</source>
-        <translation type="unfinished"></translation>
+        <translation>(névtelen)</translation>
     </message>
     <message>
         <source>invalid - %1</source>
-        <translation type="unfinished"></translation>
+        <translation>érvénytelen – %1</translation>
     </message>
     <message>
         <source>applied</source>
-        <translation type="unfinished"></translation>
+        <translation>alkalmazva</translation>
     </message>
     <message>
         <source>applied (found in memory)</source>
-        <translation type="unfinished"></translation>
+        <translation>alkalmazva (a memóriában megtalálva)</translation>
     </message>
     <message>
         <source>not applied</source>
-        <translation type="unfinished"></translation>
+        <translation>nincs alkalmazva</translation>
     </message>
     <message>
         <source>and %1 more</source>
-        <translation type="unfinished"></translation>
+        <translation>és még %1</translation>
     </message>
     <message>
         <source>Value for &quot;%1&quot; (0-255):</source>
-        <translation type="unfinished"></translation>
+        <translation>Érték ehhez: „%1” (0–255):</translation>
     </message>
 </context>
 <context>
     <name>PreferencesDialog</name>
     <message>
         <source>Preferences</source>
-        <translation type="unfinished"></translation>
+        <translation>Beállítások</translation>
     </message>
     <message>
         <source>Startup</source>
-        <translation type="unfinished"></translation>
+        <translation>Indítás</translation>
     </message>
     <message>
         <source>Input</source>
-        <translation type="unfinished"></translation>
+        <translation>Bemenet</translation>
     </message>
     <message>
         <source>Audio</source>
-        <translation type="unfinished"></translation>
+        <translation>Hang</translation>
     </message>
     <message>
         <source>Network</source>
-        <translation type="unfinished"></translation>
+        <translation>Hálózat</translation>
     </message>
     <message>
         <source>NextPi</source>
-        <translation type="unfinished"></translation>
+        <translation>NextPi</translation>
     </message>
     <message>
         <source>Paths</source>
-        <translation type="unfinished"></translation>
+        <translation>Útvonalak</translation>
     </message>
     <message>
         <source>Debugger</source>
-        <translation type="unfinished"></translation>
+        <translation>Hibakereső</translation>
     </message>
     <message>
         <source>Debugger Keys</source>
-        <translation type="unfinished"></translation>
+        <translation>Hibakereső billentyűi</translation>
     </message>
     <message>
         <source>48K</source>
-        <translation type="unfinished"></translation>
+        <translation>48K</translation>
     </message>
     <message>
         <source>128K</source>
-        <translation type="unfinished"></translation>
+        <translation>128K</translation>
     </message>
     <message>
         <source>+3</source>
-        <translation type="unfinished"></translation>
+        <translation>+3</translation>
     </message>
     <message>
         <source>Pentagon</source>
-        <translation type="unfinished"></translation>
+        <translation>Pentagon</translation>
     </message>
     <message>
         <source>Next</source>
-        <translation type="unfinished"></translation>
+        <translation>Next</translation>
     </message>
     <message>
         <source>Machine type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Géptípus:</translation>
     </message>
     <message>
         <source>CPU speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Processzorsebesség:</translation>
     </message>
     <message>
         <source>%</source>
-        <translation type="unfinished"></translation>
+        <translation>%</translation>
     </message>
     <message>
         <source>Emulator speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Emuláció sebessége:</translation>
     </message>
     <message>
         <source>Smooth sound (drop frames)</source>
-        <translation type="unfinished"></translation>
+        <translation>Folyamatos hang (képkockák kimaradnak)</translation>
     </message>
     <message>
         <source>Smooth picture (run slower, sound stutters)</source>
-        <translation type="unfinished"></translation>
+        <translation>Folyamatos kép (lassabb futás, akadozó hang)</translation>
     </message>
     <message>
         <source>Only takes effect on a host that cannot emulate in real time. Smooth sound keeps the sound card fed by emulating two frames in one slot, so the first of the pair is never shown. Smooth picture shows every frame and lets the machine run slower than real time.</source>
-        <translation type="unfinished"></translation>
+        <translation>Csak olyan számítógépen számít, amely nem bírja a valós idejű emulációt. A folyamatos hangnál egy időszeletben két képkocka emulálódik, így a hangkártya mindig kap adatot, de a pár első képkockája nem jelenik meg. A folyamatos képnél minden képkocka megjelenik, a gép pedig a valós időnél lassabban fut.</translation>
     </message>
     <message>
         <source>When the host is too slow:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ha a számítógép túl lassú:</translation>
     </message>
     <message>
         <source> s</source>
-        <translation type="unfinished"></translation>
+        <translation> mp</translation>
     </message>
     <message>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Ki</translation>
     </message>
     <message>
         <source>Run the first seconds of a plain Next start at full speed with the sound off. Any key returns to normal speed. Not used when a program is loaded at start. Takes effect at the next start.</source>
-        <translation type="unfinished"></translation>
+        <translation>Egy sima Next-indítás első másodperceit teljes sebességgel, hang nélkül futtatja. Bármelyik billentyű visszaállítja a normál sebességet. Nem működik, ha indításkor program töltődik be. A program következő indításakor lép életbe.</translation>
     </message>
     <message>
         <source>Fast boot:</source>
-        <translation type="unfinished"></translation>
+        <translation>Gyors indítás:</translation>
     </message>
     <message>
         <source>%1x</source>
-        <translation type="unfinished"></translation>
+        <translation>%1x</translation>
     </message>
     <message>
         <source>Window scale:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ablak nagyítása:</translation>
     </message>
     <message>
         <source>Scanlines</source>
-        <translation type="unfinished"></translation>
+        <translation>Pásztázósorok</translation>
     </message>
     <message>
         <source>Soft scanlines (GPU)</source>
-        <translation type="unfinished"></translation>
+        <translation>Lágy pásztázósorok (videókártya)</translation>
     </message>
     <message>
         <source>TV (curved, bloom)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tévé (ívelt, ragyogás)</translation>
     </message>
     <message>
         <source>PC monitor</source>
-        <translation type="unfinished"></translation>
+        <translation>PC-monitor</translation>
     </message>
     <message>
         <source>CRT effect:</source>
-        <translation type="unfinished"></translation>
+        <translation>CRT-hatás:</translation>
     </message>
     <message>
         <source>Start muted (no audio output)</source>
-        <translation type="unfinished"></translation>
+        <translation>Indítás némítva (nincs hangkimenet)</translation>
     </message>
     <message>
         <source>Applies on next launch - there is no live audio-device toggle.</source>
-        <translation type="unfinished"></translation>
+        <translation>A következő indításkor lép életbe – a hangeszköz futás közben nem kapcsolható.</translation>
     </message>
     <message>
         <source>Tape fast-load by default</source>
-        <translation type="unfinished"></translation>
+        <translation>Kazetta gyorstöltése alapból</translation>
     </message>
     <message>
         <source>Tape: automatic play/stop</source>
-        <translation type="unfinished"></translation>
+        <translation>Kazetta: automatikus lejátszás/leállítás</translation>
     </message>
     <message>
         <source>Joy 1 source (port 0x1F):</source>
-        <translation type="unfinished"></translation>
+        <translation>1. joystick forrása (0x1F port):</translation>
     </message>
     <message>
         <source>Joy 2 source (port 0x37):</source>
-        <translation type="unfinished"></translation>
+        <translation>2. joystick forrása (0x37 port):</translation>
     </message>
     <message>
         <source>Release captured mouse with:</source>
-        <translation type="unfinished"></translation>
+        <translation>A befogott egér elengedése:</translation>
     </message>
     <message>
         <source>The chosen click or key is not passed to the program while the mouse is captured.</source>
-        <translation type="unfinished"></translation>
+        <translation>A választott kattintás vagy billentyű nem jut el a programhoz, amíg az egér be van fogva.</translation>
     </message>
     <message>
         <source>Cursor keys drive one connector&apos;s directions with Space as fire;
 while active, the arrows and Space stop acting as ZX keys.</source>
-        <translation type="unfinished"></translation>
+        <translation>A kurzorbillentyűk az egyik csatlakozó irányait adják, a Szóköz a tüzet;
+amíg ez él, a nyilak és a Szóköz nem ZX-billentyűként működnek.</translation>
     </message>
     <message>
         <source>Master:</source>
-        <translation type="unfinished"></translation>
+        <translation>Fő:</translation>
     </message>
     <message>
         <source>Host output gain after the complete mix.</source>
-        <translation type="unfinished"></translation>
+        <translation>A kimenet erősítése a teljes keverés után.</translation>
     </message>
     <message>
         <source>Beeper:</source>
-        <translation type="unfinished"></translation>
+        <translation>Beeper:</translation>
     </message>
     <message>
         <source>Host gain for EAR, MIC and tape-EAR sound.</source>
-        <translation type="unfinished"></translation>
+        <translation>Az EAR, a MIC és a kazetta-EAR hangjának erősítése.</translation>
     </message>
     <message>
         <source>AY #0:</source>
-        <translation type="unfinished"></translation>
+        <translation>AY #0:</translation>
     </message>
     <message>
         <source>Host gain for TurboSound AY chip 0.</source>
-        <translation type="unfinished"></translation>
+        <translation>A TurboSound 0. AY-csipjének erősítése.</translation>
     </message>
     <message>
         <source>AY #1:</source>
-        <translation type="unfinished"></translation>
+        <translation>AY #1:</translation>
     </message>
     <message>
         <source>Host gain for TurboSound AY chip 1.</source>
-        <translation type="unfinished"></translation>
+        <translation>A TurboSound 1. AY-csipjének erősítése.</translation>
     </message>
     <message>
         <source>AY #2:</source>
-        <translation type="unfinished"></translation>
+        <translation>AY #2:</translation>
     </message>
     <message>
         <source>Host gain for TurboSound AY chip 2.</source>
-        <translation type="unfinished"></translation>
+        <translation>A TurboSound 2. AY-csipjének erősítése.</translation>
     </message>
     <message>
         <source>DAC:</source>
-        <translation type="unfinished"></translation>
+        <translation>DAC:</translation>
     </message>
     <message>
         <source>Host gain for Specdrum, Soundrive and Covox DAC audio.</source>
-        <translation type="unfinished"></translation>
+        <translation>A Specdrum, Soundrive és Covox DAC hangjának erősítése.</translation>
     </message>
     <message>
         <source>0 dB preserves each source. Subsystem gains are applied before the master gain; large boosts may clip.</source>
-        <translation type="unfinished"></translation>
+        <translation>A 0 dB minden forrást változatlanul hagy. A részegységek erősítése a fő erősítés előtt hat; a nagy emelés torzíthat.</translation>
     </message>
     <message>
         <source>Enable the emulated ESP-01 WiFi module</source>
-        <translation type="unfinished"></translation>
+        <translation>Az emulált ESP-01 WiFi-modul bekapcsolása</translation>
     </message>
     <message>
         <source>Lets guest software (NXtel, nextsync) open real TCP connections from your machine. Off by default.</source>
-        <translation type="unfinished"></translation>
+        <translation>A futó program (NXtel, nextsync) valódi TCP-kapcsolatokat nyithat a számítógépéről. Alapból kikapcsolva.</translation>
     </message>
     <message>
         <source>nx.nxtel.org</source>
-        <translation type="unfinished"></translation>
+        <translation>nx.nxtel.org</translation>
     </message>
     <message>
         <source>One host per line (a comma separates too). Matching is exact and case-insensitive: no wildcards, and an IP address must be listed as itself.</source>
-        <translation type="unfinished"></translation>
+        <translation>Soronként egy gép (vessző is elválaszt). Az egyezés pontos, a kis- és nagybetű nem számít: helyettesítő karakter nincs, az IP-címet önmagaként kell felsorolni.</translation>
     </message>
     <message>
         <source>Allowed hosts:</source>
-        <translation type="unfinished"></translation>
+        <translation>Engedélyezett gépek:</translation>
     </message>
     <message>
         <source>An EMPTY list places no restriction on the host name - the guest may name any host. Listing hosts narrows that.
@@ -2201,226 +2284,233 @@ while active, the arrows and Space stop acting as ZX keys.</source>
 Connections to loopback, link-local and cloud-metadata addresses are always refused; your own LAN is reachable.
 
 This setting is not applied to the machine that is already running: it takes effect on the next hard reset (F1, or Machine ▸ Power Reset) and on the next launch. --no-esp overrides it for a single run.</source>
-        <translation type="unfinished"></translation>
+        <translation>Az ÜRES lista nem korlátozza a gépnevet – a program bármilyen gépet megadhat. A felsorolt gépek ezt szűkítik.
+
+A loopback, a link-local és a felhős metaadat-címek felé a kapcsolat mindig tiltott; a saját helyi hálózat elérhető.
+
+A beállítás a már futó gépre nem hat: a következő hidegindításkor (F1, vagy Gép ▸ Hidegindítás) és a következő indításkor lép életbe. A --no-esp egy futásra felülírja.</translation>
     </message>
     <message>
         <source>Start NextPi (under QEMU) when jnext starts the ZX Next</source>
-        <translation type="unfinished"></translation>
+        <translation>A NextPi indítása (QEMU alatt), amikor a jnext a ZX Nextet indítja</translation>
     </message>
     <message>
         <source>Boots NextPi under QEMU and connects it to UART 1, the Pi GPIO header&apos;s UART, so NextZXOS&apos;s Pi tools (.pisend, the NextPi UI) talk to it. Needs QEMU installed. Off by default.</source>
-        <translation type="unfinished"></translation>
+        <translation>A NextPi-t QEMU alatt indítja, és az 1-es UART-ra (a Pi GPIO-csatlakozójának UART-jára) köti, így a NextZXOS Pi-eszközei (.pisend, a NextPi felülete) beszélhetnek vele. QEMU kell hozzá. Alapból kikapcsolva.</translation>
     </message>
     <message>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation>Tallózás…</translation>
     </message>
     <message>
         <source>Select QEMU</source>
-        <translation type="unfinished"></translation>
+        <translation>QEMU kiválasztása</translation>
     </message>
     <message>
         <source>All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Minden fájl (*)</translation>
     </message>
     <message>
         <source>NextPi directory:</source>
-        <translation type="unfinished"></translation>
+        <translation>NextPi mappája:</translation>
     </message>
     <message>
         <source>%1 (default)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (alapértelmezett)</translation>
     </message>
     <message>
         <source>The NextPi release to download on first use: a release name from the mirror, or &quot;latest&quot; for the newest one listed there.</source>
-        <translation type="unfinished"></translation>
+        <translation>Az első használatkor letöltendő NextPi-kiadás: egy kiadás neve a tükörszerverről, vagy „latest” a legújabbhoz.</translation>
     </message>
     <message>
         <source>NextPi release:</source>
-        <translation type="unfinished"></translation>
+        <translation>NextPi-kiadás:</translation>
     </message>
     <message>
         <source>QEMU:</source>
-        <translation type="unfinished"></translation>
+        <translation>QEMU:</translation>
     </message>
     <message>
         <source>qemu-system-arm (from PATH)</source>
-        <translation type="unfinished"></translation>
+        <translation>qemu-system-arm (a PATH-ból)</translation>
     </message>
     <message>
         <source>the Next&apos;s mixer (default); &quot;host&quot;: this computer&apos;s default output</source>
-        <translation type="unfinished"></translation>
+        <translation>a Next keverője (alapértelmezett); „host”: a számítógép alapértelmezett kimenete</translation>
     </message>
     <message>
         <source>Where the Pi&apos;s sound goes. Empty: into the Next&apos;s mixer, as on the real machine - NextREG 0xA2 controls it, and recordings include it. &quot;host&quot;: straight to this computer&apos;s default output. Or a QEMU audio driver to play it straight to this computer, &quot;none&quot; to mute it, or wav:FILE to record it on its own.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hová kerül a Pi hangja. Üresen: a Next keverőjébe, mint a valódi gépen – a NextREG 0xA2 szabályozza, és a felvételekben is benne van. „host”: egyenesen a számítógép alapértelmezett kimenetére. Vagy egy QEMU-hangmeghajtó, amely egyenesen a számítógépen játssza le, „none” a némításhoz, vagy wav:FÁJL, hogy külön felvegye.</translation>
     </message>
     <message>
         <source>Pi audio:</source>
-        <translation type="unfinished"></translation>
+        <translation>Pi hangja:</translation>
     </message>
     <message>
         <source>none - e.g. -serial telnet:127.0.0.1:2357,server,nowait</source>
-        <translation type="unfinished"></translation>
+        <translation>nincs – pl. -serial telnet:127.0.0.1:2357,server,nowait</translation>
     </message>
     <message>
         <source>Added after jnext&apos;s own QEMU arguments when NextPi starts. Split on spaces; &apos;...&apos; or &quot;...&quot; keep spaces in one argument; a backslash is an ordinary character. There is no shell: nothing is expanded.</source>
-        <translation type="unfinished"></translation>
+        <translation>A NextPi indításakor a jnext saját QEMU-argumentumai után kerülnek. A szóközök választják el őket; &apos;…&apos; vagy &quot;…&quot; között a szóköz egy argumentumon belül marad; a fordított perjel közönséges karakter. Nincs parancsértelmező: semmi nem helyettesítődik.</translation>
     </message>
     <message>
         <source>Extra QEMU arguments:</source>
-        <translation type="unfinished"></translation>
+        <translation>További QEMU-argumentumok:</translation>
     </message>
     <message>
         <source>The first time NextPi starts, jnext offers to download NextPi (about 6 GB; about 22 GB free needed while it is unpacked) into the directory above, as it does for the SD card image.
 
 These settings are not applied to the machine that is already running: they take effect the next time jnext starts. --nextpi and --no-nextpi override the tick for a single run. The tick starts NextPi only when jnext starts on the ZX Next; --nextpi starts it with any machine. Changing the machine while jnext runs neither starts nor stops it.</source>
-        <translation type="unfinished"></translation>
+        <translation>A NextPi első indításakor a jnext felajánlja a NextPi letöltését (kb. 6 GB; kicsomagolás közben kb. 22 GB szabad hely kell) a fenti mappába, ahogy az SD-kártyaképnél is.
+
+A beállítások a már futó gépre nem hatnak: a jnext következő indításakor lépnek életbe. A --nextpi és a --no-nextpi egy futásra felülírja a pipát. A pipa csak akkor indítja a NextPi-t, ha a jnext ZX Nexttel indul; a --nextpi bármelyik géppel elindítja. A gép futás közbeni váltása nem indítja és nem állítja le.</translation>
     </message>
     <message>
         <source>Last load directory:</source>
-        <translation type="unfinished"></translation>
+        <translation>Utolsó betöltési mappa:</translation>
     </message>
     <message>
         <source>Default SD card image:</source>
-        <translation type="unfinished"></translation>
+        <translation>Alapértelmezett SD-kártyakép:</translation>
     </message>
     <message>
         <source>Second SD card image:</source>
-        <translation type="unfinished"></translation>
+        <translation>Második SD-kártyakép:</translation>
     </message>
     <message>
         <source>Screenshot directory:</source>
-        <translation type="unfinished"></translation>
+        <translation>Képernyőképek mappája:</translation>
     </message>
     <message>
         <source>One directory per line. The Source tab tries them after the source map&apos;s own directory and its parents, longest matching part of the file name first. --source-dir overrides this list for a single run.</source>
-        <translation type="unfinished"></translation>
+        <translation>Soronként egy mappa. A Forrás lap a forrástérkép saját mappája és annak szülői után próbálja őket, a fájlnév leghosszabb egyező részével kezdve. A --source-dir egy futásra felülírja ezt a listát.</translation>
     </message>
     <message>
         <source>Add Directory...</source>
-        <translation type="unfinished"></translation>
+        <translation>Mappa hozzáadása…</translation>
     </message>
     <message>
         <source>Select Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Mappa kiválasztása</translation>
     </message>
     <message>
         <source>Source search path:</source>
-        <translation type="unfinished"></translation>
+        <translation>Forráskeresési útvonal:</translation>
     </message>
     <message>
         <source>Quick screenshot directory:</source>
-        <translation type="unfinished"></translation>
+        <translation>Gyors képernyőképek mappája:</translation>
     </message>
     <message>
         <source>PNG (composited picture)</source>
-        <translation type="unfinished"></translation>
+        <translation>PNG (a kevert kép)</translation>
     </message>
     <message>
         <source>SCR (ULA screen memory)</source>
-        <translation type="unfinished"></translation>
+        <translation>SCR (a ULA képernyőmemóriája)</translation>
     </message>
     <message>
         <source>Quick screenshot format:</source>
-        <translation type="unfinished"></translation>
+        <translation>Gyors képernyőkép formátuma:</translation>
     </message>
     <message>
         <source>Unlimited</source>
-        <translation type="unfinished"></translation>
+        <translation>Korlátlan</translation>
     </message>
     <message>
         <source>Quick Save deletes the oldest quick snapshots (files named jnext-&lt;date&gt;-&lt;time&gt;.jns) beyond this many. Other files in the folder are never touched. --quick-snapshot-keep overrides this.</source>
-        <translation type="unfinished"></translation>
+        <translation>A Gyors mentés ennél több gyors pillanatkép (jnext-&lt;dátum&gt;-&lt;idő&gt;.jns nevű fájlok) esetén a legrégebbieket törli. A mappa más fájljaihoz soha nem nyúl. A --quick-snapshot-keep felülírja.</translation>
     </message>
     <message>
         <source>Quick snapshots to keep:</source>
-        <translation type="unfinished"></translation>
+        <translation>Megtartott gyors pillanatképek:</translation>
     </message>
     <message>
         <source>Select SD Card Image</source>
-        <translation type="unfinished"></translation>
+        <translation>SD-kártyakép kiválasztása</translation>
     </message>
     <message>
         <source>Disk Images (*.img *.bin *.raw);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Lemezképek (*.img *.bin *.raw);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Source search path</source>
-        <translation type="unfinished"></translation>
+        <translation>Forráskeresési útvonal</translation>
     </message>
     <message>
         <source>The directory &quot;%1&quot; contains &apos;%2&apos;, which separates directories in the saved list and in --set. Rename the directory or reach it through a link.</source>
-        <translation type="unfinished"></translation>
+        <translation>A(z) „%1” mappa nevében „%2” van, ez a mentett listában és a --set-ben a mappák elválasztójele. Nevezze át a mappát, vagy érje el egy hivatkozáson át.</translation>
     </message>
     <message>
         <source>The Source tab&apos;s background, text and syntax colours. --set source.colour_scheme=WORD sets it for one run.</source>
-        <translation type="unfinished"></translation>
+        <translation>A Forrás lap háttér-, szöveg- és szintaxisszínei. A --set source.colour_scheme=SZÓ egy futásra beállítja.</translation>
     </message>
     <message>
         <source>Auto (follow the application)</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatikus (a programot követi)</translation>
     </message>
     <message>
         <source>Light</source>
-        <translation type="unfinished"></translation>
+        <translation>Világos</translation>
     </message>
     <message>
         <source>Dark</source>
-        <translation type="unfinished"></translation>
+        <translation>Sötét</translation>
     </message>
     <message>
         <source>Borland C++ 3.1</source>
-        <translation type="unfinished"></translation>
+        <translation>Borland C++ 3.1</translation>
     </message>
     <message>
         <source>Source tab colours:</source>
-        <translation type="unfinished"></translation>
+        <translation>A Forrás lap színei:</translation>
     </message>
     <message>
         <source>Click a shortcut to change it, then press the key combination you want. Only F1-F12 may be used on their own; anything else needs Ctrl, Alt or Meta, because a bare key would be taken away from whichever debugger panel has focus.
 Only the bindings you change are written to the configuration file.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kattintson egy gyorsbillentyűre a módosításhoz, majd nyomja le a kívánt billentyűkombinációt. Önmagában csak az F1–F12 használható; minden más mellé Ctrl, Alt vagy Meta kell, mert a puszta billentyűt elvenné attól a hibakereső-paneltől, amelyiken a fókusz van.
+Csak a módosított hozzárendelések kerülnek a beállításfájlba.</translation>
     </message>
     <message>
         <source>%1 = %2 - %3</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 = %2 – %3</translation>
     </message>
     <message>
         <source>&lt;b&gt;Problems found in the configuration file:&lt;/b&gt;&lt;br&gt;%1</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Hibák a beállításfájlban:&lt;/b&gt;&lt;br&gt;%1</translation>
     </message>
     <message>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Visszaállítás</translation>
     </message>
     <message>
         <source>Reset All to Defaults</source>
-        <translation type="unfinished"></translation>
+        <translation>Mind alapértelmezettre</translation>
     </message>
     <message>
         <source>All debugger keys reset to their defaults.</source>
-        <translation type="unfinished"></translation>
+        <translation>A hibakereső minden billentyűje visszaállt az alapértelmezettre.</translation>
     </message>
     <message>
         <source>%1 is already bound to &quot;%2&quot;. Change that one first.</source>
-        <translation type="unfinished"></translation>
+        <translation>A(z) %1 már ehhez tartozik: „%2”. Előbb azt módosítsa.</translation>
     </message>
     <message>
         <source>&quot;%1&quot; is now %2 - but the emulator window already uses %2 for &quot;%3&quot;. It will work in the debugger window; in the emulator window %2 still does &quot;%3&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>„%1” most: %2 – de az emulátorablak már használja a(z) %2 billentyűt erre: „%3”. A hibakereső ablakában működni fog; az emulátorablakban a(z) %2 továbbra is ezt teszi: „%3”.</translation>
     </message>
     <message>
         <source>&quot;%1&quot; is now %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>„%1” most: %2.</translation>
     </message>
     <message>
         <source>Cannot restore %1 for &quot;%2&quot;: it is bound to &quot;%3&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>A(z) %1 nem állítható vissza ehhez: „%2”: ehhez tartozik: „%3”.</translation>
     </message>
     <message>
         <source>&quot;%1&quot; reset to %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>„%1” visszaállítva: %2.</translation>
     </message>
     <message>
         <source>Automatic (system language)</source>
@@ -2439,15 +2529,15 @@ Only the bindings you change are written to the configuration file.</source>
     <name>QObject</name>
     <message>
         <source>Download and replace</source>
-        <translation type="unfinished"></translation>
+        <translation>Letöltés és csere</translation>
     </message>
     <message>
         <source>Keep my card</source>
-        <translation type="unfinished"></translation>
+        <translation>A kártyám marad</translation>
     </message>
     <message>
         <source>Do not ask me again</source>
-        <translation type="unfinished"></translation>
+        <translation>Ne kérdezze újra</translation>
     </message>
     <message>
         <source>Rename Label</source>
@@ -2570,7 +2660,7 @@ Proceed anyway?</source>
     </message>
     <message>
         <source>Load Failed</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sikertelen betöltés</translation>
     </message>
     <message>
         <source>Could not load MAP file:
@@ -2820,6 +2910,14 @@ with %1 z88dk listings</source>
 Updated only while the emulator is paused.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Mégse</translation>
+    </message>
+    <message>
+        <source>jnext - Downloading</source>
+        <translation>jnext – Letöltés</translation>
+    </message>
 </context>
 <context>
     <name>ScriptPanel</name>
@@ -3014,19 +3112,19 @@ Updated only while the emulator is paused.</source>
     <name>ShortcutCaptureButton</name>
     <message>
         <source>Press a key... (Esc cancels)</source>
-        <translation type="unfinished"></translation>
+        <translation>Nyomjon le egy billentyűt… (Esc: mégse)</translation>
     </message>
     <message>
         <source>(unbound)</source>
-        <translation type="unfinished"></translation>
+        <translation>(nincs hozzárendelve)</translation>
     </message>
     <message>
         <source>That key is not one jnext can bind.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ezt a billentyűt a jnext nem tudja hozzárendelni.</translation>
     </message>
     <message>
         <source>%1 cannot be used: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>A(z) %1 nem használható: %2.</translation>
     </message>
 </context>
 <context>
@@ -3403,7 +3501,7 @@ Source map not verified yet: it is checked when the program first runs its code<
     </message>
     <message>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Eltávolítás</translation>
     </message>
     <message>
         <source>Address</source>
@@ -3472,6 +3570,29 @@ Source map not verified yet: it is checked when the program first runs its code<
     <message>
         <source>Edit Watch</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>host_shortcuts</name>
+    <message>
+        <source>Pause / resume emulation (%1 or Pause)</source>
+        <translation>Az emuláció szüneteltetése / folytatása (%1 vagy Pause)</translation>
+    </message>
+    <message>
+        <source>Quick Screenshot (%1) writes jnext-&lt;date&gt;-&lt;time&gt; into that directory with no dialog, and names the file in the status bar. A .SCR records only the classic ULA screen memory - Layer 2, the tilemap and the sprites are not in it.</source>
+        <translation>A Gyors képernyőkép (%1) párbeszédablak nélkül jnext-&lt;dátum&gt;-&lt;idő&gt; fájlt ír ebbe a mappába, és az állapotsorban kiírja a nevét. A .SCR csak a klasszikus ULA-képernyőmemóriát rögzíti – a Layer 2, a tilemap és a sprite-ok nincsenek benne.</translation>
+    </message>
+    <message>
+        <source>Toggle Debugger (%1)</source>
+        <translation>Hibakereső be/ki (%1)</translation>
+    </message>
+    <message>
+        <source>Capture the screen at the next frame (%1 does the same while recording)</source>
+        <translation>Képernyő rögzítése a következő képkockánál (felvétel közben a(z) %1 ugyanezt teszi)</translation>
+    </message>
+    <message>
+        <source>Recording to %1 (%2 captures).</source>
+        <translation>Felvétel ide: %1 (rögzítés: %2).</translation>
     </message>
 </context>
 </TS>

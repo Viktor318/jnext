@@ -75,6 +75,7 @@
 #include "menu_accel.h"
 
 #include <QApplication>
+#include "gui/ui_language.h"
 #include <QTemporaryDir>
 #include <QMenuBar>
 
@@ -262,6 +263,76 @@ static void test_accelerators(MainWindow& w)
     }
 }
 
+// ── MA-HU: the same namespaces with the Hungarian interface (hungarian-ui) ──
+//
+// The mnemonics are part of the translation: a translated label carries its own
+// '&', so every English guarantee above has to hold again with the Hungarian
+// catalogue installed. The oracle is the same Qt accelerator model, plus the two
+// window-wide rules host_hotkey_test pins for English (H115-26: a menu-bar
+// mnemonic must not be a QAction shortcut; H115-27: Alt+E/G/C belong to the
+// guest). Two Hungarian menu titles, "Gép" and "Súgó", have NO mnemonic: every
+// letter of both is already taken by one of those rules (G is the guest's,
+// P/S are Preferences and Save Screenshot), so the pinned count is two lower.
+static void test_accelerators_hu(MainWindow& w)
+{
+    using accel::Accel;
+    QMenuBar* bar = w.menuBar();
+    std::vector<Accel> menu_accels;
+    std::set<QString>  popup_scopes;
+    accel::harvest_menu_bar(bar, menu_accels, popup_scopes);
+    const std::vector<Accel> top = accel::only_scope(menu_accels, accel::menu_bar_scope());
+    const bool translated = !bar->actions().isEmpty()
+        && bar->actions().first()->text() == QString::fromUtf8("&Fájl");
+    {
+        const std::string dups = accel::collisions(top);
+        check("MA-HU-01", "Hungarian: the menu bar's own mnemonics are unique",
+              translated && dups.empty(),
+              !translated ? std::string("the Hungarian catalogue is not in effect") : dups);
+    }
+    {
+        const std::vector<Accel> items = accel::except_scope(menu_accels, accel::menu_bar_scope());
+        const std::string dups = accel::collisions(items);
+        check("MA-HU-02", "Hungarian: no menu reuses a mnemonic among its own items",
+              dups.empty(),
+              dups.empty() ? fmt("%zu item mnemonics across %zu popups, all distinct",
+                                 items.size(), popup_scopes.size())
+                           : dups);
+    }
+    const std::vector<Accel> key_accels = accel::harvest_shortcuts(&w);
+    {
+        QStringList taken = {QStringLiteral("Alt+E"), QStringLiteral("Alt+G"), QStringLiteral("Alt+C")};
+        for (const Accel& a : key_accels) taken << a.key;
+        std::string bad;
+        for (const Accel& a : top)
+            if (taken.contains(a.key))
+                bad += (a.label + " -> " + a.key + "; ").toStdString();
+        check("MA-HU-03", "Hungarian: no menu-bar mnemonic is a QAction shortcut or a guest chord (Alt+E/G/C)",
+              bad.empty(), bad);
+    }
+    {
+        const std::vector<Accel> widgets = accel::harvest_widget_mnemonics(&w);
+        const std::string bad = accel::widget_alt_conflicts(widgets, top);
+        check("MA-HU-04", "Hungarian: no widget mnemonic collides in the window-wide Alt namespace",
+              bad.empty(), bad);
+    }
+    {
+        const bool as_expected =
+               bar->actions().size() == 8
+            && top.size()           == 6
+            && popup_scopes.size()  == 14
+            && menu_accels.size()   == 51 + kDebuggerMnemonics
+            && key_accels.size()    == 18 + kDebuggerShortcuts;
+        check("MA-HU-05", "Hungarian: the same menu tree, every translated item keeping a mnemonic "
+                          "(the menu bar: six of eight)",
+              as_expected,
+              fmt("menus=%zu (want 8), menu-bar mnemonics=%zu (want 6), popups=%zu (want 14), "
+                  "mnemonics=%zu (want %zu), shortcuts=%zu (want %zu)",
+                  static_cast<size_t>(bar->actions().size()), top.size(), popup_scopes.size(),
+                  menu_accels.size(), 51 + kDebuggerMnemonics,
+                  key_accels.size(), 18 + kDebuggerShortcuts));
+    }
+}
+
 int main(int argc, char** argv)
 {
     qputenv("QT_QPA_PLATFORM", "offscreen");
@@ -289,6 +360,17 @@ int main(int argc, char** argv)
 
     test_accelerators(w);
     std::printf("  Group: MA             - done\n");
+
+    // The Hungarian interface: the translators installed as a Hungarian run
+    // installs them, then a second window built under them.
+    ui_language::set_session_choice(ui_language::Choice::Hungarian);
+    ui_language::install(app);
+    {
+        MainWindow hu;
+        QApplication::processEvents();
+        test_accelerators_hu(hu);
+    }
+    std::printf("  Group: MA-HU          - done\n");
 
     std::printf("\n==================================================================\n");
     std::printf("Total: %4d  Passed: %4d  Failed: %4d  Skipped:    0\n",

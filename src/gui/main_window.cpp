@@ -1210,7 +1210,7 @@ void MainWindow::create_menus() {
     speed_group_ = new QActionGroup(this);
     speed_group_->setExclusive(true);
 
-    const char* speed_labels[] = {"3.5 MHz", "7 MHz", "14 MHz", "28 MHz"};
+    const char* speed_labels[] = {QT_TR_NOOP("3.5 MHz"), QT_TR_NOOP("7 MHz"), QT_TR_NOOP("14 MHz"), QT_TR_NOOP("28 MHz")};
     for (int i = 0; i < 4; ++i) {
         QAction* a = speed_menu->addAction(tr(speed_labels[i]));
         a->setCheckable(true);
@@ -1229,10 +1229,10 @@ void MainWindow::create_menus() {
 
     struct EmuSpeedEntry { const char* label; double multiplier; };
     EmuSpeedEntry emu_speeds[] = {
-        {"0.5x (50%)",  0.5},
-        {"1x (100%)",   1.0},
-        {"2x (200%)",   2.0},
-        {"4x (400%)",   4.0},
+        {QT_TR_NOOP("0.5x (50%)"),  0.5},
+        {QT_TR_NOOP("1x (100%)"),   1.0},
+        {QT_TR_NOOP("2x (200%)"),   2.0},
+        {QT_TR_NOOP("4x (400%)"),   4.0},
     };
     for (auto& e : emu_speeds) {
         QAction* a = emu_speed_menu->addAction(tr(e.label));
@@ -1606,7 +1606,7 @@ void MainWindow::update_status(double fps, double presented_fps,
     // the emulated rate under the bare name "FPS" is what made every user
     // report of judder ("but it says 59 fps") impossible to interpret.
     if (fps_label_)
-        fps_label_->setText(QString("FPS: %1 emu / %2 shown")
+        fps_label_->setText(tr("FPS: %1 emu / %2 shown")
                                 .arg(fps, 0, 'f', 1)
                                 .arg(presented_fps, 0, 'f', 1));
 

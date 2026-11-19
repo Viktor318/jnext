@@ -132,8 +132,8 @@ std::unique_ptr<QProgressDialog> SdcardGuiProvisioner::make_download_dialog(cons
     // on the first frame - a (0,0) "busy" range paints as a FULL bar in
     // several Qt styles until the first real total arrives.
     auto dlg = std::make_unique<QProgressDialog>(QString::fromStdString(label),
-                                                 QStringLiteral("Cancel"), 0, 10000);
-    dlg->setWindowTitle(QStringLiteral("jnext - Downloading"));
+                                                 QObject::tr("Cancel"), 0, 10000);
+    dlg->setWindowTitle(QObject::tr("jnext - Downloading"));
     dlg->setWindowModality(Qt::ApplicationModal);
     dlg->setMinimumDuration(0);   // show immediately
     dlg->setAutoClose(false);
