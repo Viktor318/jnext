@@ -7,6 +7,11 @@ classic Spectrum pixel is already 2×2 there. 1.5x (960×768) makes it exactly
 display; only the Next's 640-pixel-wide modes are scaled by one and a half.
 1x, 2x and 3x are whole numbers for every mode.
 
+**Picture only.** **View > Picture Only**, or **Shift+F11**, hides the menus,
+the toolbar and the status bar, so the window is just the picture at its
+scale; Shift+F11 again brings them back. The menu shortcuts keep working while
+they are hidden. It lasts until jnext is closed.
+
 **Fullscreen.** **F11**, or **View > Fullscreen**. The image is centred with
 black bars, keeping the correct shape. F11 again returns. (Esc will not: it is
 the Break key.) On a Mac, macOS takes F11 for Show Desktop: use **Control+Command+F (⌃⌘F)**, the green

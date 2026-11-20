@@ -136,6 +136,12 @@ public:
     /// Toggle between windowed and fullscreen mode.
     void toggle_fullscreen();
 
+    /// hungarian-ui: "Picture only" (Shift+F11) - hide the menu bar, the
+    /// toolbars and the status bar, so the window is just the picture; the
+    /// same again brings them back. Session only, not saved.
+    void toggle_picture_only();
+    bool picture_only() const { return picture_only_; }
+
     /// Set integer scale factor (2-4) and resize window accordingly.
     /// Only effective in windowed mode.
     void set_scale(int factor);
@@ -663,6 +669,10 @@ private:
 
     // Fullscreen action
     QAction* fullscreen_action_ = nullptr;
+    QAction* picture_only_action_ = nullptr;   // hungarian-ui, Shift+F11
+    bool picture_only_ = false;
+    QList<QAction*> picture_only_window_actions_;   // menu actions lent to the window while hidden
+    void apply_picture_only();
 
     // File > Quit. Kept so keyPressEvent() can trigger it for an Alt+F4 that
     // no shortcut matched (GH #380).

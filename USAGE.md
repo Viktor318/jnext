@@ -2707,9 +2707,11 @@ Magic Breakpoint (toggle), Debugger (Alt+D - the same entry as in
 
 **View**  
 Scale 1x / 1.5x / 2x / 3x, Fullscreen (F11, or Control+Command+F (⌃⌘F)
-on macOS; letterboxed), the CRT effect (CRT Scanlines, CRT Soft
-Scanlines, CRT TV, CRT PC Monitor; one at a time, none checked = off;
-the last three only in builds with GPU support), Debugger (Alt+D).
+on macOS; letterboxed), Picture Only (Shift+F11: the window without the
+menus, the toolbar and the status bar), the CRT effect (CRT Scanlines,
+CRT Soft Scanlines, CRT TV, CRT PC Monitor; one at a time, none checked
+= off; the last three only in builds with GPU support), Debugger
+(Alt+D).
 
 **Settings**  
 Preferences… (Alt+P), which opens the settings dialog (Startup, Input,

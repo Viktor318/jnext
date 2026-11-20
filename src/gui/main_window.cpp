@@ -672,12 +672,45 @@ void MainWindow::toggle_fullscreen() {
 // GH #404 — the body of View > Fullscreen. `call_show` is false when the
 // window system has ALREADY moved the window (macOS green button): only the
 // chrome, size constraints, viewport mode and menu tick follow it.
+void MainWindow::toggle_picture_only() {
+    picture_only_ = !picture_only_;
+    apply_picture_only();
+}
+
+void MainWindow::apply_picture_only() {
+    if (picture_only_action_) picture_only_action_->setChecked(picture_only_);
+    // A hidden menu bar's actions cannot fire their shortcuts (see the macOS
+    // full-screen note in keyPressEvent): while the chrome is hidden, every
+    // menu action is lent to the window itself, so Alt+P, Alt+K, F4 and the
+    // rest keep working; they are taken back when the chrome returns.
+    if (picture_only_ && picture_only_window_actions_.isEmpty()) {
+        std::function<void(QMenu*)> collect = [&](QMenu* m) {
+            for (QAction* a : m->actions()) {
+                if (a->menu()) collect(a->menu());
+                else if (!a->isSeparator() && !a->shortcuts().isEmpty()) picture_only_window_actions_ << a;
+            }
+        };
+        for (QAction* top : menuBar()->actions())
+            if (top->menu()) collect(top->menu());
+        addActions(picture_only_window_actions_);
+    } else if (!picture_only_ && !picture_only_window_actions_.isEmpty()) {
+        for (QAction* a : picture_only_window_actions_) removeAction(a);
+        picture_only_window_actions_.clear();
+    }
+    if (is_fullscreen_) return;   // full screen hides them anyway; its exit applies the choice
+    menuBar()->setVisible(!picture_only_);
+    for (QToolBar* tb : findChildren<QToolBar*>()) tb->setVisible(!picture_only_);
+    statusBar()->setVisible(!picture_only_);
+    apply_fixed_window_size();
+}
+
 void MainWindow::apply_fullscreen_state(bool enter, bool call_show) {
     if (!enter) {
         // Restore chrome.
-        menuBar()->show();
-        for (QToolBar* tb : findChildren<QToolBar*>()) tb->show();
-        statusBar()->show();
+        // hungarian-ui: "Picture only" keeps the chrome hidden after full screen.
+        menuBar()->setVisible(!picture_only_);
+        for (QToolBar* tb : findChildren<QToolBar*>()) tb->setVisible(!picture_only_);
+        statusBar()->setVisible(!picture_only_);
 
         if (call_show) showNormal();
         is_fullscreen_ = false;
@@ -1413,6 +1446,16 @@ void MainWindow::create_menus() {
 #endif
     fullscreen_action_->setCheckable(true);
     connect(fullscreen_action_, &QAction::triggered, this, &MainWindow::on_fullscreen);
+
+    // hungarian-ui: Shift+F11, the windowed partner of F11 - the window keeps
+    // its scale but shows only the picture. keyPressEvent handles the key too,
+    // because with the menu bar hidden this action's shortcut cannot fire.
+    picture_only_action_ = view_menu->addAction(tr("Picture &Only"));
+    picture_only_action_->setObjectName(QStringLiteral("pictureOnlyAction"));
+    picture_only_action_->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_F11));
+    picture_only_action_->setCheckable(true);
+    picture_only_action_->setToolTip(tr("Hide the menus, the toolbar and the status bar (Shift+F11 brings them back)"));
+    connect(picture_only_action_, &QAction::triggered, this, [this]() { toggle_picture_only(); });
 
     view_menu->addSeparator();
 
@@ -3378,6 +3421,12 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
         }
 #endif
 
+        // hungarian-ui: Shift+F11 is "Picture only", not full screen.
+        if (key == Qt::Key_F11 && (modifiers & Qt::ShiftModifier)) {
+            toggle_picture_only();
+            event->accept();
+            return;
+        }
         switch (key) {
         case Qt::Key_F11:
             toggle_fullscreen();

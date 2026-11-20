@@ -237,7 +237,8 @@ static void test_accelerators(MainWindow& w)
     // GH #381 added a mnemonic: Machine > POK T&rainers...
     // GH #406 added a popup and two mnemonics: File > Recent &Files, and its
     // &Clear Recent Files; the numbered entries exist only once a file was loaded.
-    // And a shortcut: File > Reload Last File, Alt+L.)
+    // And a shortcut: File > Reload Last File, Alt+L.
+    // hungarian-ui added one of each: View > Picture &Only, Shift+F11.)
     //
     // ADDING OR REMOVING A MENU ENTRY MEANS UPDATING THESE NUMBERS, and that
     // edit is the point: it is the claim about how much of the menu tree is
@@ -251,15 +252,15 @@ static void test_accelerators(MainWindow& w)
         const bool as_expected =
                top.size()           == 8
             && popup_scopes.size()  == 14
-            && menu_accels.size()   == 53 + kDebuggerMnemonics
-            && key_accels.size()    == 18 + kDebuggerShortcuts;
+            && menu_accels.size()   == 54 + kDebuggerMnemonics
+            && key_accels.size()    == 19 + kDebuggerShortcuts;
         check("MA-05", "the harvest matches the pinned shape of the menu tree",
               as_expected,
               fmt("menus=%zu (want 8), popups=%zu (want 14), mnemonics=%zu (want %zu), "
                   "shortcuts=%zu (want %zu)",
                   top.size(), popup_scopes.size(),
-                  menu_accels.size(), 53 + kDebuggerMnemonics,
-                  key_accels.size(), 18 + kDebuggerShortcuts));
+                  menu_accels.size(), 54 + kDebuggerMnemonics,
+                  key_accels.size(), 19 + kDebuggerShortcuts));
     }
 }
 
@@ -320,16 +321,16 @@ static void test_accelerators_hu(MainWindow& w)
                bar->actions().size() == 8
             && top.size()           == 6
             && popup_scopes.size()  == 14
-            && menu_accels.size()   == 51 + kDebuggerMnemonics
-            && key_accels.size()    == 18 + kDebuggerShortcuts;
+            && menu_accels.size()   == 52 + kDebuggerMnemonics
+            && key_accels.size()    == 19 + kDebuggerShortcuts;
         check("MA-HU-05", "Hungarian: the same menu tree, every translated item keeping a mnemonic "
                           "(the menu bar: six of eight)",
               as_expected,
               fmt("menus=%zu (want 8), menu-bar mnemonics=%zu (want 6), popups=%zu (want 14), "
                   "mnemonics=%zu (want %zu), shortcuts=%zu (want %zu)",
                   static_cast<size_t>(bar->actions().size()), top.size(), popup_scopes.size(),
-                  menu_accels.size(), 51 + kDebuggerMnemonics,
-                  key_accels.size(), 18 + kDebuggerShortcuts));
+                  menu_accels.size(), 52 + kDebuggerMnemonics,
+                  key_accels.size(), 19 + kDebuggerShortcuts));
     }
 }
 

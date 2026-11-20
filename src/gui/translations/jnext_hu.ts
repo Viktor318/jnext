@@ -1755,6 +1755,14 @@ Restart now?
         <source>Scale %1x (%2x%3)</source>
         <translation>Nagyítás: %1x (%2×%3)</translation>
     </message>
+    <message>
+        <source>Picture &amp;Only</source>
+        <translation>Csak a &amp;kép</translation>
+    </message>
+    <message>
+        <source>Hide the menus, the toolbar and the status bar (Shift+F11 brings them back)</source>
+        <translation>A menük, az eszköztár és az állapotsor elrejtése (a Shift+F11 visszahozza őket)</translation>
+    </message>
 </context>
 <context>
     <name>MemoryPanel</name>

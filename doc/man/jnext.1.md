@@ -2496,7 +2496,7 @@ Control+Command+F (full screen) (see **KEYBOARD MAPPING** below).
     **View**).
 
 **View**
-:   Scale 1x / 1.5x / 2x / 3x, Fullscreen (F11, or Control+Command+F (⌃⌘F) on macOS; letterboxed), the CRT effect (CRT Scanlines,
+:   Scale 1x / 1.5x / 2x / 3x, Fullscreen (F11, or Control+Command+F (⌃⌘F) on macOS; letterboxed), Picture Only (Shift+F11: the window without the menus, the toolbar and the status bar), the CRT effect (CRT Scanlines,
     CRT Soft Scanlines, CRT TV, CRT PC Monitor; one at a time, none checked = off; the last
     three only in builds with GPU support), Debugger (Alt+D).
 

@@ -106,6 +106,9 @@
 #include <QWindow>
 
 #include <QApplication>
+#include <QStatusBar>
+#include <QMenuBar>
+#include <QKeyEvent>
 #include <QFile>
 #include <QScreen>
 #include <QTemporaryDir>
@@ -467,6 +470,45 @@ int main(int argc, char** argv)
               one_and_half && cycle_ok && refused,
               fmt("1.5x viewport %dx%d x2=%d; cycle %s; set 5 -> %d", s15.width(), s15.height(),
                   w.current_scale_x2(), seq.c_str(), w.current_scale_x2()));
+    }
+
+    // ── WS-HU-02 (hungarian-ui) — Picture only (Shift+F11) ───────────────
+    // Oracle: MainWindow::toggle_picture_only()'s contract — the menu bar, the
+    // toolbars and the status bar hide, the window shrinks to the picture
+    // (the scale is kept), and the same again restores them. The KEY is
+    // delivered straight to the window, the path that must work while the menu
+    // bar (and with it the action's own shortcut) is hidden; F11 stays full
+    // screen's.
+    {
+        MainWindow w;
+        w.show();
+        std::vector<uint32_t> fb(static_cast<size_t>(EmulatorWidget::NATIVE_W) * 256, 0xFF000000u);
+        pump(w, fb);
+        w.set_scale_x2(3);
+        pump(w, fb);
+        const QSize full = w.size();
+        auto press = [&](int key, Qt::KeyboardModifiers mods) {
+            QKeyEvent down(QEvent::KeyPress, key, mods);
+            QApplication::sendEvent(&w, &down);
+            QKeyEvent up(QEvent::KeyRelease, key, mods);
+            QApplication::sendEvent(&w, &up);
+            pump(w, fb);
+        };
+        press(Qt::Key_F11, Qt::ShiftModifier);
+        const bool hidden = w.picture_only() && !w.menuBar()->isVisible() && !w.statusBar()->isVisible()
+                            && w.size() == QSize(960, 768) && !w.isFullScreen();
+        const QSize small = w.size();
+        bool lent = false;   // Alt+P (Preferences) must still be reachable from the window
+        for (QAction* a : w.actions()) lent = lent || a->shortcut() == QKeySequence(Qt::ALT | Qt::Key_P);
+        press(Qt::Key_F11, Qt::ShiftModifier);
+        const bool back = !w.picture_only() && w.menuBar()->isVisible() && w.statusBar()->isVisible()
+                          && w.size() == full && w.actions().isEmpty();
+        check("WS-HU-02", "Shift+F11 hides the menu bar, the toolbars and the status bar (window = the 960x768 "
+                          "picture, menu shortcuts lent to the window), and Shift+F11 again restores them",
+              hidden && lent && back,
+              fmt("hidden=%d (%dx%d) lent=%d back=%d (%dx%d, full %dx%d)", hidden ? 1 : 0,
+                  small.width(), small.height(), lent ? 1 : 0, back ? 1 : 0,
+                  w.width(), w.height(), full.width(), full.height()));
     }
 
     std::printf("\n=========================================================================\n");
