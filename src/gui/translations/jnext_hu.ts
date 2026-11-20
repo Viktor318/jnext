@@ -1117,17 +1117,17 @@ Lásd: https://ffmpeg.org/download.html</translation>
     </message>
     <message>
         <source>FPS: -- emu / -- shown</source>
-        <translation>FPS: -- emulált / -- megjelenített</translation>
+        <translation>FPS: -- gép / -- kép</translation>
     </message>
     <message>
         <source>emu:   emulated frames per second (how fast the machine is simulated)
 shown: frames per second that actually reached the screen
 
 &apos;shown&apos; below &apos;emu&apos; means frames are not being presented - deliberately (audio catch-up, speed &gt; 1x) or otherwise. Run with --log-level platform=info for the full cadence breakdown.</source>
-        <translation>emulált: emulált képkocka másodpercenként (milyen gyorsan fut a gép szimulációja)
-megjelenített: ennyi képkocka jutott ki ténylegesen a képernyőre másodpercenként
+        <translation>gép: emulált képkocka másodpercenként (milyen gyorsan fut a gép szimulációja)
+kép: ennyi képkocka jutott ki ténylegesen a képernyőre másodpercenként
 
-Ha a megjelenített kevesebb az emuláltnál, képkockák maradnak ki – szándékosan (a hang utolérése, 1×-nél nagyobb sebesség) vagy más okból. A részletes ütemezésért indítsa ezzel: --log-level platform=info.</translation>
+Ha a kép kevesebb a gépnél, képkockák maradnak ki – szándékosan (a hang utolérése, 1x-nél nagyobb sebesség) vagy más okból. A részletes ütemezésért indítsa ezzel: --log-level platform=info.</translation>
     </message>
     <message>
         <source>3.5 MHz</source>
@@ -1753,7 +1753,7 @@ Restart now?
     </message>
     <message>
         <source>FPS: %1 emu / %2 shown</source>
-        <translation>FPS: %1 emulált / %2 megjelenített</translation>
+        <translation>FPS: %1 gép / %2 kép</translation>
     </message>
 </context>
 <context>

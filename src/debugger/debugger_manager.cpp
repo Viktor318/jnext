@@ -54,19 +54,10 @@ DebuggerManager::DebuggerManager(QMainWindow* main_window, jnext::dbg::Debugger&
     // Watch main window move/resize to keep debugger sticky.
     main_window_->installEventFilter(this);
 
-    // Find the "Debugger" action in the View menu (created by MainWindow).
-    QMenuBar* bar = main_window_->menuBar();
-    for (QAction* menu_action : bar->actions()) {
-        if (menu_action->menu()) {
-            for (QAction* a : menu_action->menu()->actions()) {
-                if (a->text().contains("Debugger", Qt::CaseInsensitive) && a->isCheckable()) {
-                    enable_action_ = a;
-                    break;
-                }
-            }
-        }
-        if (enable_action_) break;
-    }
+    // Find the "Debugger" action of the View menu (created by MainWindow) by its
+    // object name. Its TEXT is translated, so a match on "Debugger" found
+    // nothing in the Hungarian interface and the menu entry opened nothing.
+    enable_action_ = main_window_->findChild<QAction*>(QStringLiteral("debuggerToggleAction"));
 
     if (enable_action_) {
         connect(enable_action_, &QAction::triggered, this, [this](bool checked) {

@@ -110,6 +110,7 @@
 #include "debugger/mmu_panel.h"
 #include "debugger/memory_panel.h"
 #include "gui/main_window.h"
+#include "gui/ui_language.h"
 #include "gui/preferences_dialog.h"
 #include "debug/source_search.h"
 #include "debugger/source_highlighter.h"
@@ -2194,6 +2195,30 @@ static void test_debug_menu()
     }
 }
 
+// GH215-08 (hungarian-ui) — the same Debugger entry in the HUNGARIAN interface.
+// DebuggerManager used to find the entry by the word "Debugger" in its text, so
+// with the Hungarian catalogue ("&Hibakereső") it found nothing and the menu
+// entry opened nothing. Run last: the translators stay installed.
+static void test_debug_menu_hungarian(QApplication& app)
+{
+    set_group("DBG-HU");
+    ui_language::set_session_choice(ui_language::Choice::Hungarian);
+    const QString lang = ui_language::install(app);
+    MainWindowFixture fx;
+    QAction* entry = fx.ok ? fx.win.findChild<QAction*>(QStringLiteral("debuggerToggleAction")) : nullptr;
+    bool now_enabled = false;
+    if (entry && fx.win.debugger_manager() && !fx.win.debugger_manager()->is_enabled()) {
+        entry->trigger();   // bare trigger(): see GH215-06
+        QApplication::processEvents();
+        now_enabled = fx.win.debugger_manager()->is_enabled();
+    }
+    check("GH215-08", "with the Hungarian interface, the translated View/Debug > Debugger entry still opens the debugger",
+          lang == QLatin1String("hu") && entry != nullptr && entry->text() != QLatin1String("&Debugger") && now_enabled,
+          fmt("lang=%s entry=%s text=%s enabled=%d", lang.toUtf8().constData(),
+              entry ? "found" : "missing",
+              entry ? entry->text().toUtf8().constData() : "-", now_enabled ? 1 : 0));
+}
+
 // ── F5R: Run on an already-running machine is a no-op (GH #223) ───────
 //
 // DebuggerManager::on_run() had no pause check, unlike on_run_to_eof() and
@@ -3499,6 +3524,8 @@ int main(int argc, char** argv)
     std::printf("  Group: QLADDR         - done\n");
     test_reload_last_from_debugger();
     std::printf("  Group: DRL            - done\n");
+    test_debug_menu_hungarian(app);   // last: it leaves the Hungarian translators installed
+    std::printf("  Group: DBG-HU         - done\n");
 
     std::printf("\n=====================================\n");
     std::printf("Total: %4d  Passed: %4d  Failed: %4d  Skipped:    0\n",

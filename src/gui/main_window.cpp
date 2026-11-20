@@ -1443,6 +1443,9 @@ void MainWindow::create_menus() {
 #ifdef ENABLE_DEBUGGER
     view_menu->addSeparator();
     debugger_action_ = view_menu->addAction(tr("&Debugger"));
+    // DebuggerManager finds this action by its object name, never by its text:
+    // the text is translated (hungarian-ui), the name is not.
+    debugger_action_->setObjectName(QStringLiteral("debuggerToggleAction"));
     debugger_action_->setShortcut(host_shortcuts::sequence(host_shortcuts::Action::Debugger));
     debugger_action_->setCheckable(true);
 
