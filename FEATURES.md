@@ -113,7 +113,7 @@ One line per feature. Details are in the user guide (`doc/user-guide`) and the d
 - Native Qt 6 main window with menu bar, toolbar, and status bar
 - Monochrome SVG toolbar icons that follow a light or dark theme live
 - Light and dark mode: windows (debugger included) follow the desktop colour scheme live (`JNEXT_COLOR_SCHEME=dark|light` forces one)
-- Hi-DPI pixel-perfect rendering at integer scale (2×/3×/4×)
+- Hi-DPI pixel-perfect rendering: window scale 1x, 1.5x, 2x, 3x (640×512 … 1920×1536; at 1.5x a Spectrum pixel is exactly 3×3)
 - True fullscreen with aspect-ratio letterbox (macOS green button and ⌃⌘F too)
 - CRT effect: off, Scanlines, or GPU Soft scanlines / TV / PC-monitor looks (View menu, Preferences, `--crt`)
 - FPS counter, CPU speed, and machine mode in status bar

@@ -196,7 +196,7 @@ int main() {
                 if (canon(f + v) != "<refused>") bad += f + "'" + v + "' ";
         }
         check("SETK-08", "for every Int key its own lo and hi are accepted, lo-1, hi+1, x, 1,5 and empty are refused",
-              bad.empty() && n == 5, bad + " keys=" + std::to_string(n));
+              bad.empty() && n == 4, bad + " keys=" + std::to_string(n));
     }
 
     // SETK-09
@@ -238,7 +238,7 @@ int main() {
             config_keys::word_index("audio|video", "vide") != -1 || config_keys::word_index("audio|video", "") != -1)
             bad += "word_index ";
         check("SETK-10", "for every Word and Machine key each listed word is accepted in upper case and canonicalises to itself; nonsense is refused",
-              bad.empty() && n == 8, bad + " keys=" + std::to_string(n));
+              bad.empty() && n == 9, bad + " keys=" + std::to_string(n));
     }
 
     // SETK-11

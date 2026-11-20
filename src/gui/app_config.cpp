@@ -21,9 +21,12 @@ const char* N(KeyId id) { return config_keys::name(id); }
 
 // The table's bounds are the file reader's bounds; the ones it cannot include
 // are tied to their owners here.
-static_assert(config_keys::info(KeyId::StartupWindowScale).lo == EmulatorWidget::MIN_SCALE &&
-              config_keys::info(KeyId::StartupWindowScale).hi == EmulatorWidget::MAX_SCALE,
-              "config_keys window_scale bounds must match EmulatorWidget");
+static_assert(config_keys::word_at(config_keys::info(KeyId::StartupWindowScale).values, 0) == "1" &&
+              config_keys::word_at(config_keys::info(KeyId::StartupWindowScale).values, 1) == "1.5" &&
+              config_keys::word_at(config_keys::info(KeyId::StartupWindowScale).values, 2) == "2" &&
+              config_keys::word_at(config_keys::info(KeyId::StartupWindowScale).values, 3) == "3" &&
+              2 * EmulatorWidget::MAX_SCALE == 6 && 2 * EmulatorWidget::MIN_SCALE == 2,
+              "config_keys window_scale words must be the EmulatorWidget half steps 2, 3, 4, 6");
 static_assert(config_keys::info(KeyId::StartupCrtShaderStyle).hi == crt_shader::STYLE_COUNT - 1,
               "config_keys crt_shader_style bound must match crt_shader::STYLE_COUNT");
 static_assert(config_keys::word_at(config_keys::info(KeyId::StartupWhenSlowPrefer).values,
@@ -142,7 +145,11 @@ void merge_cli_assignments(AppConfigData& d, const std::vector<config_keys::Assi
     for (const config_keys::Assignment& a : list) {
         const QString text = QString::fromStdString(a.text);
         switch (a.id) {
-        case KeyId::StartupWindowScale:     d.window_scale = text.toInt(); break;
+        case KeyId::StartupWindowScale: {
+            const int h = window_scale_x2_from_key(a.text);
+            if (h > 0) d.window_scale_x2 = h;
+            break;
+        }
         case KeyId::StartupCrtFilter:       d.crt_filter = (a.text == "true"); break;
         case KeyId::StartupCrtShader:       d.crt_shader = (a.text == "true"); break;
         case KeyId::StartupCrtShaderStyle:  d.crt_shader_style = crt_shader::style_from_int(text.toInt()); break;
@@ -280,11 +287,13 @@ void AppConfig::load() {
             if (i >= 0) data_.ui_language = static_cast<ui_language::Choice>(i);
         }
 
-        const int scale = settings_.value(
-            N(KeyId::StartupWindowScale), data_.window_scale).toInt(&ok);
-        if (ok && scale >= config_keys::info(KeyId::StartupWindowScale).lo
-               && scale <= config_keys::info(KeyId::StartupWindowScale).hi)
-            data_.window_scale = scale;
+        // startup.window_scale: one of the table's words (1, 1.5, 2, 3); anything
+        // else keeps the default. An older file's 1, 2 and 3 read as before.
+        {
+            const int h = window_scale_x2_from_key(settings_.value(N(KeyId::StartupWindowScale),
+                window_scale_to_key(data_.window_scale_x2)).toString().trimmed().toStdString());
+            if (h > 0) data_.window_scale_x2 = h;
+        }
 
         data_.crt_filter     = settings_.value(N(KeyId::StartupCrtFilter), data_.crt_filter).toBool();
         data_.crt_shader     = settings_.value(N(KeyId::StartupCrtShader), data_.crt_shader).toBool();
@@ -478,7 +487,7 @@ void AppConfig::save() const {
     settings_.setValue(N(KeyId::StartupEmulatorSpeedPercent), data_.emulator_speed_percent);
     settings_.setValue(N(KeyId::StartupFastBootSeconds), data_.fast_boot_seconds);
     settings_.setValue(N(KeyId::StartupLanguage), ui_language_to_key(data_.ui_language));
-    settings_.setValue(N(KeyId::StartupWindowScale), data_.window_scale);
+    settings_.setValue(N(KeyId::StartupWindowScale), window_scale_to_key(data_.window_scale_x2));
     settings_.setValue(N(KeyId::StartupCrtFilter), data_.crt_filter);
     settings_.setValue(N(KeyId::StartupCrtShader), data_.crt_shader);
     settings_.setValue(N(KeyId::StartupCrtShaderStyle), static_cast<int>(data_.crt_shader_style));
@@ -585,4 +594,17 @@ void AppConfig::save() const {
     settings_.endGroup();
 
     settings_.sync();
+}
+
+QString window_scale_to_key(int halves) {
+    const int i = halves == 3 ? 1 : halves == 4 ? 2 : halves == 6 ? 3 : 0;
+    const std::string_view w = config_keys::word_at(
+        config_keys::info(KeyId::StartupWindowScale).values, i);
+    return QString::fromLatin1(w.data(), static_cast<qsizetype>(w.size()));
+}
+
+int window_scale_x2_from_key(const std::string& word) {
+    static constexpr int kHalves[] = {2, 3, 4, 6};
+    const int i = config_keys::word_index(config_keys::info(KeyId::StartupWindowScale).values, word);
+    return (i >= 0 && i < 4) ? kHalves[i] : -1;
 }

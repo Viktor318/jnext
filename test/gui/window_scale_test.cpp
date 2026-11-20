@@ -177,7 +177,7 @@ Geom startup_path(int scale, const std::vector<uint32_t>& fb) {
     MainWindow w;
     w.show();
     AppConfigData cfg;
-    cfg.window_scale = scale;
+    cfg.window_scale_x2 = 2 * scale;
     w.apply_startup_config(cfg);
     pump(w, fb);
     return read(w);
@@ -188,7 +188,7 @@ Geom runtime_path(int scale, const std::vector<uint32_t>& fb) {
     MainWindow w;
     w.show();
     AppConfigData cfg;
-    cfg.window_scale = EmulatorWidget::MIN_SCALE;
+    cfg.window_scale_x2 = 2 * EmulatorWidget::MIN_SCALE;
     w.apply_startup_config(cfg);
     pump(w, fb);
     w.set_scale(scale);
@@ -355,7 +355,7 @@ int main(int argc, char** argv)
             MainWindow w;
             w.show();
             AppConfigData cfg;
-            cfg.window_scale = s;
+            cfg.window_scale_x2 = 2 * s;
             w.apply_startup_config(cfg);
             pump(w, fb);
             const Geom before = read(w);
@@ -435,6 +435,38 @@ int main(int argc, char** argv)
         }
         check("GH404-02", "windowed main window has minimumSize == maximumSize == size",
               ok, ok ? "exact at set_scale and after a fullscreen round trip" : detail);
+    }
+
+    // ── WS-HU-01 (hungarian-ui) — the 1.5x step ─────────────────────────
+    // Oracle: EmulatorWidget::set_scale_x2's contract — half steps 2, 3, 4, 6
+    // are 640x512 times 1, 1.5, 2, 3; 3 (1.5x) is 960x768, where a Spectrum
+    // pixel is exactly 3x3. The View menu cycles 1 -> 1.5 -> 2 -> 3 -> 1, and a
+    // half step that is not one (5, 2.5x) is refused to the 2x below it.
+    {
+        MainWindow w;
+        w.show();
+        std::vector<uint32_t> fb(static_cast<size_t>(EmulatorWidget::NATIVE_W) * 256, 0xFF000000u);
+        pump(w, fb);
+        w.set_scale_x2(3);
+        pump(w, fb);
+        const QSize s15 = w.emulator_widget()->size();
+        const bool one_and_half = s15 == QSize(960, 768) && w.current_scale_x2() == 3
+                                  && w.current_scale() == 1;
+        std::string seq;
+        bool cycle_ok = true;
+        const int want[] = {4, 6, 2, 3};
+        for (int i = 0; i < 4; ++i) {
+            w.cycle_scale();
+            seq += std::to_string(w.current_scale_x2()) + " ";
+            cycle_ok = cycle_ok && w.current_scale_x2() == want[i];
+        }
+        w.set_scale_x2(5);
+        const bool refused = w.current_scale_x2() == 4;
+        check("WS-HU-01", "set_scale_x2(3) gives a 960x768 viewport (1.5x); the cycle runs 1.5 -> 2 -> 3 -> 1 -> 1.5; "
+                          "2.5x is not a step and gives 2x",
+              one_and_half && cycle_ok && refused,
+              fmt("1.5x viewport %dx%d x2=%d; cycle %s; set 5 -> %d", s15.width(), s15.height(),
+                  w.current_scale_x2(), seq.c_str(), w.current_scale_x2()));
     }
 
     std::printf("\n=========================================================================\n");

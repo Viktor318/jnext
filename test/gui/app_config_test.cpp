@@ -100,7 +100,7 @@ static void test_defaults_no_file(QTemporaryDir& dir) {
     check("AC-03", "cpu_speed defaults to MHZ_3_5", d.cpu_speed == def.cpu_speed);
     check("AC-04", "emulator_speed_percent defaults to 100",
           d.emulator_speed_percent == def.emulator_speed_percent);
-    check("AC-05", "window_scale defaults match AppConfigData{}", d.window_scale == def.window_scale);
+    check("AC-05", "window_scale defaults match AppConfigData{}", d.window_scale_x2 == def.window_scale_x2);
     check("AC-06", "crt_filter defaults to false", d.crt_filter == def.crt_filter);
     check("AC-07", "silent defaults to false", d.silent == def.silent);
     check("AC-08", "tape_fast_load defaults to true", d.tape_fast_load == def.tape_fast_load);
@@ -154,7 +154,7 @@ static void test_roundtrip(QTemporaryDir& dir) {
         writer.data().machine_type           = MachineType::ZX_PLUS3;
         writer.data().cpu_speed              = CpuSpeed::MHZ_14;
         writer.data().emulator_speed_percent = 400;
-        writer.data().window_scale           = 3;
+        writer.data().window_scale_x2        = 6;
         writer.data().crt_filter             = true;
         writer.data().silent                 = true;
         writer.data().tape_fast_load         = false;
@@ -190,7 +190,7 @@ static void test_roundtrip(QTemporaryDir& dir) {
     check("AC-15", "cpu_speed round-trips", d.cpu_speed == written.cpu_speed);
     check("AC-16", "emulator_speed_percent round-trips",
           d.emulator_speed_percent == written.emulator_speed_percent);
-    check("AC-17", "window_scale round-trips", d.window_scale == written.window_scale);
+    check("AC-17", "window_scale round-trips", d.window_scale_x2 == written.window_scale_x2);
     check("AC-18", "crt_filter round-trips", d.crt_filter == written.crt_filter);
     check("AC-19", "silent round-trips", d.silent == written.silent);
     check("AC-20", "tape_fast_load round-trips", d.tape_fast_load == written.tape_fast_load);
@@ -351,7 +351,7 @@ static void test_malformed_values(QTemporaryDir& dir) {
     check("AC-32", "out-of-range emulator_speed_percent falls back to default",
           d.emulator_speed_percent == def.emulator_speed_percent);
     check("AC-33", "out-of-range window_scale falls back to default",
-          d.window_scale == def.window_scale);
+          d.window_scale_x2 == def.window_scale_x2);
     check("AC-45", "unparseable joy1_source string falls back to default",
           d.joy_source[0] == def.joy_source[0]);
     // A typo must not silently change how the emulator degrades.
@@ -1590,7 +1590,7 @@ static void test_merge_cli_assignments(QTemporaryDir& dir) {
     const QString merged_path = fresh_ini_path(dir, "merge-merged");
 
     AppConfigData saved;
-    saved.window_scale = 3;
+    saved.window_scale_x2 = 6;
     saved.crt_filter = true;
     saved.crt_shader = true;
     saved.crt_shader_style = crt_shader::Style::Pc;
@@ -1635,7 +1635,7 @@ static void test_merge_cli_assignments(QTemporaryDir& dir) {
                               "screenshot/quick_format", "startup/crt_filter", "startup/crt_shader",
                               "startup/crt_shader_style", "startup/window_scale"};
     const bool merge_ok =
-          differ == want && merged.window_scale == 1 && merged.silent && merged.esp_enabled
+          differ == want && merged.window_scale_x2 == 2 && merged.silent && merged.esp_enabled
               && merged.last_load_dir == QLatin1String("/cli/load")
               && merged.quick_screenshot_format == ScreenshotFormat::Scr
               && merged.source_dirs == QStringList({QStringLiteral("/cli/a"), QStringLiteral("/cli/b")})
@@ -1725,7 +1725,7 @@ static void test_source_scheme(QTemporaryDir& dir) {
     AppConfigData before = merged;
     merge_cli_assignments(merged, {{ config_keys::KeyId::SourceColourScheme, {}, "light" }});
     const bool only_scheme = merged.source_scheme == SourceScheme::Light &&
-                             merged.window_scale == before.window_scale && merged.silent == before.silent &&
+                             merged.window_scale_x2 == before.window_scale_x2 && merged.silent == before.silent &&
                              merged.source_dirs == before.source_dirs;
     check("AC-101", "source_scheme defaults to Auto; a file with colour_scheme=borland loads Borland and =solarized "
                     "loads Auto; save() writes colour_scheme=dark for Dark; merge_cli_assignments() changes only that field",
@@ -1787,7 +1787,7 @@ static void test_ui_language(QTemporaryDir& dir) {
     AppConfigData merged = before;
     merge_cli_assignments(merged, {{ config_keys::KeyId::StartupLanguage, {}, "hu" }});
     const bool only_lang = merged.ui_language == Choice::Hungarian &&
-                           merged.window_scale == before.window_scale && merged.silent == before.silent;
+                           merged.window_scale_x2 == before.window_scale_x2 && merged.silent == before.silent;
     check("AC-103", "ui_language defaults to Auto; a file with language=HU loads Hungarian and =de loads Auto; "
                     "save() writes language=en for English; merge_cli_assignments() changes only that field",
           def && h.data().ui_language == Choice::Hungarian && u.data().ui_language == Choice::Auto &&

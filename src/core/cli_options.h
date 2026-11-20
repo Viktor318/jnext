@@ -399,8 +399,8 @@ inline constexpr Option OPTIONS[] = {
       "NextZXOS sets its own speed while it boots" },
     { "--scale", 1, Doc::Documented, OptId::Scale,
       "N",
-      "Window scale 1..3 for this run, overriding the saved\n"
-      "Preferences value (Qt window only)" },
+      "Window scale 1, 1.5, 2 or 3 for this run (1 = 640x512), overriding\n"
+      "the saved Preferences value (Qt window only)" },
     { "--crt", 1, Doc::Documented, OptId::Crt,
       "EFFECT",
       "CRT effect for this run: off, scanlines, soft, tv or pc\n"

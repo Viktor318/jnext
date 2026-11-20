@@ -139,8 +139,10 @@ public:
     /// Set integer scale factor (2-4) and resize window accordingly.
     /// Only effective in windowed mode.
     void set_scale(int factor);
+    /// The same in half steps (EmulatorWidget::set_scale_x2): 3 = 1.5x.
+    void set_scale_x2(int halves);
 
-    /// Cycle through scale factors 2x -> 3x -> 4x -> 2x.
+    /// Cycle through the scales 1x -> 1.5x -> 2x -> 3x -> 1x.
     /// Only effective in windowed mode.
     void cycle_scale();
 
@@ -156,6 +158,7 @@ public:
 
     bool is_fullscreen() const { return is_fullscreen_; }
     int current_scale() const { return current_scale_; }
+    int current_scale_x2() const { return current_scale_x2_; }
 
     /// Set callback for emulator speed changes.
     using SpeedCallback = std::function<void(double)>;
@@ -428,8 +431,8 @@ public:
 #endif
 
 signals:
-    /// Emitted when a scale factor is selected from the View menu.
-    void scale_requested(int factor);
+    /// Emitted when a scale is selected from the View menu, in half steps (3 = 1.5x).
+    void scale_requested(int halves);
 
     /// Emitted when a NEX file should be loaded.
     void load_nex_requested(const QString& path);
@@ -474,7 +477,7 @@ private:
     void on_soft_reset();
     void on_machine_type(MachineType type);
     void on_cpu_speed(int speed_idx);
-    void on_scale(int factor);
+    void on_scale(int halves);
     void on_fullscreen(bool checked);
     void on_about();
 
@@ -641,6 +644,7 @@ private:
 
     bool is_fullscreen_ = false;
     bool applying_fullscreen_ = false;  // GH #404 — inside toggle_fullscreen()
+    int current_scale_x2_ = 2;  ///< the scale in half steps (2 = 1x, 3 = 1.5x, 4 = 2x, 6 = 3x)
     int current_scale_ = 1;  ///< Default 1× scale (640×512 viewport — post-G104, was 2× / 1280×1024 pre-G104).
 
     // Status bar labels

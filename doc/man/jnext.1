@@ -418,8 +418,9 @@ On the other machines it holds.
 Works in the Qt window, the SDL\-only build and \f[B]\-\-headless\f[R].
 .TP
 \f[B]\-\-scale\f[R] \f[I]N\f[R]
-Window scale 1 to 3 for this run, over the saved \f[B]Preferences\f[R]
-value.
+Window scale 1, 1.5, 2 or 3 for this run, over the saved
+\f[B]Preferences\f[R] value.
+1 is 640x512 pixels, 1.5 is 960x768.
 The same as \f[CR]\-\-set startup.window_scale\f[R].
 Qt window only: elsewhere \f[B]jnext\f[R] warns and ignores it.
 .TP
@@ -1717,7 +1718,7 @@ Where \f[B]\-\-speed\f[R] clamps a value outside the range,
 \f[B]\-\-set\f[R] refuses it.
 The Qt window and the SDL\-only build.
 .TP
-\f[CR]startup.window_scale\f[R] \f[I]1..3\f[R]
+\f[CR]startup.window_scale\f[R] \f[I]1|1.5|2|3\f[R]
 The window scale; \f[B]\-\-scale\f[R].
 The Qt window.
 .TP
@@ -3206,10 +3207,10 @@ Magic Breakpoint (toggle), Debugger (Alt+D \- the same entry as in
 \f[B]View\f[R]).
 .TP
 \f[B]View\f[R]
-Scale 1x / 2x / 3x, Fullscreen (F11, or Control+Command+F (⌃⌘F) on
-macOS; letterboxed), the CRT effect (CRT Scanlines, CRT Soft Scanlines,
-CRT TV, CRT PC Monitor; one at a time, none checked = off; the last
-three only in builds with GPU support), Debugger (Alt+D).
+Scale 1x / 1.5x / 2x / 3x, Fullscreen (F11, or Control+Command+F (⌃⌘F)
+on macOS; letterboxed), the CRT effect (CRT Scanlines, CRT Soft
+Scanlines, CRT TV, CRT PC Monitor; one at a time, none checked = off;
+the last three only in builds with GPU support), Debugger (Alt+D).
 .TP
 \f[B]Settings\f[R]
 Preferences\&...

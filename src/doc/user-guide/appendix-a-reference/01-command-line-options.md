@@ -353,9 +353,10 @@ with status 1.
     Works in the Qt window, the SDL-only build and **--headless**.
 
 **--scale** *N*
-:   Window scale 1 to 3 for this run, over the saved **Preferences**
-    value. The same as `--set startup.window_scale`. Qt window only:
-    elsewhere **jnext** warns and ignores it.
+:   Window scale 1, 1.5, 2 or 3 for this run, over the saved
+    **Preferences** value. 1 is 640x512 pixels, 1.5 is 960x768. The same
+    as `--set startup.window_scale`. Qt window only: elsewhere **jnext**
+    warns and ignores it.
 
 **--crt** *EFFECT*
 :   CRT effect for this run: `off`, `scanlines`, `soft`, `tv` or `pc`,
@@ -1476,7 +1477,7 @@ use the key: the Qt window, the SDL-only build (both interactive) or
     **--speed** clamps a value outside the range, **--set** refuses it.
     The Qt window and the SDL-only build.
 
-`startup.window_scale` *1..3*
+`startup.window_scale` *1\|1.5\|2\|3*
 :   The window scale; **--scale**. The Qt window.
 
 `startup.crt_filter` *true\|false*

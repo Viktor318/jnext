@@ -1036,10 +1036,6 @@ Lásd: https://ffmpeg.org/download.html</translation>
         <translation>&amp;Nézet</translation>
     </message>
     <message>
-        <source>Scale %1x</source>
-        <translation>Nagyítás: %1x</translation>
-    </message>
-    <message>
         <source>&amp;Fullscreen</source>
         <translation>&amp;Teljes képernyő</translation>
     </message>
@@ -1755,6 +1751,10 @@ Restart now?
         <source>FPS: %1 emu / %2 shown</source>
         <translation>FPS: %1 gép / %2 kép</translation>
     </message>
+    <message>
+        <source>Scale %1x (%2x%3)</source>
+        <translation>Nagyítás: %1x (%2×%3)</translation>
+    </message>
 </context>
 <context>
     <name>MemoryPanel</name>
@@ -2141,10 +2141,6 @@ Restart now?
         <translation>Gyors indítás:</translation>
     </message>
     <message>
-        <source>%1x</source>
-        <translation>%1x</translation>
-    </message>
-    <message>
         <source>Window scale:</source>
         <translation>Ablak nagyítása:</translation>
     </message>
@@ -2523,6 +2519,10 @@ Csak a módosított hozzárendelések kerülnek a beállításfájlba.</translat
     <message>
         <source>Language:</source>
         <translation>Nyelv:</translation>
+    </message>
+    <message>
+        <source>%1x (%2x%3)</source>
+        <translation>%1x (%2×%3)</translation>
     </message>
 </context>
 <context>

@@ -369,7 +369,7 @@ MainWindow::MainWindow(QWidget* parent)
     });
 
     // Apply default scale — the widget sizes itself, then we fix the window around it.
-    set_scale(current_scale_);
+    set_scale_x2(current_scale_x2_);
 }
 
 // Defined out-of-line so unique_ptr<MouseDispatcher> can be declared with
@@ -692,7 +692,7 @@ void MainWindow::apply_fullscreen_state(bool enter, bool call_show) {
         // the layout had nothing to size itself from and the window collapsed
         // to the chrome's own minimum on every fullscreen exit, staying wrong
         // until the next scale change put the constraint back.
-        emulator_widget_->set_scale(current_scale_);
+        emulator_widget_->set_scale_x2(current_scale_x2_);
         // Restore fixed windowed size.
         apply_fixed_window_size();
     } else {
@@ -720,19 +720,21 @@ void MainWindow::apply_fullscreen_state(bool enter, bool call_show) {
 void MainWindow::set_scale(int factor) {
     if (factor < EmulatorWidget::MIN_SCALE) factor = EmulatorWidget::MIN_SCALE;
     if (factor > EmulatorWidget::MAX_SCALE) factor = EmulatorWidget::MAX_SCALE;
-    current_scale_ = factor;
+    set_scale_x2(2 * factor);
+}
 
-    // Size the widget to an exact integer multiple.
-    emulator_widget_->set_scale(factor);
+void MainWindow::set_scale_x2(int halves) {
+    emulator_widget_->set_scale_x2(halves);
+    current_scale_x2_ = emulator_widget_->scale_x2();   // the widget's step (it refuses 2.5x)
+    current_scale_ = current_scale_x2_ / 2;
 
     if (!is_fullscreen_) {
         apply_fixed_window_size();
     }
 
-    // Sync the scale menu action group.
     if (scale_group_) {
         for (QAction* a : scale_group_->actions()) {
-            if (a->data().toInt() == factor) {
+            if (a->data().toInt() == current_scale_x2_) {
                 a->setChecked(true);
                 break;
             }
@@ -797,10 +799,10 @@ void MainWindow::apply_fixed_window_size() {
 
 void MainWindow::cycle_scale() {
     if (is_fullscreen_) return;
-    // 2 -> 3 -> 4 -> 2
-    int next = current_scale_ + 1;
-    if (next > EmulatorWidget::MAX_SCALE) next = EmulatorWidget::MIN_SCALE;
-    set_scale(next);
+    // 1x -> 1.5x -> 2x -> 3x -> 1x (half steps 2, 3, 4, 6).
+    const int next = current_scale_x2_ == 2 ? 3 : current_scale_x2_ == 3 ? 4
+                   : current_scale_x2_ == 4 ? 6 : 2;
+    set_scale_x2(next);
 }
 
 void MainWindow::set_crt_filter(bool enabled) {
@@ -1376,13 +1378,19 @@ void MainWindow::create_menus() {
 
     scale_group_ = new QActionGroup(this);
     scale_group_->setExclusive(true);
-    for (int s = EmulatorWidget::MIN_SCALE; s <= EmulatorWidget::MAX_SCALE; ++s) {
-        QAction* a = view_menu->addAction(tr("Scale %1x").arg(s));
+    // Half steps: 1x, 1.5x, 2x, 3x. The label gives the picture's size, since
+    // "1x" is already 640x512 (a Spectrum pixel is 2x2 at 1x).
+    for (int h : {2, 3, 4, 6}) {
+        const QString factor = (h % 2) ? QStringLiteral("%1.5").arg(h / 2) : QString::number(h / 2);
+        QAction* a = view_menu->addAction(tr("Scale %1x (%2x%3)")
+                                              .arg(factor)
+                                              .arg(EmulatorWidget::NATIVE_W * h / 2)
+                                              .arg(EmulatorWidget::DISPLAY_H * h / 2));
         a->setCheckable(true);
-        a->setData(s);
+        a->setData(h);
         scale_group_->addAction(a);
-        if (s == current_scale_) a->setChecked(true);
-        connect(a, &QAction::triggered, this, [this, s]() { on_scale(s); });
+        if (h == current_scale_x2_) a->setChecked(true);
+        connect(a, &QAction::triggered, this, [this, h]() { on_scale(h); });
     }
 
     view_menu->addSeparator();
@@ -2272,9 +2280,9 @@ void MainWindow::on_cpu_speed(int speed_idx) {
     }
 }
 
-void MainWindow::on_scale(int factor) {
-    set_scale(factor);
-    emit scale_requested(factor);
+void MainWindow::on_scale(int halves) {
+    set_scale_x2(halves);
+    emit scale_requested(halves);
 }
 
 void MainWindow::on_fullscreen(bool checked) {
@@ -3028,7 +3036,7 @@ void MainWindow::apply_startup_config(const AppConfigData& cfg, bool program_cpu
     if (tape_auto_action_) tape_auto_action_->setChecked(cfg.tape_auto_play);
 
     set_mouse_release_method(cfg.mouse_release);   // GH #365
-    set_scale(cfg.window_scale);
+    set_scale_x2(cfg.window_scale_x2);
     // One effect: resolve the exclusivity before touching the widget. The shader
     // (any style, Lite = Soft Scanlines) wins over the software Scanlines. In a build
     // without it a saved Soft Scanlines choice is the nearest thing it has: Scanlines.

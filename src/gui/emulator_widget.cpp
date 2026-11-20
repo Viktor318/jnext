@@ -30,7 +30,7 @@ EmulatorWidget::EmulatorWidget(QWidget* parent)
 
     // Fixed size policy — the widget dictates its own size.
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    set_scale(scale_);
+    set_scale_x2(scale_x2_);
 }
 
 void EmulatorWidget::update_frame(const uint32_t* framebuffer, int w, int h,
@@ -42,7 +42,7 @@ void EmulatorWidget::update_frame(const uint32_t* framebuffer, int w, int h,
     // size and pre-scaled image match the actual physical pixel count.
     if (!dpr_valid_) {
         dpr_valid_ = true;
-        set_scale(scale_);
+        set_scale_x2(scale_x2_);
         emit scale_changed();
     }
 
@@ -120,7 +120,14 @@ void EmulatorWidget::flush_pending_present() {
 
 void EmulatorWidget::set_scale(int factor) {
     factor = std::clamp(factor, MIN_SCALE, MAX_SCALE);
-    scale_ = factor;
+    set_scale_x2(2 * factor);
+}
+
+void EmulatorWidget::set_scale_x2(int halves) {
+    halves = std::clamp(halves, 2 * MIN_SCALE, 2 * MAX_SCALE);
+    if (!valid_scale_x2(halves)) halves = (halves == 5) ? 4 : 2 * (halves / 2);   // 2.5x is not a step
+    scale_x2_ = halves;
+    scale_ = halves / 2;
 
     // Widget size is in Qt logical pixels.  On Hi-DPI (Wayland, etc.) Qt
     // multiplies by devicePixelRatio to get physical pixels.  We want the
@@ -128,9 +135,10 @@ void EmulatorWidget::set_scale(int factor) {
     // the logical size must be divided by the DPR. DISPLAY_H = NATIVE_H * 2
     // gives the vertical 2× scaling that turns the 640×256 in-memory
     // framebuffer into a square-pixel 640×512 viewport (G104 Phase 7).
+    // The factor is halves / 2 (1.5x: 960×768).
     const qreal dpr = devicePixelRatioF();
-    const int lw = qRound(NATIVE_W * factor / dpr);
-    const int lh = qRound(DISPLAY_H * factor / dpr);
+    const int lw = qRound(NATIVE_W * halves / 2.0 / dpr);
+    const int lh = qRound(DISPLAY_H * halves / 2.0 / dpr);
     setFixedSize(lw, lh);
 
     // Re-scale the cached image for the new factor.

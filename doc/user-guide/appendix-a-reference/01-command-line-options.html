@@ -4779,9 +4779,10 @@ the Next machine a program that waits for the firmware sees the
 firmware’s speed, not this one. On the other machines it holds.
 Works in the Qt window, the SDL-only build and <strong>--headless</strong>.</dd>
 <dt><strong>--scale</strong> <em>N</em></dt>
-<dd>Window scale 1 to 3 for this run, over the saved <strong>Preferences</strong>
-value. The same as <code>--set startup.window_scale</code>. Qt window only:
-elsewhere <strong>jnext</strong> warns and ignores it.</dd>
+<dd>Window scale 1, 1.5, 2 or 3 for this run, over the saved
+<strong>Preferences</strong> value. 1 is 640x512 pixels, 1.5 is 960x768. The same
+as <code>--set startup.window_scale</code>. Qt window only: elsewhere <strong>jnext</strong>
+warns and ignores it.</dd>
 <dt><strong>--crt</strong> <em>EFFECT</em></dt>
 <dd>CRT effect for this run: <code>off</code>, <code>scanlines</code>, <code>soft</code>, <code>tv</code> or <code>pc</code>,
 the choices of the <strong>Preferences</strong> CRT effect pop-up. The same as
@@ -5781,7 +5782,7 @@ own speed while it boots. All frontends.</dd>
 <dd>The emulation speed as a percentage of real time; <strong>--speed</strong>. Where
 <strong>--speed</strong> clamps a value outside the range, <strong>--set</strong> refuses it.
 The Qt window and the SDL-only build.</dd>
-<dt><code>startup.window_scale</code> <em>1..3</em></dt>
+<dt><code>startup.window_scale</code> <em>1|1.5|2|3</em></dt>
 <dd>The window scale; <strong>--scale</strong>. The Qt window.</dd>
 <dt><code>startup.crt_filter</code> <em>true|false</em></dt>
 <dd>The software scanlines effect; <strong>--crt scanlines</strong>. The Qt window

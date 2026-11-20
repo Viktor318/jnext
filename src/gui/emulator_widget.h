@@ -55,6 +55,14 @@ public:
     /// Set the integer scale factor (2-4).  Resizes the widget to NATIVE_W*s x DISPLAY_H*s.
     void set_scale(int factor);
     int scale() const { return scale_; }
+    /// The scale in HALF steps (hungarian-ui): 2 = 1x, 3 = 1.5x, 4 = 2x, 6 = 3x.
+    /// 1.5x (960x768) is the one non-integer step: a Spectrum pixel is then
+    /// exactly 3x3, so the classic screen stays sharp, and the window fits a
+    /// 1080-line display, which 2x (1280x1024 plus the menus) does not.
+    /// set_scale(f) is set_scale_x2(2 * f); scale() is the whole part.
+    void set_scale_x2(int halves);
+    int scale_x2() const { return scale_x2_; }
+    static constexpr bool valid_scale_x2(int h) { return h == 2 || h == 3 || h == 4 || h == 6; }
 
     /// The Scanlines mode of the CRT display: the software overlay drawn in paintEvent(),
     /// for every build and host, with or without OpenGL.
@@ -242,6 +250,7 @@ private:
     QImage native_;   ///< Original framebuffer (640×256 ARGB32).
     QImage scaled_;   ///< Pre-scaled framebuffer (drawn 1:1, no painter scaling).
     int scale_ = MIN_SCALE;
+    int scale_x2_ = 2 * MIN_SCALE;
     bool crt_filter_ = false;
     bool crt_shader_ = false;                     ///< the setting
     crt_shader::Style crt_style_ = crt_shader::STYLE_DEFAULT;

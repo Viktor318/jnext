@@ -334,8 +334,9 @@ naming the option and the value, and exits with status 1.
     **\--headless**.
 
 **\--scale** *N*
-:   Window scale 1 to 3 for this run, over the saved **Preferences** value. The
-    same as `--set startup.window_scale`. Qt window only: elsewhere **jnext**
+:   Window scale 1, 1.5, 2 or 3 for this run, over the saved
+    **Preferences** value. 1 is 640x512 pixels, 1.5 is 960x768. The same
+    as `--set startup.window_scale`. Qt window only: elsewhere **jnext**
     warns and ignores it.
 
 **\--crt** *EFFECT*
@@ -1360,7 +1361,7 @@ The entries say which frontends use the key: the Qt window, the SDL-only build
     **\--speed** clamps a value outside the range, **\--set** refuses it. The
     Qt window and the SDL-only build.
 
-`startup.window_scale` *1..3*
+`startup.window_scale` *1|1.5|2|3*
 :   The window scale; **\--scale**. The Qt window.
 
 `startup.crt_filter` *true|false*
@@ -2495,7 +2496,7 @@ Control+Command+F (full screen) (see **KEYBOARD MAPPING** below).
     **View**).
 
 **View**
-:   Scale 1x / 2x / 3x, Fullscreen (F11, or Control+Command+F (⌃⌘F) on macOS; letterboxed), the CRT effect (CRT Scanlines,
+:   Scale 1x / 1.5x / 2x / 3x, Fullscreen (F11, or Control+Command+F (⌃⌘F) on macOS; letterboxed), the CRT effect (CRT Scanlines,
     CRT Soft Scanlines, CRT TV, CRT PC Monitor; one at a time, none checked = off; the last
     three only in builds with GPU support), Debugger (Alt+D).
 

@@ -1552,9 +1552,16 @@ int main(int argc, char* argv[]) {
                 break;
             }
             case cli::OptId::Scale: {
-                int n = 0;
-                if (!int_arg(arg, opt, v[0], 1, 3, n)) return 1;
-                qt_assignments.push_back({ config_keys::KeyId::StartupWindowScale, {}, std::to_string(n) });
+                // 1, 1.5, 2 or 3 (hungarian-ui added 1.5): the words of startup.window_scale.
+                const int si = config_keys::word_index(
+                    config_keys::info(config_keys::KeyId::StartupWindowScale).values, v[0]);
+                if (si < 0) {
+                    fprintf(stderr, "%s: N must be 1, 1.5, 2 or 3, not \"%s\".\n", arg.c_str(), v[0]);
+                    return 1;
+                }
+                qt_assignments.push_back({ config_keys::KeyId::StartupWindowScale, {},
+                    std::string(config_keys::word_at(
+                        config_keys::info(config_keys::KeyId::StartupWindowScale).values, si)) });
                 note_given(config_keys::KeyId::StartupWindowScale, arg);
                 break;
             }

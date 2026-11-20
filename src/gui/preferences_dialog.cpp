@@ -83,7 +83,7 @@ PreferencesDialog::PreferencesDialog(const AppConfigData& current, QWidget* pare
         when_slow_combo_->findData(static_cast<int>(current.when_slow_prefer)));
     mouse_release_combo_->setCurrentIndex(
         mouse_release_combo_->findData(static_cast<int>(current.mouse_release)));
-    scale_combo_->setCurrentIndex(scale_combo_->findData(current.window_scale));
+    scale_combo_->setCurrentIndex(scale_combo_->findData(current.window_scale_x2));
     // Both set (a hand-edited file): the shader wins, as it does at start-up. The Lite
     // style is Soft Scanlines. Without the shader choices only Scanlines can show.
     int crt_choice = CRT_OFF;
@@ -226,8 +226,13 @@ QWidget* PreferencesDialog::build_startup_tab() {
     form->addRow(tr("Language:"), language_combo_);
 
     scale_combo_ = new QComboBox(tab);
-    for (int s = EmulatorWidget::MIN_SCALE; s <= EmulatorWidget::MAX_SCALE; ++s)
-        scale_combo_->addItem(tr("%1x").arg(s), s);
+    // Half steps (EmulatorWidget::set_scale_x2): 1x, 1.5x, 2x, 3x, with the size.
+    for (int h : {2, 3, 4, 6}) {
+        const QString factor = (h % 2) ? QStringLiteral("%1.5").arg(h / 2) : QString::number(h / 2);
+        scale_combo_->addItem(tr("%1x (%2x%3)").arg(factor)
+                                  .arg(EmulatorWidget::NATIVE_W * h / 2)
+                                  .arg(EmulatorWidget::DISPLAY_H * h / 2), h);
+    }
     form->addRow(tr("Window scale:"), scale_combo_);
 
     // One CRT effect at a time, as a pop-up: Off, Scanlines (the software overlay), or one of the three
@@ -691,7 +696,7 @@ AppConfigData PreferencesDialog::collect() const {
     cfg.ui_language = static_cast<ui_language::Choice>(language_combo_->currentData().toInt());
     cfg.when_slow_prefer = static_cast<audio_pacing::WhenSlowPrefer>(
         when_slow_combo_->currentData().toInt());
-    cfg.window_scale = scale_combo_->currentData().toInt();
+    cfg.window_scale_x2 = scale_combo_->currentData().toInt();
     cfg.mouse_release = static_cast<pointer_capture::ReleaseMethod>(
         mouse_release_combo_->currentData().toInt());
     const int crt_choice = crt_combo_->currentData().toInt();

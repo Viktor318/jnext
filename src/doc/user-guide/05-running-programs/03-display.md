@@ -1,7 +1,11 @@
 # 5.3 Display
 
-**Scale.** **View > Scale 1x/2x/3x**, or press **F2** to cycle. Scaling is
-always a whole number of pixels, so the picture stays sharp.
+**Scale.** **View > Scale 1x/1.5x/2x/3x**, or press **F2** to cycle. 1x is
+640×512 pixels, because the Next's widest modes are 640 pixels across: a
+classic Spectrum pixel is already 2×2 there. 1.5x (960×768) makes it exactly
+3×3, so the classic screen stays sharp and the window fits a 1080-line
+display; only the Next's 640-pixel-wide modes are scaled by one and a half.
+1x, 2x and 3x are whole numbers for every mode.
 
 **Fullscreen.** **F11**, or **View > Fullscreen**. The image is centred with
 black bars, keeping the correct shape. F11 again returns. (Esc will not: it is

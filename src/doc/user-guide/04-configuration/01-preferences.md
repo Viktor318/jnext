@@ -14,7 +14,7 @@
 | When the host is too slow | Smooth sound / Smooth picture | Which of the two to sacrifice when one emulated frame costs more than its real-time budget; inert on a host with headroom |
 | Fast boot | Off, 1–60 s (default 15 s) | Run the first seconds of a plain Next start at full speed with the sound off; any key returns to normal speed. Not used when a program is loaded at start. Takes effect on next launch only; see [3.4](../03-first-run/04-the-first-boot.md) |
 | Language | Automatic (system language), English, Magyar | The language of the menus, dialogs and the debugger; Automatic follows the system's display language. Takes effect on next launch only (`startup.language`) |
-| Window scale | 1x, 2x, 3x | |
+| Window scale | 1x, 1.5x, 2x, 3x | 640×512, 960×768, 1280×1024 or 1920×1536 pixels; see [5.3](../05-running-programs/03-display.md) |
 | CRT effect | Off / Scanlines / Soft scanlines / TV / PC monitor | A pop-up; one choice, see [5.3](../05-running-programs/03-display.md). Soft scanlines, TV and PC monitor are drawn by the GPU and are absent from builds without GPU support |
 | Start muted | on / off | Takes effect on next launch only |
 | Tape fast-load by default | on / off | See [5.5](../05-running-programs/05-recording-and-playback.md) |

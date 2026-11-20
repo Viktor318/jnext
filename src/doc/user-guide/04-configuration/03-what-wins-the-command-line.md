@@ -23,7 +23,7 @@ jnext --set audio.gain_db=-6 --set startup.silent=false --set paths.last_load_di
 ```
 
 Three settings also have flags of their own, because they have menus of their
-own: `--cpu-speed` (`3.5`, `7`, `14` or `28` MHz), `--scale` (1 to 3) and
+own: `--cpu-speed` (`3.5`, `7`, `14` or `28` MHz), `--scale` (1, 1.5, 2 or 3) and
 `--crt` (`off`, `scanlines`, `soft`, `tv` or `pc`). The keys, and the flag
 beside each key that has one, are listed by `jnext --help` and in
 **jnext(1)** under *Settings for --set*.

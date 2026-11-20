@@ -29,7 +29,9 @@ struct AppConfigData {
     MachineType machine_type           = MachineType::ZXN_ISSUE2;
     CpuSpeed    cpu_speed              = CpuSpeed::MHZ_3_5;
     int         emulator_speed_percent = 100;   // 10..1000, matches --speed's clamp
-    int         window_scale           = 1;     // matches MainWindow's default (G104)
+    // The window scale in HALF steps (hungarian-ui): 2 = 1x, 3 = 1.5x, 4 = 2x,
+    // 6 = 3x; the file and --set spell it 1|1.5|2|3 (startup.window_scale).
+    int         window_scale_x2        = 2;     // 1x, MainWindow's default (G104)
     bool        crt_filter             = false;
     // The OpenGL CRT shader (doc/design/CRT-GL-FILTER.md). Off by default: a
     // machine with no config file behaves, and costs, exactly as before.
@@ -247,3 +249,8 @@ private:
     bool               loaded_from_existing_file_ = false;
     std::vector<jnext::dbgkeys::LoadIssue> debug_key_issues_;
 };
+
+/// startup.window_scale's word ("1", "1.5", "2", "3") for a scale in half
+/// steps, and back (-1 for a word that is not one of them).
+QString window_scale_to_key(int halves);
+int     window_scale_x2_from_key(const std::string& word);

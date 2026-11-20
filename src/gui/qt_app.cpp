@@ -486,7 +486,7 @@ bool QtApp::init(int argc, char* argv[]) {
     // The 100ms delay ensures the window manager has finished placing the window
     // and the real DPR is available (critical on Wayland/Hi-DPI).
     QTimer::singleShot(100, main_window_, [this]() {
-        main_window_->set_scale(main_window_->current_scale());
+        main_window_->set_scale_x2(main_window_->current_scale_x2());
     });
 
     // Drive emulator frames from a single-shot timer paced by the fractional
