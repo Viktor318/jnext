@@ -162,6 +162,7 @@ BEGIN {
     M["tick_stats_test"]               = "Tick-delivery stats"
     M["speed_report_test"]             = "Achieved-speed report"
     M["host_key_latch_test"]           = "Host key minimum-hold latch"
+    M["host_layout_keys_test"]         = "Host layout keys (hungarian-ui)"
     M["sdl_window_title_test"]         = "SDL window title (version)"
     M["sdl_app_tick_test"]             = "SdlApp tick (frame loop)"
     M["browser_policy_test"]           = "Browser frame gate and refusals"

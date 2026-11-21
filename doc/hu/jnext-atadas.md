@@ -63,7 +63,11 @@ A `CLAUDE.local.md` (a tároló gyökerében, `git add -f`-fel követve, mert a 
     - **Alt+számjegy:** a döntés (szkript vagy Caps Shift + számjegy) a lenyomáskor születik, a felengedés azt követi, a fizikai billentyűhöz kötve; akkor is, ha a szkript a kettő között töltődik be. Külön teszt.
     - **Hatókör:** csak a Qt-felület; az SDL-es ablak marad. A fizikai azonosító: `nativeScanCode()`, ha 0, akkor `nativeVirtualKey()`, végül `key()`.
     - **Sorrend:** előbb a Qt nélkül tesztelhető modul és egységtesztjei, utána a bekötés a `MainWindow`-ba; a Windows-mérés (AltGr, halott billentyűk) a végén, Viktor gépén.
-  - Még nincs elkezdve; Viktor 2026-11-21 este: „holnap kezdjük”.
+  - **Állapot (2026-11-21 éjjel): a modul és az egységtesztjei készen vannak, bekötés még nincs.**
+    - `src/platform/host_layout_keys.h` (`host_layout::Translator`, csak fejléc, Qt és SDL nélkül) és `test/platform/host_layout_keys_test.cpp` (39 sor: HLAY-01..37, HLAY-40/41; a 40–41 a valódi Routeren át a mátrixot nézi). Mutációs próba: a kulcsszabályok kivétele mind elbukik egy sort.
+    - **Új döntés a mérés alapján (Claude):** az E-módos sorozat lépése csak olyan képkockán számít, amely előtt a Router már mindent alkalmazott (`set_output_idle`, a bekötésben `router.pending() == 0`). Ok: gyors gépelésnél vagy akadáskor a Routerben sor áll, és a modul saját órája mellett az E mód csak 1–2 képkockáig látszott (HLAY-41 ezt fogja meg).
+    - A módosítókat a modul indexsorrendben küldi (Ctrl a Shift előtt); a Router a módosítókat egy képkockán belül együtt alkalmazza, így ez mindegy.
+    - Következik: bekötés a `MainWindow::handle_key`-be és a `QtApp`-ba (a fizikai azonosító, a jobb Alt felismerése, `post_frames`, `keyboard_lost`, `has_host_subscribers()`), a két beállítás (`input.windows_layout`, `input.alt_digit_caps_shift`) a szokásos helyeken, a Ctrl+Alt egérelengedés bal Alt-ra szűkítése, aztán Windows-próba Viktor gépén.
 - **GitHub Actions (Viktor engedélyezte, 2026-11-21):**
   - „Windows Build (manual)”: `gh workflow run "Windows Build (manual)" -R Viktor318/jnext --ref hungarian-ui -f qt6=true -f qt5=false -f win32=false` (14 perc, PGO-s).
   - **A teljes CI** (`ci.yml`): `gh workflow run CI -R Viktor318/jnext --ref hungarian-ui`. **Viktor döntése (2026-11-21 20:46): a `ci.yml` SD-kép-gyorsítótára („Cache NextZXOS SD-card image”, actions/cache) belefér a szabályba** – a gyorsítótárat csak a tároló munkafolyamatai olvassák, a felületen nem tölthető le, és az upstream CI is így használja. Úgy fut, ahogy van. Első futás: `44942749295` (a `5b20d8e`-re).

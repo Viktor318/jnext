@@ -1123,6 +1123,7 @@ my %NO_MATRIX_SECTION = (
     # here is the host key latch and the frontend key bindings, which the core
     # does not contain (it sees a PS/2 stream and a membrane, not a Qt event).
     'host_key_latch_test' => 'host key latch/debounce compensation; guest matrix is `## Input`',
+    'host_layout_keys_test' => 'typing by the host keyboard layout\'s character (hungarian-ui); host input translation, no VHDL counterpart',
     'pointer_capture_test' => 'host mouse-capture policy (window-manager behaviour)',
     'sdl_pointer_release_test' => 'SDL pointer-release route (host UI, GH #365)',
     'mouse_release_test'  => 'captured-mouse release gesture in the Qt window (host UI, GH #365)',

@@ -1409,6 +1409,12 @@ target_include_directories(host_key_latch_test PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(host_key_latch_test PRIVATE ${JNEXT_SDL3_TARGET})
 add_test(NAME host_key_latch_tests COMMAND host_key_latch_test)
 
+# hungarian-ui - typing by the host layout's character (src/platform/host_layout_keys.h).
+# Header-only and free of Qt and SDL; HLAY-40/41 drive it through the real Router.
+add_executable(host_layout_keys_test platform/host_layout_keys_test.cpp)
+target_include_directories(host_layout_keys_test PRIVATE ${CMAKE_SOURCE_DIR}/src)
+add_test(NAME host_layout_keys_tests COMMAND host_layout_keys_test)
+
 # GH #364 — SIGINT/SIGTERM as a quit request. fork()s, and the signals under
 # test have no Windows counterpart, so POSIX-only (`# os: posix` in the
 # manifest). quit_signal.cpp is compiled in directly, like sdl_input.cpp above:
