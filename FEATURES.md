@@ -131,7 +131,7 @@ One line per feature. Details are in the user guide (`doc/user-guide`) and the d
 - Direct audio recording to WAV (`--wav-record`, no FFmpeg required)
 - Preferences dialog (Settings → Preferences…, Alt+P) saved to `~/.jnext/jnext.conf`; CLI flags always override
 - Every Preferences setting can be set for one run from the command line: `--set section.key=value`, `--cpu-speed`, `--scale`, `--crt`
-- Interface language: English or Hungarian, or the system's (Preferences → Startup → Language, `--set startup.language=auto|en|hu`); the Qt standard dialogs follow it
+- Interface language: English or Hungarian, or the system's (Preferences → Startup → Language, `--set startup.language=auto|en|hu`); the debugger is translated too (menus, panels, dialogs), and the Qt standard dialogs follow it
 
 ## Distribution / packaging
 - Native Linux packages via CMake CPack: TGZ, DEB, RPM, plus Fedora and Debian/Ubuntu source packaging

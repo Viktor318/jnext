@@ -3,6 +3,7 @@
 #include "debug/gfx_decode.h"
 
 #include <QComboBox>
+#include <QCoreApplication>
 #include <QFont>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -54,7 +55,7 @@ uint32_t argb_of(const std::vector<uint16_t>& pal, uint8_t index) {
 QComboBox* make_palette_combo(const char* name, QWidget* parent) {
     auto* c = new QComboBox(parent);
     c->setObjectName(name);
-    c->addItems({"Active", "First", "Second"});
+    c->addItems({QCoreApplication::translate("GraphicsPanel", "Active"), QCoreApplication::translate("GraphicsPanel", "First"), QCoreApplication::translate("GraphicsPanel", "Second")});
     return c;
 }
 
@@ -220,15 +221,15 @@ void GraphicsPanel::create_ui() {
         pal_bank_->setObjectName("gfxPalBank");
         struct Bank { const char* name; PaletteId id; };
         const Bank banks[] = {
-            {"ULA first", PaletteId::UlaFirst},           {"ULA second", PaletteId::UlaSecond},
-            {"Layer 2 first", PaletteId::Layer2First},    {"Layer 2 second", PaletteId::Layer2Second},
-            {"Sprites first", PaletteId::SpriteFirst},    {"Sprites second", PaletteId::SpriteSecond},
-            {"Tilemap first", PaletteId::TilemapFirst},   {"Tilemap second", PaletteId::TilemapSecond}};
-        for (const Bank& b : banks) pal_bank_->addItem(b.name, static_cast<int>(b.id));
+            {QT_TR_NOOP("ULA first"), PaletteId::UlaFirst},           {QT_TR_NOOP("ULA second"), PaletteId::UlaSecond},
+            {QT_TR_NOOP("Layer 2 first"), PaletteId::Layer2First},    {QT_TR_NOOP("Layer 2 second"), PaletteId::Layer2Second},
+            {QT_TR_NOOP("Sprites first"), PaletteId::SpriteFirst},    {QT_TR_NOOP("Sprites second"), PaletteId::SpriteSecond},
+            {QT_TR_NOOP("Tilemap first"), PaletteId::TilemapFirst},   {QT_TR_NOOP("Tilemap second"), PaletteId::TilemapSecond}};
+        for (const Bank& b : banks) pal_bank_->addItem(tr(b.name), static_cast<int>(b.id));
         v->addWidget(pal_bank_);
         pal_table_ = new QTableWidget(256, 5, page);
         pal_table_->setObjectName("gfxPalTable");
-        pal_table_->setHorizontalHeaderLabels({"#", "Colour", "RGB333", "Hex", "Pri"});
+        pal_table_->setHorizontalHeaderLabels({"#", tr("Colour"), "RGB333", "Hex", tr("Pri")});
         pal_table_->setFont(mono);
         pal_table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
         pal_table_->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -396,7 +397,7 @@ void GraphicsPanel::render_palettes() {
     static const char* const names[8] = {"ULA first", "ULA second", "Layer 2 first", "Layer 2 second",
                                          "Sprites first", "Sprites second", "Tilemap first", "Tilemap second"};
     for (int i = 0; i < pal_bank_->count(); ++i)
-        pal_bank_->setItemText(i, QString::fromLatin1(names[i]) + (active[i] ? " (active)" : ""));
+        pal_bank_->setItemText(i, tr(names[i]) + (active[i] ? tr(" (active)") : QString()));
 
     const PaletteId bank = static_cast<PaletteId>(pal_bank_->currentData().toInt());
     const std::vector<uint16_t> pal = dbg_->palette(bank);

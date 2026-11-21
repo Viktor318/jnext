@@ -23,7 +23,7 @@ void StackPanel::create_ui() {
 
     table_ = new QTableWidget(STACK_ROWS, 5, this);
     table_->setFont(mono);
-    table_->setHorizontalHeaderLabels({"Address", "Word", "High Byte", "Low Byte", "Memory"});
+    table_->setHorizontalHeaderLabels({tr("Address"), tr("Word"), tr("High Byte"), tr("Low Byte"), tr("Memory")});
     table_->verticalHeader()->setVisible(false);
     table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     table_->setSelectionMode(QAbstractItemView::SingleSelection);

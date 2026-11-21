@@ -76,6 +76,7 @@
 #include "core/emulator_config.h"
 #include "debugger/debugger_manager.h"
 #include "debugger/debugger_window.h"
+#include "gui/ui_language.h"
 
 #include "menu_accel.h"
 
@@ -367,6 +368,77 @@ static void test_accelerators(Fixture& fx)
     }
 }
 
+// ── DACC-HU: the same namespaces with the Hungarian interface (hungarian-ui) ──
+//
+// A translated label carries its own '&', so every guarantee above has to hold
+// again with the Hungarian catalogue installed, plus one the English menu bar
+// meets by construction: no menu-bar mnemonic may be one of the window's own
+// Alt shortcuts (Alt+L Reload Last File, Alt+1..8 script keys, Alt+Left/Right),
+// or the key would open the menu instead. Every English mnemonic keeps one, so
+// the pinned shape is the English one.
+static void test_accelerators_hu(Fixture& fx)
+{
+    set_group("DACC-HU");
+    if (!fx.ok) {
+        check("DACC-HU-01", "Hungarian: the menu bar's own mnemonics are unique", false, "fixture failed");
+        check("DACC-HU-02", "Hungarian: no menu reuses a mnemonic among its own items", false, "fixture failed");
+        check("DACC-HU-03", "Hungarian: no menu-bar mnemonic is one of the window's shortcuts", false, "fixture failed");
+        check("DACC-HU-04", "Hungarian: no widget mnemonic collides in the window-wide Alt namespace", false, "fixture failed");
+        check("DACC-HU-05", "Hungarian: the same menu tree, every translated item keeping a mnemonic", false, "fixture failed");
+        return;
+    }
+    QMenuBar* bar = fx.dbg->menuBar();
+    std::vector<Accel> menu_accels;
+    std::set<QString>  popup_scopes;
+    accel::harvest_menu_bar(bar, menu_accels, popup_scopes);
+    const std::vector<Accel> top = only_scope(menu_accels, kMenuBar);
+    const bool translated = !bar->actions().isEmpty()
+        && bar->actions().first()->text() == QString::fromUtf8("&Fájl");
+    {
+        const std::string dups = collisions(top);
+        check("DACC-HU-01", "Hungarian: the menu bar's own mnemonics are unique",
+              translated && dups.empty(),
+              !translated ? std::string("the Hungarian catalogue is not in effect") : dups);
+    }
+    {
+        const std::vector<Accel> items = except_scope(menu_accels, kMenuBar);
+        const std::string dups = collisions(items);
+        check("DACC-HU-02", "Hungarian: no menu reuses a mnemonic among its own items",
+              dups.empty(),
+              dups.empty() ? fmt("%zu item mnemonics across %zu popups, all distinct",
+                                 items.size(), popup_scopes.size())
+                           : dups);
+    }
+    const std::vector<Accel> key_accels = accel::harvest_shortcuts(fx.dbg);
+    {
+        QStringList taken;
+        for (const Accel& a : key_accels) taken << a.key;
+        std::string bad;
+        for (const Accel& a : top)
+            if (taken.contains(a.key))
+                bad += (a.label + " -> " + a.key + "; ").toStdString();
+        check("DACC-HU-03", "Hungarian: no menu-bar mnemonic is one of the window's shortcuts",
+              bad.empty(), bad);
+    }
+    {
+        const std::vector<Accel> widgets = accel::harvest_widget_mnemonics(fx.dbg);
+        const std::string bad = accel::widget_alt_conflicts(widgets, top);
+        check("DACC-HU-04", "Hungarian: no widget mnemonic collides in the window-wide Alt namespace",
+              bad.empty(), bad);
+    }
+    {
+        const bool as_expected = top.size() == 8
+                              && popup_scopes.size() == 15
+                              && menu_accels.size() == 67
+                              && key_accels.size() == 28;
+        check("DACC-HU-05", "Hungarian: the same menu tree, every translated item keeping a mnemonic",
+              as_expected,
+              fmt("menus=%zu (want 8), popups=%zu (want 15), mnemonics=%zu (want 67), "
+                  "shortcuts=%zu (want 28)",
+                  top.size(), popup_scopes.size(), menu_accels.size(), key_accels.size()));
+    }
+}
+
 // ── AK: pressing the keys does what the labels promise ────────────────
 
 static void test_keystrokes(Fixture& fx)
@@ -457,6 +529,16 @@ int main(int argc, char** argv)
     std::printf("  Group: DACC           — done\n");
     test_keystrokes(fx);
     std::printf("  Group: AK             — done\n");
+
+    // The Hungarian interface: the translators installed as a Hungarian run
+    // installs them, then a second debugger window built under them.
+    ui_language::set_session_choice(ui_language::Choice::Hungarian);
+    ui_language::install(app);
+    {
+        Fixture hu;
+        test_accelerators_hu(hu);
+    }
+    std::printf("  Group: DACC-HU        — done\n");
 
     std::printf("\n=====================================\n");
     std::printf("Total: %4d  Passed: %4d  Failed: %4d  Skipped:    0\n",

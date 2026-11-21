@@ -268,11 +268,11 @@ void video_panel_layer_state(const jnext::dbg::Debugger& dbg, bool active_out[4]
     priority_out  = (reg15 >> 2) & 0x07;
 }
 
-VideoLayerView::VideoLayerView(Layer layer, const char* title,
+VideoLayerView::VideoLayerView(Layer layer, const QString& title,
                                const jnext::dbg::Debugger* dbg, QWidget* parent)
     : QWidget(parent)
     , layer_(layer)
-    , title_(QString::fromLatin1(title))
+    , title_(title)
     , dbg_(dbg)
     , image_(RENDER_W, NATIVE_H, QImage::Format_ARGB32)
 {
@@ -349,8 +349,8 @@ void VideoLayerView::render_to_image(int vc)
     // holds at the end of the frame so far; when the Copper animates it, the
     // bands in the image are the honest per-row story.
     if (layer_ == Layer::Background) {
-        title_ = QString::asprintf("Background colour (NR 0x4A = $%02X)",
-                                   dbg_->nextreg_peek(0x4A));
+        title_ = tr("Background colour (NR 0x4A = $%1)")
+                     .arg(QString::asprintf("%02X", dbg_->nextreg_peek(0x4A)));
     }
 
     // The two ULA views pin their bank (that is the point of having both), so the one
@@ -362,11 +362,11 @@ void VideoLayerView::render_to_image(int vc)
     if (layer_ == Layer::UlaPrimary || layer_ == Layer::UlaShadow) {
         const bool showing_bank7 = (layer_ == Layer::UlaShadow);
         const bool live_bank7    = dbg_->ula_screen_regs().active_bank == 7;
-        title_ = showing_bank7 ? QStringLiteral("ULA shadow (bank 7)")
-                               : QStringLiteral("ULA primary (bank 5)");
+        title_ = showing_bank7 ? tr("ULA shadow (bank 7)")
+                               : tr("ULA primary (bank 5)");
         title_ += (showing_bank7 == live_bank7)
-                    ? QStringLiteral(" - LIVE: the ULA is reading this bank")
-                    : QString(" - NOT live: the ULA is reading bank %1")
+                    ? tr(" - LIVE: the ULA is reading this bank")
+                    : tr(" - NOT live: the ULA is reading bank %1")
                           .arg(live_bank7 ? 7 : 5);
     }
 }
@@ -484,7 +484,7 @@ void VideoPanel::create_ui()
 
         auto* head = new QHBoxLayout();
         head->setSpacing(4);
-        head->addWidget(make_bold("Raster:"));
+        head->addWidget(make_bold(tr("Raster:")));
         head->addStretch();
         col->addLayout(head);
 
@@ -505,12 +505,12 @@ void VideoPanel::create_ui()
 
         auto* state = new QHBoxLayout();
         state->setSpacing(4);
-        state->addWidget(make_bold("Region:"));
+        state->addWidget(make_bold(tr("Region:")));
         region_label_ = make_val("---");
         region_label_->setObjectName(QStringLiteral("rasterRegion"));
         state->addWidget(region_label_);
         state->addSpacing(12);
-        state->addWidget(make_bold("ULA fetch:"));
+        state->addWidget(make_bold(tr("ULA fetch:")));
         fetch_label_ = make_val("---");
         fetch_label_->setObjectName(QStringLiteral("rasterFetch"));
         state->addWidget(fetch_label_);
@@ -531,7 +531,7 @@ void VideoPanel::create_ui()
     {
         auto* row = new QHBoxLayout();
         row->setSpacing(4);
-        row->addWidget(make_bold("Layers:      "));
+        row->addWidget(make_bold(tr("Layers:      ")));
         static const char* kLayerNames[4] = { "ULA", "Layer2", "Tilemap", "Sprites" };
         for (int i = 0; i < 4; ++i) {
             layer_flags_[i] = make_val(kLayerNames[i]);
@@ -546,7 +546,7 @@ void VideoPanel::create_ui()
     {
         auto* row = new QHBoxLayout();
         row->setSpacing(4);
-        row->addWidget(make_bold("Priority:    "));
+        row->addWidget(make_bold(tr("Priority:    ")));
         static const char* kPrioNames[6] = { "SLU", "LSU", "SUL", "LUS", "USL", "ULS" };
         for (int i = 0; i < 6; ++i) {
             prio_flags_[i] = make_val(kPrioNames[i]);
@@ -561,7 +561,7 @@ void VideoPanel::create_ui()
     {
         auto* row = new QHBoxLayout();
         row->setSpacing(4);
-        row->addWidget(make_bold("ULA Palette: "));
+        row->addWidget(make_bold(tr("ULA Palette: ")));
         palette_widget_ = new PaletteSwatchWidget(this);
         // Named so the panel test can grab it and check the swatch shows the
         // ACTIVE ULA bank's colours (GH #278 WP4d).
@@ -601,7 +601,7 @@ void VideoPanel::create_ui()
         vbox->setSpacing(2);
 
         // Fixed-size screen view, centred so left/right margins are equal.
-        auto* view = new VideoLayerView(layer, view_title, dbg_, tab);
+        auto* view = new VideoLayerView(layer, tr(view_title), dbg_, tab);
         vbox->addWidget(view, 0, Qt::AlignHCenter);
 
         // Fixed-height control row below the screen.
@@ -633,16 +633,16 @@ void VideoPanel::create_ui()
     // that actually explains the screen, since the per-layer views cannot show
     // the NR 0x4A fallback colour (it belongs to no layer).
     composite_view_ = make_layer_tab(
-        "All layers",
-        VideoLayerView::Layer::Composite, "All layers (composite)",
+        QT_TR_NOOP("All layers"),
+        VideoLayerView::Layer::Composite, QT_TR_NOOP("All layers (composite)"),
         nullptr, nullptr, nullptr, nullptr);
 
     // ULA tab — single view, radio buttons select primary/shadow.
     ula_view_ = make_layer_tab(
         "ULA",
-        VideoLayerView::Layer::UlaPrimary, "ULA screen (bank 5/7)",
-        "Primary (bank 5)", &ula_rb_primary_,
-        "Shadow (bank 7)",  &ula_rb_shadow_);
+        VideoLayerView::Layer::UlaPrimary, QT_TR_NOOP("ULA screen (bank 5/7)"),
+        QT_TR_NOOP("Primary (bank 5)"), &ula_rb_primary_,
+        QT_TR_NOOP("Shadow (bank 7)"),  &ula_rb_shadow_);
 
     connect(ula_rb_primary_, &QRadioButton::toggled, this, [this](bool checked) {
         if (checked) {
@@ -661,8 +661,8 @@ void VideoPanel::create_ui()
     l2_view_ = make_layer_tab(
         "Layer2",
         VideoLayerView::Layer::Layer2Active, "Layer 2",
-        "Active bank",  &l2_rb_active_,
-        "Shadow bank",  &l2_rb_shadow_);
+        QT_TR_NOOP("Active bank"),  &l2_rb_active_,
+        QT_TR_NOOP("Shadow bank"),  &l2_rb_shadow_);
 
     connect(l2_rb_active_, &QRadioButton::toggled, this, [this](bool checked) {
         if (checked) {
@@ -692,8 +692,8 @@ void VideoPanel::create_ui()
     // Background tab — rightmost.  The NR 0x4A fallback colour: the one thing
     // on screen that belongs to no layer, so no layer view can show it.
     background_view_ = make_layer_tab(
-        "Background",
-        VideoLayerView::Layer::Background, "Background colour (NR 0x4A)",
+        QT_TR_NOOP("Background"),
+        VideoLayerView::Layer::Background, QT_TR_NOOP("Background colour (NR 0x4A)"),
         nullptr, nullptr, nullptr, nullptr);
 
     // When the user switches tabs, invalidate so the new tab renders immediately.

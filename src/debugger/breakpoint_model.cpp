@@ -1,6 +1,8 @@
 #include "debugger/breakpoint_model.h"
 #include "debugger/memory_text.h"
 
+#include <QCoreApplication>
+
 #include <algorithm>
 #include <memory>
 #include <set>
@@ -120,6 +122,25 @@ QString space_suffix(jnext::dbg::MemSpace sp, uint16_t addr, jnext::dbg::Address
     return QStringLiteral(" ") + QString::fromStdString(jnext::dbg::space_text(sp, addr, st, next));
 }
 
+// hungarian-ui: the Type column's words, for the translation catalogue. The
+// texts stay English everywhere else (bp_kind_name() is the .jds file's word);
+// only the column shows them through translated().
+[[maybe_unused]] const char* const kTypeWords[] = {
+    QT_TRANSLATE_NOOP("BreakpointModel", "Execute"),    QT_TRANSLATE_NOOP("BreakpointModel", "Read"),
+    QT_TRANSLATE_NOOP("BreakpointModel", "Write"),      QT_TRANSLATE_NOOP("BreakpointModel", "Read/Write"),
+    QT_TRANSLATE_NOOP("BreakpointModel", "IO Read"),    QT_TRANSLATE_NOOP("BreakpointModel", "IO Write"),
+    QT_TRANSLATE_NOOP("BreakpointModel", "IO Read/Write"),
+    QT_TRANSLATE_NOOP("BreakpointModel", "Interrupt"),  QT_TRANSLATE_NOOP("BreakpointModel", "NMI"),
+    QT_TRANSLATE_NOOP("BreakpointModel", "NextREG Write"), QT_TRANSLATE_NOOP("BreakpointModel", "Frame"),
+    QT_TRANSLATE_NOOP("BreakpointModel", "Scanline"),   QT_TRANSLATE_NOOP("BreakpointModel", "Cycle"),
+    QT_TRANSLATE_NOOP("BreakpointModel", "Reset"),      QT_TRANSLATE_NOOP("BreakpointModel", "Magic"),
+    QT_TRANSLATE_NOOP("BreakpointModel", "Host"),       QT_TRANSLATE_NOOP("BreakpointModel", "Copper"),
+    QT_TRANSLATE_NOOP("BreakpointModel", "DMA"),
+};
+QString translated(const QString& english) {
+    return QCoreApplication::translate("BreakpointModel", english.toUtf8().constData());
+}
+
 // The Type column for a row the Add dialog could not have made.
 QString kind_text(const SubscriptionInfo& si) {
     const char* rw = si.access == Access::Read    ? "Read"
@@ -215,8 +236,8 @@ void BreakpointModel::publish_() {
             r.group = si.group;
         }
         if (r.type >= 0) {
-            r.type_text = QString::fromLatin1(bp_kind_name(static_cast<BpSpec::Kind>(r.type)));
-            if (r.count_only) r.type_text += QStringLiteral(" (count only)");
+            r.type_text = translated(QString::fromLatin1(bp_kind_name(static_cast<BpSpec::Kind>(r.type))));
+            if (r.count_only) r.type_text += QCoreApplication::translate("BreakpointModel", " (count only)");
             // The same texts another client's range or masked port had before the dialog could make
             // one: `$8000-$80FF`, `$00FE/FFFF`.
             if (addressless) {}
@@ -227,7 +248,7 @@ void BreakpointModel::publish_() {
             else
                 r.addr_text = address_text(r.addr, r.space, style_, memtext::next_layout(&dbg_));
         } else {
-            r.type_text = kind_text(si);
+            r.type_text = translated(kind_text(si));
             if (port)
                 r.addr_text = QString::asprintf("$%04X/%04X", si.filter.port_value,
                                                 si.filter.port_mask);
@@ -244,7 +265,7 @@ void BreakpointModel::publish_() {
         // REQ-qt-13d — another client's row is listed, read-only, and says
         // whose it is: the id is the one the backend's ATTACH log line names.
         if (!r.own)
-            r.type_text += QStringLiteral(" (client %1)").arg(si.owner);
+            r.type_text += QCoreApplication::translate("BreakpointModel", " (client %1)").arg(si.owner);
         rows.push_back(std::move(r));
         seen.push_back(Seen{si.id, si.kind, si.enabled, si.live});
     }

@@ -46,14 +46,14 @@ DisasmPanel::DisasmPanel(const jnext::dbg::Debugger* dbg, QWidget* parent)
     auto* top_bar = new QHBoxLayout();
     top_bar->setContentsMargins(2, 2, 2, 2);
 
-    auto* addr_label = new QLabel("Address:");
+    auto* addr_label = new QLabel(tr("Address:"));
     addr_input_ = new QLineEdit();
-    addr_input_->setPlaceholderText("Address...");
+    addr_input_->setPlaceholderText(tr("Address..."));
     addr_input_->setFont(mono_font_);
     addr_input_->setMaximumWidth(80);
-    addr_input_->setToolTip("Enter an address (e.g. 4000) or a symbol and press Enter");
+    addr_input_->setToolTip(tr("Enter an address (e.g. 4000) or a symbol and press Enter"));
 
-    goto_pc_btn_ = new QPushButton("Go to PC");
+    goto_pc_btn_ = new QPushButton(tr("Go to PC"));
     goto_pc_btn_->setMaximumWidth(80);
 
     top_bar->addWidget(addr_label);
@@ -662,12 +662,12 @@ void DisasmPanel::paintEvent(QPaintEvent* /*event*/)
     int header_y = paint_y_offset_ - 4;
     // GH #448: Mem, Addr, BP column, [Label], mnemonic, bytes, [; comment].
     const int bp_x = breakpoint_x();
-    painter.drawText(LEFT_MARGIN, header_y, "Mem");   // GH #360
-    painter.drawText(LEFT_MARGIN + MEM_WIDTH, header_y, "Addr");
+    painter.drawText(LEFT_MARGIN, header_y, tr("Mem"));   // GH #360
+    painter.drawText(LEFT_MARGIN + MEM_WIDTH, header_y, tr("Addr"));
     painter.drawText(bp_x + 2, header_y, "BP");
     const bool label_col = label_column_shown();   // GH #387
     if (label_col)
-        painter.drawText(bp_x + GUTTER_WIDTH + 4, header_y, "Label");
+        painter.drawText(bp_x + GUTTER_WIDTH + 4, header_y, tr("Label"));
     painter.setFont(mono_font_);
 
     // Draw gutter separator
@@ -1078,12 +1078,12 @@ void DisasmPanel::contextMenuEvent(QContextMenuEvent* event)
 
     menu.addSeparator();
 
-    auto* toggle_bp = menu.addAction("Toggle Breakpoint");
+    auto* toggle_bp = menu.addAction(tr("Toggle Breakpoint"));
     connect(toggle_bp, &QAction::triggered, this, [this, addr, line]() {
         toggle_breakpoint(addr, line);   // same as the gutter click
     });
 
-    auto* run_to = menu.addAction("Run to Here");
+    auto* run_to = menu.addAction(tr("Run to Here"));
     connect(run_to, &QAction::triggered, this, [this, addr]() {
         emit run_to_requested(addr);
     });
@@ -1091,7 +1091,7 @@ void DisasmPanel::contextMenuEvent(QContextMenuEvent* event)
     // GH #366 - Follow: the line's branch target, or its memory operand in the Memory panel.
     {
         const disasm_hint::Follow f = follow_of_line(line);
-        auto* follow_act = menu.addAction("Follow");
+        auto* follow_act = menu.addAction(tr("Follow"));
         menu.setToolTipsVisible(true);
         if (f.kind == disasm_hint::Follow::Kind::None) {
             follow_act->setEnabled(false);
@@ -1104,7 +1104,7 @@ void DisasmPanel::contextMenuEvent(QContextMenuEvent* event)
 
     menu.addSeparator();
 
-    auto* go_to = menu.addAction("Go to Address...");
+    auto* go_to = menu.addAction(tr("Go to Address..."));
     connect(go_to, &QAction::triggered, this, [this]() {
         addr_input_->setFocus();
         addr_input_->selectAll();
@@ -1114,7 +1114,7 @@ void DisasmPanel::contextMenuEvent(QContextMenuEvent* event)
     // map loaded, and disabled where no source line covers the address.
     if (dbg_ && !dbg_->source_map().empty()) {
         menu.setToolTipsVisible(true);
-        auto* show_src = menu.addAction("Show in Source");
+        auto* show_src = menu.addAction(tr("Show in Source"));
         if (!dbg_->source_map().lookup(entries_[line].space, addr)) {
             show_src->setEnabled(false);
             show_src->setToolTip(tr("no source line at $%1").arg(QString::asprintf("%04X", addr)));

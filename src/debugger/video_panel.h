@@ -29,7 +29,7 @@ public:
     using Layer = jnext::dbg::Layer;
 
     /// @param dbg  the backend to render through; null shows the placeholder.
-    VideoLayerView(Layer layer, const char* title,
+    VideoLayerView(Layer layer, const QString& title,
                    const jnext::dbg::Debugger* dbg, QWidget* parent = nullptr);
 
     /// Switch which layer/screen is displayed and force a re-render.

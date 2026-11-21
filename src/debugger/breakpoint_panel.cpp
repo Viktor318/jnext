@@ -286,7 +286,7 @@ bool BreakpointPanel::show_bp_dialog(const QString& title, uint16_t addr,
 
     auto* addr_edit = new QLineEdit(&dlg);
     addr_edit->setObjectName(QStringLiteral("bp_dialog_address"));
-    addr_edit->setPlaceholderText("e.g. 4000, $4000, symbol or file.bas:12");
+    addr_edit->setPlaceholderText(tr("e.g. 4000, $4000, symbol or file.bas:12"));
     // A breakpoint on a source line edits as that line.
     QString initial = QString::asprintf("%04X", addr);
     if (space != jnext::dbg::MemSpace::cpu() && dbg_) {

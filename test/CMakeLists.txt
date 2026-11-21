@@ -2401,7 +2401,7 @@ if(ENABLE_DEBUGGER)
     add_executable(debugger_accel_test debugger/accel_test.cpp)
     set_target_properties(debugger_accel_test PROPERTIES AUTOMOC ON)
     target_link_libraries(debugger_accel_test PRIVATE
-        jnext_debugger
+        jnext_gui jnext_debugger
         jnext_core jnext_cpu jnext_memory jnext_video
         jnext_audio jnext_port jnext_peripheral jnext_input
         jnext_save jnext_debug spdlog::spdlog zot_tzx ZLIB::ZLIB

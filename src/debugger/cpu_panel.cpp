@@ -149,7 +149,7 @@ void CpuPanel::create_ui() {
     auto* flags_row = new QHBoxLayout();
     flags_row->setSpacing(1);
 
-    auto* flags_lbl = new QLabel("Flags: ", this);
+    auto* flags_lbl = new QLabel(tr("Flags: "), this);
     flags_lbl->setFont(mono_bold);
     flags_row->addWidget(flags_lbl);
 
@@ -176,17 +176,17 @@ void CpuPanel::create_ui() {
     auto* state_row = new QHBoxLayout();
     state_row->setSpacing(4);
 
-    auto* state_lbl = new QLabel("State: ", this);
+    auto* state_lbl = new QLabel(tr("State: "), this);
     state_lbl->setFont(mono_bold);
     state_row->addWidget(state_lbl);
 
-    reg_halted_ = new QLabel("Running", this);
+    reg_halted_ = new QLabel(tr("Running"), this);
     reg_halted_->setFont(mono);
     state_row->addWidget(reg_halted_);
 
     state_row->addSpacing(8);
 
-    auto* screen_lbl = new QLabel("Screen: ", this);
+    auto* screen_lbl = new QLabel(tr("Screen: "), this);
     screen_lbl->setFont(mono_bold);
     state_row->addWidget(screen_lbl);
 
@@ -202,7 +202,7 @@ void CpuPanel::create_ui() {
     auto* tstates_row = new QHBoxLayout();
     tstates_row->setSpacing(4);
 
-    auto* tstates_lbl = new QLabel("T-states: ", this);
+    auto* tstates_lbl = new QLabel(tr("T-states: "), this);
     tstates_lbl->setFont(mono_bold);
     tstates_row->addWidget(tstates_lbl);
 
@@ -489,12 +489,12 @@ void CpuPanel::refresh() {
 
     // Halted state
     if (regs.halted) {
-        reg_halted_->setText("HALTED");
+        reg_halted_->setText(tr("HALTED"));
         reg_halted_->setStyleSheet("QLabel { color: " +
                                    palette_tint::css(palette_tint::ink(pal, QColor(0xCC, 0x00, 0x00))) +
                                    "; font-weight: bold; }");
     } else {
-        reg_halted_->setText("Running");
+        reg_halted_->setText(tr("Running"));
         reg_halted_->setStyleSheet("");
     }
 

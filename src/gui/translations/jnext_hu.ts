@@ -5,287 +5,442 @@
     <name>AudioPanel</name>
     <message>
         <source>Sources</source>
-        <translation type="unfinished"></translation>
+        <translation>Források</translation>
     </message>
     <message>
         <source>AY #0</source>
-        <translation type="unfinished"></translation>
+        <translation>AY #0</translation>
     </message>
     <message>
         <source>AY #1</source>
-        <translation type="unfinished"></translation>
+        <translation>AY #1</translation>
     </message>
     <message>
         <source>AY #2</source>
-        <translation type="unfinished"></translation>
+        <translation>AY #2</translation>
     </message>
     <message>
         <source>DAC</source>
-        <translation type="unfinished"></translation>
+        <translation>DAC</translation>
     </message>
     <message>
         <source>Beeper</source>
-        <translation type="unfinished"></translation>
+        <translation>Csipogó</translation>
     </message>
     <message>
         <source>Info</source>
-        <translation type="unfinished"></translation>
+        <translation>Információ</translation>
     </message>
     <message>
         <source>TurboSound: No</source>
-        <translation type="unfinished"></translation>
+        <translation>TurboSound: nem</translation>
     </message>
     <message>
         <source>Mode: AY</source>
-        <translation type="unfinished"></translation>
+        <translation>Mód: AY</translation>
     </message>
     <message>
         <source>Stereo: ABC</source>
-        <translation type="unfinished"></translation>
+        <translation>Sztereó: ABC</translation>
     </message>
     <message>
         <source>TurboSound: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>TurboSound: %1</translation>
     </message>
     <message>
         <source>Yes</source>
-        <translation type="unfinished"></translation>
+        <translation>igen</translation>
     </message>
     <message>
         <source>No</source>
-        <translation type="unfinished"></translation>
+        <translation>nem</translation>
     </message>
     <message>
         <source>Mode: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Mód: %1</translation>
     </message>
     <message>
         <source>Stereo: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Sztereó: %1</translation>
+    </message>
+</context>
+<context>
+    <name>BreakpointModel</name>
+    <message>
+        <source>Execute</source>
+        <translation>Végrehajtás</translation>
+    </message>
+    <message>
+        <source>Read</source>
+        <translation>Olvasás</translation>
+    </message>
+    <message>
+        <source>Write</source>
+        <translation>Írás</translation>
+    </message>
+    <message>
+        <source>Read/Write</source>
+        <translation>Olvasás/írás</translation>
+    </message>
+    <message>
+        <source>IO Read</source>
+        <translation>IO olvasás</translation>
+    </message>
+    <message>
+        <source>IO Write</source>
+        <translation>IO írás</translation>
+    </message>
+    <message>
+        <source>IO Read/Write</source>
+        <translation>IO olvasás/írás</translation>
+    </message>
+    <message>
+        <source>Interrupt</source>
+        <translation>Megszakítás</translation>
+    </message>
+    <message>
+        <source>NMI</source>
+        <translation>NMI</translation>
+    </message>
+    <message>
+        <source>NextREG Write</source>
+        <translation>NextREG írás</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>Képkocka</translation>
+    </message>
+    <message>
+        <source>Scanline</source>
+        <translation>Sor</translation>
+    </message>
+    <message>
+        <source>Cycle</source>
+        <translation>Ciklus</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Újraindítás</translation>
+    </message>
+    <message>
+        <source>Magic</source>
+        <translation>Magic</translation>
+    </message>
+    <message>
+        <source>Host</source>
+        <translation>Gazdagép</translation>
+    </message>
+    <message>
+        <source>Copper</source>
+        <translation>Copper</translation>
+    </message>
+    <message>
+        <source>DMA</source>
+        <translation>DMA</translation>
+    </message>
+    <message>
+        <source> (count only)</source>
+        <translation> (csak számol)</translation>
+    </message>
+    <message>
+        <source> (client %1)</source>
+        <translation> (%1. kliens)</translation>
     </message>
 </context>
 <context>
     <name>BreakpointPanel</name>
     <message>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>Hozzáadás</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Szerkesztés</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation type="unfinished">Eltávolítás</translation>
+        <translation>Törlés</translation>
     </message>
     <message>
         <source>Breakpoints enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Töréspontok bekapcsolva</translation>
     </message>
     <message>
         <source>Master switch. Unchecking suspends every breakpoint and watchpoint without deleting any; re-checking restores each one&apos;s own Enabled state. Step Over, Step Out and Run to Here keep working.</source>
-        <translation type="unfinished"></translation>
+        <translation>Főkapcsoló. Kikapcsolva minden töréspontot és figyelési pontot felfüggeszt, de egyiket sem törli; visszakapcsolva mindegyik visszakapja a saját Be állapotát. Az Átlépés, a Kilépés a rutinból és a Futtatás idáig továbbra is működik.</translation>
     </message>
     <message>
         <source>On</source>
-        <translation type="unfinished"></translation>
+        <translation>Be</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Típus</translation>
     </message>
     <message>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Cím</translation>
     </message>
     <message>
         <source>Symbol / Source</source>
-        <translation type="unfinished"></translation>
+        <translation>Szimbólum / forrás</translation>
     </message>
     <message numerus="yes">
         <source> (%n locations)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform> (%n hely)</numerusform>
         </translation>
     </message>
     <message>
         <source>Execute</source>
-        <translation type="unfinished"></translation>
+        <translation>Végrehajtás</translation>
     </message>
     <message>
         <source>Read</source>
-        <translation type="unfinished"></translation>
+        <translation>Olvasás</translation>
     </message>
     <message>
         <source>Write</source>
-        <translation type="unfinished"></translation>
+        <translation>Írás</translation>
     </message>
     <message>
         <source>Read/Write</source>
-        <translation type="unfinished"></translation>
+        <translation>Olvasás/írás</translation>
     </message>
     <message>
         <source>IO Read</source>
-        <translation type="unfinished"></translation>
+        <translation>IO olvasás</translation>
     </message>
     <message>
         <source>IO Write</source>
-        <translation type="unfinished"></translation>
+        <translation>IO írás</translation>
     </message>
     <message>
         <source>Type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Típus:</translation>
     </message>
     <message>
         <source>Address, symbol or file:line:</source>
-        <translation type="unfinished"></translation>
+        <translation>Cím, szimbólum vagy fájl:sor:</translation>
     </message>
     <message>
         <source>IO Read/Write: 00-FF matches any port with that low byte
 (FE = the ULA); 0100 and up matches that exact port (243B).</source>
-        <translation type="unfinished"></translation>
+        <translation>IO olvasás/írás: a 00-FF minden olyan portra illeszkedik, amelynek ez az alsó bájtja
+(FE = az ULA); a 0100-tól felfelé pontosan arra a portra (243B).</translation>
     </message>
     <message>
         <source>A source line can only be an Execute breakpoint. Use an address or a symbol for this type.</source>
-        <translation type="unfinished"></translation>
+        <translation>Forrássorra csak végrehajtási töréspont tehető. Ehhez a típushoz címet vagy szimbólumot adjon meg.</translation>
     </message>
     <message>
         <source>Not an address, symbol or source line: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem cím, szimbólum vagy forrássor: %1</translation>
     </message>
     <message>
         <source>Add Breakpoint</source>
-        <translation type="unfinished"></translation>
+        <translation>Töréspont hozzáadása</translation>
     </message>
     <message>
         <source>Edit Breakpoint</source>
-        <translation type="unfinished"></translation>
+        <translation>Töréspont szerkesztése</translation>
     </message>
     <message>
         <source>Reset Hits</source>
-        <translation type="unfinished"></translation>
+        <translation>Találatok nullázása</translation>
     </message>
     <message>
         <source>Zero the Hits count of every breakpoint of this window.</source>
-        <translation type="unfinished"></translation>
+        <translation>Az ablak összes töréspontjának találatszámát nullázza.</translation>
     </message>
     <message>
         <source>Hits</source>
-        <translation type="unfinished"></translation>
+        <translation>Találat</translation>
     </message>
     <message>
         <source>Condition</source>
-        <translation type="unfinished"></translation>
+        <translation>Feltétel</translation>
     </message>
     <message>
         <source>(condition)</source>
-        <translation type="unfinished"></translation>
+        <translation>(feltétel)</translation>
     </message>
     <message>
         <source>Last run-time error: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Utolsó futásidejű hiba: %1</translation>
     </message>
     <message>
         <source>Interrupt</source>
-        <translation type="unfinished"></translation>
+        <translation>Megszakítás</translation>
     </message>
     <message>
         <source>NMI</source>
-        <translation type="unfinished">NMI</translation>
+        <translation>NMI</translation>
     </message>
     <message>
         <source>optional: end of the range</source>
-        <translation type="unfinished"></translation>
+        <translation>nem kötelező: a tartomány vége</translation>
     </message>
     <message>
         <source>To (optional):</source>
-        <translation type="unfinished"></translation>
+        <translation>Eddig (nem kötelező):</translation>
     </message>
     <message>
         <source>optional, hex: empty = the address rule</source>
-        <translation type="unfinished"></translation>
+        <translation>nem kötelező, hexa: üres = a cím szabálya</translation>
     </message>
     <message>
         <source>Mask (optional):</source>
-        <translation type="unfinished"></translation>
+        <translation>Maszk (nem kötelező):</translation>
     </message>
     <message>
         <source>optional, e.g. A == 5 and mem[0x9000] != 0</source>
-        <translation type="unfinished"></translation>
+        <translation>nem kötelező, pl. A == 5 and mem[0x9000] != 0</translation>
     </message>
     <message>
         <source>Condition (optional):</source>
-        <translation type="unfinished"></translation>
+        <translation>Feltétel (nem kötelező):</translation>
     </message>
     <message>
         <source>Count hits only (don&apos;t stop)</source>
-        <translation type="unfinished"></translation>
+        <translation>Csak a találatok számolása (nem áll meg)</translation>
     </message>
     <message>
         <source>A source line cannot have a range end: clear To.</source>
-        <translation type="unfinished"></translation>
+        <translation>Forrássornak nem lehet tartományvége: törölje az Eddig mezőt.</translation>
     </message>
     <message>
         <source>To is not an address or a symbol: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Az Eddig mező nem cím vagy szimbólum: %1</translation>
     </message>
     <message>
         <source>To is below the address.</source>
-        <translation type="unfinished"></translation>
+        <translation>Az Eddig kisebb, mint a cím.</translation>
     </message>
     <message>
         <source>The mask is not a hex number from 0000 to FFFF: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>A maszk nem 0000 és FFFF közötti hexa szám: %1</translation>
     </message>
     <message>
         <source>The port value has bits outside the mask: it can never match.</source>
-        <translation type="unfinished"></translation>
+        <translation>A port értékében a maszkon kívüli bitek is vannak: soha nem illeszkedhet.</translation>
     </message>
     <message>
         <source>A mask of FFFF with port 0000 is refused by the debugger.</source>
-        <translation type="unfinished"></translation>
+        <translation>A hibakereső nem fogadja el az FFFF maszkot a 0000 porttal.</translation>
+    </message>
+    <message>
+        <source>e.g. 4000, $4000, symbol or file.bas:12</source>
+        <translation>pl. 4000, $4000, szimbólum vagy fájl.bas:12</translation>
+    </message>
+</context>
+<context>
+    <name>CallStackPanel</name>
+    <message>
+        <source>Type</source>
+        <translation>Típus</translation>
+    </message>
+    <message>
+        <source>Caller</source>
+        <translation>Hívó</translation>
+    </message>
+    <message>
+        <source>Target</source>
+        <translation>Cél</translation>
+    </message>
+    <message>
+        <source>Called from</source>
+        <translation>Hívás helye</translation>
+    </message>
+    <message>
+        <source>Caller memory</source>
+        <translation>Hívó memóriája</translation>
+    </message>
+    <message>
+        <source>Target memory</source>
+        <translation>Cél memóriája</translation>
     </message>
 </context>
 <context>
     <name>CopperPanel</name>
     <message>
         <source>Copper Running</source>
-        <translation type="unfinished"></translation>
+        <translation>A Copper fut</translation>
+    </message>
+    <message>
+        <source>Addr</source>
+        <translation>Cím</translation>
+    </message>
+    <message>
+        <source>Raw</source>
+        <translation>Nyers</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Típus</translation>
+    </message>
+    <message>
+        <source>Details</source>
+        <translation>Részletek</translation>
     </message>
 </context>
 <context>
     <name>CpuPanel</name>
     <message>
         <source>Accumulate</source>
-        <translation type="unfinished"></translation>
+        <translation>Összegzés</translation>
     </message>
     <message>
         <source>Add up the T-states across stops instead of counting from the last one</source>
-        <translation type="unfinished"></translation>
+        <translation>A T-ciklusokat a megállásokon át összegzi, ahelyett hogy a legutóbbitól számolna</translation>
     </message>
     <message>
         <source>Double-click to edit (while paused)</source>
-        <translation type="unfinished"></translation>
+        <translation>Dupla kattintással szerkeszthető (szünet közben)</translation>
     </message>
     <message>
         <source>Click to toggle (while paused)</source>
-        <translation type="unfinished"></translation>
+        <translation>Kattintással átváltható (szünet közben)</translation>
     </message>
     <message>
         <source>Show in Disassembly</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjelenítés a visszafordításban</translation>
     </message>
     <message>
         <source>Show in Memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjelenítés a memóriában</translation>
     </message>
     <message>
         <source>Show in Source</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjelenítés a forrásban</translation>
     </message>
     <message>
         <source>Edit Value...</source>
-        <translation type="unfinished"></translation>
+        <translation>Érték szerkesztése…</translation>
+    </message>
+    <message>
+        <source>Flags: </source>
+        <translation>Jelzők: </translation>
+    </message>
+    <message>
+        <source>State: </source>
+        <translation>Állapot: </translation>
+    </message>
+    <message>
+        <source>Running</source>
+        <translation>Fut</translation>
+    </message>
+    <message>
+        <source>Screen: </source>
+        <translation>Képernyő: </translation>
+    </message>
+    <message>
+        <source>T-states: </source>
+        <translation>T-ciklus: </translation>
+    </message>
+    <message>
+        <source>HALTED</source>
+        <translation>HALT</translation>
     </message>
 </context>
 <context>
@@ -303,567 +458,628 @@
     <name>DebuggerWindow</name>
     <message>
         <source>JNEXT Debugger</source>
-        <translation type="unfinished"></translation>
+        <translation>JNEXT hibakereső</translation>
     </message>
     <message>
         <source>Debug Controls</source>
-        <translation type="unfinished"></translation>
+        <translation>Vezérlés</translation>
     </message>
     <message>
         <source>|◄ Frame Back</source>
-        <translation type="unfinished"></translation>
+        <translation>|◄ Képkocka vissza</translation>
     </message>
     <message>
         <source>◄ Step Back</source>
-        <translation type="unfinished"></translation>
+        <translation>◄ Lépés hátra</translation>
     </message>
     <message>
         <source>Run to EOSL</source>
-        <translation type="unfinished"></translation>
+        <translation>Sor végéig</translation>
     </message>
     <message>
         <source>Run to EOF</source>
-        <translation type="unfinished"></translation>
+        <translation>Képkocka végéig</translation>
     </message>
     <message>
         <source>Rewind</source>
-        <translation type="unfinished"></translation>
+        <translation>Visszatekerés</translation>
     </message>
     <message>
         <source>  ⏮ Rewind - Frame: </source>
-        <translation type="unfinished"></translation>
+        <translation>  ⏮ Visszatekerés – képkocka: </translation>
     </message>
     <message>
         <source>Drag to select a frame to rewind to</source>
-        <translation type="unfinished"></translation>
+        <translation>Húzással válassza ki, melyik képkockára tekerjen vissza</translation>
     </message>
     <message>
         <source>Frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>%1. képkocka</translation>
     </message>
     <message>
         <source>---</source>
-        <translation type="unfinished"></translation>
+        <translation>---</translation>
     </message>
     <message>
         <source>Jump Here</source>
-        <translation type="unfinished"></translation>
+        <translation>Ugrás ide</translation>
     </message>
     <message>
         <source>Trace</source>
-        <translation type="unfinished"></translation>
+        <translation>Nyomkövetés</translation>
     </message>
     <message>
         <source>Export Trace</source>
-        <translation type="unfinished"></translation>
+        <translation>Nyomkövetés exportálása</translation>
     </message>
     <message>
         <source>Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>Folytatás</translation>
     </message>
     <message>
         <source>Single Step</source>
-        <translation type="unfinished"></translation>
+        <translation>Lépés</translation>
     </message>
     <message>
         <source>Step Over</source>
-        <translation type="unfinished"></translation>
+        <translation>Átlépés</translation>
     </message>
     <message>
         <source>Step Out</source>
-        <translation type="unfinished"></translation>
+        <translation>Ki a rutinból</translation>
     </message>
     <message>
         <source>Break</source>
-        <translation type="unfinished"></translation>
+        <translation>Megállítás</translation>
     </message>
     <message>
         <source>Rewind to previous frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Visszatekerés az előző képkockára</translation>
     </message>
     <message>
         <source>Step back one instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Egy utasítás vissza</translation>
     </message>
     <message>
         <source>Run to End of Scan Line</source>
-        <translation type="unfinished"></translation>
+        <translation>Futtatás a sor végéig</translation>
     </message>
     <message>
         <source>Run to End of Frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Futtatás a képkocka végéig</translation>
     </message>
     <message>
         <source>&amp;File</source>
-        <translation type="unfinished">&amp;Fájl</translation>
+        <translation>&amp;Fájl</translation>
     </message>
     <message>
         <source>Reload Last File</source>
-        <translation type="unfinished">Az utolsó fájl újratöltése</translation>
+        <translation>Utolsó fájl újratöltése</translation>
     </message>
     <message>
         <source>&amp;Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Hibakeresés</translation>
     </message>
     <message>
         <source>Run / &amp;Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>Futtatás / &amp;folytatás</translation>
     </message>
     <message>
         <source>&amp;Pause / Break</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Szünet / megállítás</translation>
     </message>
     <message>
         <source>&amp;Single Step</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Lépés</translation>
     </message>
     <message>
         <source>Step &amp;Over</source>
-        <translation type="unfinished"></translation>
+        <translation>Á&amp;tlépés</translation>
     </message>
     <message>
         <source>Step O&amp;ut</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Kilépés a rutinból</translation>
     </message>
     <message>
         <source>|&lt; Frame Bac&amp;k</source>
-        <translation type="unfinished"></translation>
+        <translation>|&lt; Képkocka viss&amp;za</translation>
     </message>
     <message>
         <source>Step &amp;Back</source>
-        <translation type="unfinished"></translation>
+        <translation>Lépés &amp;hátra</translation>
     </message>
     <message>
         <source>Run to End of &amp;Frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Futtatás a képkocka &amp;végéig</translation>
     </message>
     <message>
         <source>Run to End of Scan &amp;Line</source>
-        <translation type="unfinished"></translation>
+        <translation>Futtatás a so&amp;r végéig</translation>
     </message>
     <message>
         <source>Run to Cursor</source>
-        <translation type="unfinished"></translation>
+        <translation>Futtatás a kurzorig</translation>
     </message>
     <message>
         <source>Follow</source>
-        <translation type="unfinished"></translation>
+        <translation>Követés</translation>
     </message>
     <message>
         <source>Back</source>
-        <translation type="unfinished"></translation>
+        <translation>Vissza</translation>
     </message>
     <message>
         <source>Forward</source>
-        <translation type="unfinished"></translation>
+        <translation>Előre</translation>
     </message>
     <message>
         <source>Sourc&amp;e</source>
-        <translation type="unfinished"></translation>
+        <translation>F&amp;orrás</translation>
     </message>
     <message>
         <source>Step &amp;Into</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Belépés</translation>
     </message>
     <message>
         <source>&amp;Reverse Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>Folytatás &amp;visszafelé</translation>
     </message>
     <message>
         <source>Open Source &amp;File...</source>
-        <translation type="unfinished"></translation>
+        <translation>Forrásfájl &amp;megnyitása…</translation>
     </message>
     <message>
         <source>Load Source &amp;Map...</source>
-        <translation type="unfinished"></translation>
+        <translation>Fo&amp;rrástérkép betöltése…</translation>
     </message>
     <message>
         <source>Load &amp;Symbols (Memory.txt)...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Szimbólumok betöltése (Memory.txt)…</translation>
     </message>
     <message>
         <source>&amp;Trace</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Nyomkövetés</translation>
     </message>
     <message>
         <source>&amp;Enable Trace</source>
-        <translation type="unfinished"></translation>
+        <translation>Nyomkövetés &amp;bekapcsolása</translation>
     </message>
     <message>
         <source>&amp;Clear Trace</source>
-        <translation type="unfinished"></translation>
+        <translation>Nyomkövetés &amp;törlése</translation>
     </message>
     <message>
         <source>E&amp;xport Trace...</source>
-        <translation type="unfinished"></translation>
+        <translation>Nyomkövetés &amp;exportálása…</translation>
     </message>
     <message>
         <source>Co&amp;verage</source>
-        <translation type="unfinished"></translation>
+        <translation>Lefe&amp;dettség</translation>
     </message>
     <message>
         <source>&amp;Enable Coverage</source>
-        <translation type="unfinished"></translation>
+        <translation>Lefedettség &amp;bekapcsolása</translation>
     </message>
     <message>
         <source>&amp;Clear Coverage</source>
-        <translation type="unfinished"></translation>
+        <translation>Lefedettség &amp;törlése</translation>
     </message>
     <message>
         <source>Physical &amp;Addresses</source>
-        <translation type="unfinished"></translation>
+        <translation>Fizikai &amp;címek</translation>
     </message>
     <message>
         <source>&amp;Rewind</source>
-        <translation type="unfinished">&amp;Visszatekerés</translation>
+        <translation>Visszat&amp;ekerés</translation>
     </message>
     <message>
         <source>&amp;Enable Rewind</source>
-        <translation type="unfinished"></translation>
+        <translation>Visszatekerés &amp;bekapcsolása</translation>
     </message>
     <message>
         <source>Rewind &amp;Buffer Size...</source>
-        <translation type="unfinished"></translation>
+        <translation>Visszatekerési &amp;puffer mérete…</translation>
     </message>
     <message>
         <source>&amp;Go</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Ugrás</translation>
     </message>
     <message>
         <source>&amp;Symbols</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Szimbólumok</translation>
     </message>
     <message>
         <source>&amp;Script</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Szkript</translation>
     </message>
     <message>
         <source>&amp;Load Script...</source>
-        <translation type="unfinished"></translation>
+        <translation>Szkript &amp;betöltése…</translation>
     </message>
     <message>
         <source>&amp;Reload Scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>Szkriptek ú&amp;jratöltése</translation>
     </message>
     <message>
         <source>&amp;Unload Scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>Szkriptek &amp;eltávolítása</translation>
     </message>
     <message>
         <source>Re&amp;cord Script...</source>
-        <translation type="unfinished"></translation>
+        <translation>Szkript &amp;felvétele…</translation>
     </message>
     <message>
         <source>Capture &amp;Screen</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Képernyő rögzítése</translation>
     </message>
     <message>
         <source>S&amp;top Recording</source>
-        <translation type="unfinished"></translation>
+        <translation>Felvétel &amp;leállítása</translation>
     </message>
     <message>
         <source>Script Key %1</source>
-        <translation type="unfinished"></translation>
+        <translation>%1. szkriptbillentyű</translation>
     </message>
     <message>
         <source>&amp;Map</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Térkép</translation>
     </message>
     <message>
         <source>&amp;Load MAP File</source>
-        <translation type="unfinished"></translation>
+        <translation>MAP-fájl &amp;betöltése</translation>
     </message>
     <message>
         <source>&amp;Z88DK Format...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Z88DK formátum…</translation>
     </message>
     <message>
         <source>&amp;Simple Format (48K ROM)...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Egyszerű formátum (48K ROM)…</translation>
     </message>
     <message>
         <source>s&amp;jasmplus Format (--sym, --exp)...</source>
-        <translation type="unfinished"></translation>
+        <translation>s&amp;jasmplus formátum (--sym, --exp)…</translation>
     </message>
     <message>
         <source>&amp;Open Annotations...</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjegyzések &amp;megnyitása…</translation>
     </message>
     <message>
         <source>&amp;Save Annotations</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjegyzések menté&amp;se</translation>
     </message>
     <message>
         <source>Save Annotations &amp;As...</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjegyzések mentése más&amp;ként…</translation>
     </message>
     <message>
         <source>&amp;Import</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Importálás</translation>
     </message>
     <message>
         <source>&amp;skoolkit Control Files...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;skoolkit vezérlőfájlok…</translation>
     </message>
     <message>
         <source>&amp;Ghidra Symbols...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Ghidra szimbólumok…</translation>
     </message>
     <message>
         <source>&amp;Export</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Exportálás</translation>
     </message>
     <message>
         <source>&amp;Breakpoints</source>
-        <translation type="unfinished"></translation>
+        <translation>Tö&amp;réspontok</translation>
     </message>
     <message>
         <source>Add &amp;Execute Breakpoint...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Végrehajtási töréspont hozzáadása…</translation>
     </message>
     <message>
         <source>Add &amp;Read Breakpoint...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Olvasási töréspont hozzáadása…</translation>
     </message>
     <message>
         <source>Add &amp;Write Breakpoint...</source>
-        <translation type="unfinished"></translation>
+        <translation>Í&amp;rási töréspont hozzáadása…</translation>
     </message>
     <message>
         <source>Add Read/Write &amp;Breakpoint...</source>
-        <translation type="unfinished"></translation>
+        <translation>Olvasási/írási &amp;töréspont hozzáadása…</translation>
     </message>
     <message>
         <source>&amp;Clear All Breakpoints</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Minden töréspont törlése</translation>
     </message>
     <message>
         <source>&amp;Save as Script...</source>
-        <translation type="unfinished"></translation>
+        <translation>Mentés &amp;szkriptként…</translation>
     </message>
     <message>
         <source>&amp;Load from Script...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Betöltés szkriptből…</translation>
     </message>
     <message>
         <source>&amp;Watches</source>
-        <translation type="unfinished"></translation>
+        <translation>Fi&amp;gyelők</translation>
     </message>
     <message>
         <source>&amp;Add Watch...</source>
-        <translation type="unfinished"></translation>
+        <translation>Figyelő &amp;hozzáadása…</translation>
     </message>
     <message>
         <source>Wi&amp;ndow</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Ablak</translation>
     </message>
     <message>
         <source>&amp;Attach to Emulator Window</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Csatolás az emulátor ablakához</translation>
     </message>
     <message>
         <source>Unavailable: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem érhető el: %1</translation>
     </message>
     <message>
         <source>Export Trace Log</source>
-        <translation type="unfinished"></translation>
+        <translation>Nyomkövetési napló exportálása</translation>
     </message>
     <message>
         <source>Text Files (*.txt);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Szövegfájlok (*.txt);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Export Failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Sikertelen exportálás</translation>
     </message>
     <message>
         <source>Could not write trace log to:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>A nyomkövetési naplót nem sikerült ide írni:
+%1</translation>
     </message>
     <message>
         <source>Frame %1 / %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Képkocka: %1 / %2</translation>
     </message>
     <message>
         <source>⏮ Rewound: frame %1 of %2  (%3 / Continue to resume)</source>
-        <translation type="unfinished"></translation>
+        <translation>⏮ Visszatekerve: %1. képkocka / %2  (folytatás: %3 vagy Folytatás)</translation>
     </message>
     <message>
         <source>⏮ Rewind: %1 frames / %2 MB</source>
-        <translation type="unfinished"></translation>
+        <translation>⏮ Visszatekerés: %1 képkocka / %2 MB</translation>
     </message>
     <message>
         <source>Rewind Buffer Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Visszatekerési puffer mérete</translation>
     </message>
     <message>
         <source> frames</source>
-        <translation type="unfinished"></translation>
+        <translation> képkocka</translation>
     </message>
     <message>
         <source>~%1 MB at %2 frames</source>
-        <translation type="unfinished"></translation>
+        <translation>kb. %1 MB %2 képkockánál</translation>
     </message>
     <message>
         <source>Rewind is currently disabled. Enter frame count to enable.</source>
-        <translation type="unfinished"></translation>
+        <translation>A visszatekerés most ki van kapcsolva. Adja meg a képkockák számát a bekapcsolásához.</translation>
     </message>
     <message>
         <source>Buffer size:</source>
-        <translation type="unfinished"></translation>
+        <translation>Puffer mérete:</translation>
     </message>
     <message>
         <source>Note: resizing clears all existing snapshots.</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjegyzés: az átméretezés törli az összes meglévő pillanatképet.</translation>
     </message>
     <message>
         <source>Attachment stopped: the window manager ignored the last %1 move requests. Re-enable to try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>A csatolás leállt: az ablakkezelő figyelmen kívül hagyta az utolsó %1 mozgatási kérést. Kapcsolja be újra, ha újra próbálná.</translation>
     </message>
     <message>
         <source>Debugger window attachment stopped: the window manager ignored the move requests. Re-enable it from the Window menu to retry.</source>
-        <translation type="unfinished"></translation>
+        <translation>A hibakereső ablakának csatolása leállt: az ablakkezelő figyelmen kívül hagyta a mozgatási kéréseket. Az Ablak menüből kapcsolhatja be újra.</translation>
     </message>
     <message>
         <source>Debugger window attached to the emulator window</source>
-        <translation type="unfinished"></translation>
+        <translation>A hibakereső ablaka az emulátor ablakához csatolva</translation>
     </message>
     <message>
         <source>Debugger window detached (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>A hibakereső ablaka leválasztva (%1)</translation>
     </message>
     <message>
         <source>Video</source>
-        <translation type="unfinished"></translation>
+        <translation>Videó</translation>
     </message>
     <message>
         <source>Sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>Sprite-ok</translation>
     </message>
     <message>
         <source>Copper</source>
-        <translation type="unfinished"></translation>
+        <translation>Copper</translation>
     </message>
     <message>
         <source>NextREG</source>
-        <translation type="unfinished"></translation>
+        <translation>NextREG</translation>
     </message>
     <message>
         <source>Audio</source>
-        <translation type="unfinished">Hang</translation>
+        <translation>Hang</translation>
     </message>
     <message>
         <source>Script</source>
-        <translation type="unfinished"></translation>
+        <translation>Szkript</translation>
     </message>
     <message>
         <source>Source</source>
-        <translation type="unfinished"></translation>
+        <translation>Forrás</translation>
     </message>
     <message>
         <source>Symbols</source>
-        <translation type="unfinished"></translation>
+        <translation>Szimbólumok</translation>
     </message>
     <message>
         <source>CPU Registers</source>
-        <translation type="unfinished"></translation>
+        <translation>CPU-regiszterek</translation>
     </message>
     <message>
         <source>MMU</source>
-        <translation type="unfinished"></translation>
+        <translation>MMU</translation>
     </message>
     <message>
         <source>Disassembly</source>
-        <translation type="unfinished"></translation>
+        <translation>Visszafordítás</translation>
     </message>
     <message>
         <source>Stack</source>
-        <translation type="unfinished"></translation>
+        <translation>Verem</translation>
     </message>
     <message>
         <source>Call Stack</source>
-        <translation type="unfinished"></translation>
+        <translation>Hívási verem</translation>
     </message>
     <message>
         <source>Memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Memória</translation>
     </message>
     <message>
         <source>Watches</source>
-        <translation type="unfinished"></translation>
+        <translation>Figyelők</translation>
     </message>
     <message>
         <source>Variables</source>
-        <translation type="unfinished"></translation>
+        <translation>Változók</translation>
     </message>
     <message>
         <source>Breakpoints</source>
-        <translation type="unfinished"></translation>
+        <translation>Töréspontok</translation>
     </message>
     <message>
         <source>Address, symbol or file:line:</source>
-        <translation type="unfinished"></translation>
+        <translation>Cím, szimbólum vagy fájl:sor:</translation>
     </message>
     <message>
         <source>Address or symbol:</source>
-        <translation type="unfinished"></translation>
+        <translation>Cím vagy szimbólum:</translation>
     </message>
     <message>
         <source>Not an address, symbol or source line: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem cím, szimbólum vagy forrássor: %1</translation>
     </message>
     <message>
         <source>Not an address or symbol: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add %1 Breakpoint</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem cím vagy szimbólum: %1</translation>
     </message>
     <message>
         <source>Add Execute Breakpoint</source>
-        <translation type="unfinished"></translation>
+        <translation>Végrehajtási töréspont hozzáadása</translation>
     </message>
     <message>
         <source>Run to Next &amp;Interrupt</source>
-        <translation type="unfinished"></translation>
+        <translation>Futtatás a következő &amp;megszakításig</translation>
     </message>
     <message>
         <source>Graphics</source>
-        <translation type="unfinished"></translation>
+        <translation>Grafika</translation>
+    </message>
+    <message>
+        <source>Add Read Breakpoint</source>
+        <translation>Olvasási töréspont hozzáadása</translation>
+    </message>
+    <message>
+        <source>Add Write Breakpoint</source>
+        <translation>Írási töréspont hozzáadása</translation>
+    </message>
+    <message>
+        <source>Add Read/Write Breakpoint</source>
+        <translation>Olvasási/írási töréspont hozzáadása</translation>
+    </message>
+    <message>
+        <source>Add Data Breakpoint</source>
+        <translation>Adattöréspont hozzáadása</translation>
     </message>
 </context>
 <context>
     <name>DisasmPanel</name>
     <message>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Másolás</translation>
     </message>
     <message>
         <source>Copy the selected lines as assembly</source>
-        <translation type="unfinished"></translation>
+        <translation>A kijelölt sorok másolása assemblyként</translation>
     </message>
     <message>
         <source>Copy with Addresses</source>
-        <translation type="unfinished"></translation>
+        <translation>Másolás címekkel</translation>
     </message>
     <message>
         <source>Copy the selected lines with their addresses and opcode bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>A kijelölt sorok másolása a címükkel és a műveleti kód bájtjaival</translation>
     </message>
     <message>
         <source>Select All</source>
-        <translation type="unfinished"></translation>
+        <translation>Az összes kijelölése</translation>
     </message>
     <message>
         <source>%1 in Memory</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 a memóriában</translation>
     </message>
     <message>
         <source>no source line at $%1</source>
-        <translation type="unfinished"></translation>
+        <translation>nincs forrássor itt: $%1</translation>
+    </message>
+    <message>
+        <source>Address:</source>
+        <translation>Cím:</translation>
+    </message>
+    <message>
+        <source>Address...</source>
+        <translation>Cím…</translation>
+    </message>
+    <message>
+        <source>Enter an address (e.g. 4000) or a symbol and press Enter</source>
+        <translation>Írjon be egy címet (pl. 4000) vagy egy szimbólumot, és nyomja meg az Entert</translation>
+    </message>
+    <message>
+        <source>Go to PC</source>
+        <translation>Ugrás a PC-re</translation>
+    </message>
+    <message>
+        <source>Mem</source>
+        <translation>Mem</translation>
+    </message>
+    <message>
+        <source>Addr</source>
+        <translation>Cím</translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation>Címke</translation>
+    </message>
+    <message>
+        <source>Toggle Breakpoint</source>
+        <translation>Töréspont be/ki</translation>
+    </message>
+    <message>
+        <source>Run to Here</source>
+        <translation>Futtatás idáig</translation>
+    </message>
+    <message>
+        <source>Follow</source>
+        <translation>Követés</translation>
+    </message>
+    <message>
+        <source>Go to Address...</source>
+        <translation>Ugrás címre…</translation>
+    </message>
+    <message>
+        <source>Show in Source</source>
+        <translation>Megjelenítés a forrásban</translation>
     </message>
 </context>
 <context>
@@ -877,43 +1093,99 @@
     <name>GraphicsPanel</name>
     <message>
         <source>8-bit</source>
-        <translation type="unfinished"></translation>
+        <translation>8 bites</translation>
     </message>
     <message>
         <source>4-bit</source>
-        <translation type="unfinished"></translation>
+        <translation>4 bites</translation>
     </message>
     <message>
         <source>Palette:</source>
-        <translation type="unfinished"></translation>
+        <translation>Paletta:</translation>
     </message>
     <message>
         <source>Offset:</source>
-        <translation type="unfinished"></translation>
+        <translation>Eltolás:</translation>
     </message>
     <message>
         <source>Click a pattern.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kattintson egy mintára.</translation>
     </message>
     <message>
         <source>Patterns</source>
-        <translation type="unfinished"></translation>
+        <translation>Minták</translation>
     </message>
     <message>
         <source>Click a tile.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kattintson egy csempére.</translation>
     </message>
     <message>
         <source>Tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Csempék</translation>
     </message>
     <message>
         <source>Stored priority bit (bit 15 of the palette word, NR 0x44 bit 7). Only Layer 2 palettes use it.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tárolt prioritásbit (a palettaszó 15. bitje, NR 0x44 7. bit). Csak a Layer 2 palettái használják.</translation>
     </message>
     <message>
         <source>Palettes</source>
-        <translation type="unfinished"></translation>
+        <translation>Paletták</translation>
+    </message>
+    <message>
+        <source>Active</source>
+        <translation>Aktív</translation>
+    </message>
+    <message>
+        <source>First</source>
+        <translation>Első</translation>
+    </message>
+    <message>
+        <source>Second</source>
+        <translation>Második</translation>
+    </message>
+    <message>
+        <source>ULA first</source>
+        <translation>ULA, első</translation>
+    </message>
+    <message>
+        <source>ULA second</source>
+        <translation>ULA, második</translation>
+    </message>
+    <message>
+        <source>Layer 2 first</source>
+        <translation>Layer 2, első</translation>
+    </message>
+    <message>
+        <source>Layer 2 second</source>
+        <translation>Layer 2, második</translation>
+    </message>
+    <message>
+        <source>Sprites first</source>
+        <translation>Sprite-ok, első</translation>
+    </message>
+    <message>
+        <source>Sprites second</source>
+        <translation>Sprite-ok, második</translation>
+    </message>
+    <message>
+        <source>Tilemap first</source>
+        <translation>Tilemap, első</translation>
+    </message>
+    <message>
+        <source>Tilemap second</source>
+        <translation>Tilemap, második</translation>
+    </message>
+    <message>
+        <source>Colour</source>
+        <translation>Szín</translation>
+    </message>
+    <message>
+        <source>Pri</source>
+        <translation>Pri</translation>
+    </message>
+    <message>
+        <source> (active)</source>
+        <translation> (aktív)</translation>
     </message>
 </context>
 <context>
@@ -1903,223 +2175,305 @@ Restart now?
     <name>MemoryPanel</name>
     <message>
         <source>Page...</source>
-        <translation type="unfinished"></translation>
+        <translation>Lap…</translation>
     </message>
     <message>
         <source>Coverage:</source>
-        <translation type="unfinished"></translation>
+        <translation>Lefedettség:</translation>
     </message>
     <message>
         <source>Physical Page</source>
-        <translation type="unfinished"></translation>
+        <translation>Fizikai lap</translation>
     </message>
     <message>
         <source>NR page number (hex, 00-DF):</source>
-        <translation type="unfinished"></translation>
+        <translation>NR lapszám (hexa, 00-DF):</translation>
     </message>
     <message>
         <source>Find...</source>
-        <translation type="unfinished"></translation>
+        <translation>Keresés…</translation>
     </message>
     <message>
         <source>Find Next</source>
-        <translation type="unfinished"></translation>
+        <translation>Következő találat</translation>
     </message>
     <message>
         <source>Save Block...</source>
-        <translation type="unfinished"></translation>
+        <translation>Blokk mentése…</translation>
     </message>
     <message>
         <source>Load Block...</source>
-        <translation type="unfinished"></translation>
+        <translation>Blokk betöltése…</translation>
     </message>
     <message>
         <source>Fill Block...</source>
-        <translation type="unfinished"></translation>
+        <translation>Blokk kitöltése…</translation>
     </message>
     <message>
         <source> refused: not an address: &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation> elutasítva: nem cím: „%1”</translation>
     </message>
     <message>
         <source> refused: the start is outside the 8K page</source>
-        <translation type="unfinished"></translation>
+        <translation> elutasítva: a kezdőcím a 8K-s lapon kívül van</translation>
     </message>
     <message>
         <source> refused: no debugger</source>
-        <translation type="unfinished"></translation>
+        <translation> elutasítva: nincs hibakereső</translation>
     </message>
     <message>
         <source> refused: </source>
-        <translation type="unfinished"></translation>
+        <translation> elutasítva: </translation>
     </message>
     <message>
         <source> refused: memory cannot be changed while an RZX recording or playback is running (stop it first)</source>
-        <translation type="unfinished"></translation>
+        <translation> elutasítva: RZX-felvétel vagy -lejátszás közben a memória nem módosítható (előbb állítsa le)</translation>
     </message>
     <message>
         <source>ROM is read-only</source>
-        <translation type="unfinished"></translation>
+        <translation>A ROM csak olvasható</translation>
     </message>
     <message>
         <source>Find: could not read %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Keresés: nem sikerült olvasni: %1</translation>
     </message>
     <message>
         <source>Not found in %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem található itt: %1</translation>
     </message>
     <message>
         <source>Found at %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Találat itt: %1</translation>
     </message>
     <message>
         <source> (wrapped)</source>
-        <translation type="unfinished"></translation>
+        <translation> (körbeért)</translation>
     </message>
     <message>
         <source>; not mapped in any slot, so the Disassembly does not move</source>
-        <translation type="unfinished"></translation>
+        <translation>; egyik slotba sincs belapozva, ezért a visszafordítás nem ugrik oda</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Mentés</translation>
     </message>
     <message>
         <source>Save failed: could not read the memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Sikertelen mentés: a memóriát nem sikerült olvasni</translation>
     </message>
     <message>
         <source>Save failed: %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Sikertelen mentés: %1: %2</translation>
     </message>
     <message>
         <source>Saved %1 bytes from %2 to %3</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 bájt mentve innen: %2, ide: %3</translation>
     </message>
     <message>
         <source>Load</source>
-        <translation type="unfinished">Betöltés</translation>
+        <translation>Betöltés</translation>
     </message>
     <message>
         <source>Load failed: %1: not a file</source>
-        <translation type="unfinished"></translation>
+        <translation>Sikertelen betöltés: %1: nem fájl</translation>
     </message>
     <message>
         <source>Load failed: %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Sikertelen betöltés: %1: %2</translation>
     </message>
     <message>
         <source>Load refused: %1 is empty</source>
-        <translation type="unfinished"></translation>
+        <translation>Betöltés elutasítva: %1 üres</translation>
     </message>
     <message>
         <source>Loaded %1 bytes at %2 from %3</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 bájt betöltve ide: %2, innen: %3</translation>
     </message>
     <message>
         <source>the file holds only %1 bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>a fájl csak %1 bájtos</translation>
     </message>
     <message>
         <source>the rest would run past $FFFF</source>
-        <translation type="unfinished"></translation>
+        <translation>a maradék túlfutna a $FFFF-en</translation>
     </message>
     <message>
         <source>the rest would run past page DF</source>
-        <translation type="unfinished"></translation>
+        <translation>a maradék túlfutna a DF lapon</translation>
     </message>
     <message>
         <source>the rest is ROM, which is read-only</source>
-        <translation type="unfinished"></translation>
+        <translation>a maradék ROM, ami csak olvasható</translation>
     </message>
     <message>
         <source>Loaded %1 of %2 bytes at %3 from %4: %5</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 / %2 bájt betöltve ide: %3, innen: %4: %5</translation>
     </message>
     <message>
         <source>Fill</source>
-        <translation type="unfinished"></translation>
+        <translation>Kitöltés</translation>
     </message>
     <message>
         <source>Filled %1 bytes at %2 with %3</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 bájt kitöltve itt: %2, ezzel: %3</translation>
     </message>
     <message>
         <source>Filled %1 of %2 bytes at %3 with %4: the rest is ROM, which is read-only</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 / %2 bájt kitöltve itt: %3, ezzel: %4: a maradék ROM, ami csak olvasható</translation>
     </message>
     <message>
         <source>Find</source>
-        <translation type="unfinished"></translation>
+        <translation>Keresés</translation>
     </message>
     <message>
         <source>Pattern:</source>
-        <translation type="unfinished"></translation>
+        <translation>Minta:</translation>
     </message>
     <message>
         <source>Mask (optional):</source>
-        <translation type="unfinished"></translation>
+        <translation>Maszk (nem kötelező):</translation>
     </message>
     <message>
         <source>Text</source>
-        <translation type="unfinished"></translation>
+        <translation>Szöveg</translation>
     </message>
     <message>
         <source>Match case</source>
-        <translation type="unfinished"></translation>
+        <translation>Kis- és nagybetű megkülönböztetése</translation>
     </message>
     <message>
         <source>Find: </source>
-        <translation type="unfinished"></translation>
+        <translation>Keresés: </translation>
     </message>
     <message>
         <source>Save Block</source>
-        <translation type="unfinished"></translation>
+        <translation>Blokk mentése</translation>
     </message>
     <message>
         <source>Start:</source>
-        <translation type="unfinished"></translation>
+        <translation>Kezdőcím:</translation>
     </message>
     <message>
         <source>Length (hex):</source>
-        <translation type="unfinished"></translation>
+        <translation>Hossz (hexa):</translation>
     </message>
     <message>
         <source>File:</source>
-        <translation type="unfinished"></translation>
+        <translation>Fájl:</translation>
     </message>
     <message>
         <source>Browse...</source>
-        <translation type="unfinished">Tallózás…</translation>
+        <translation>Tallózás…</translation>
     </message>
     <message>
         <source>Save refused: </source>
-        <translation type="unfinished"></translation>
+        <translation>Mentés elutasítva: </translation>
     </message>
     <message>
         <source>Load Block</source>
-        <translation type="unfinished"></translation>
+        <translation>Blokk betöltése</translation>
     </message>
     <message>
         <source>Length (hex, blank = whole file):</source>
-        <translation type="unfinished"></translation>
+        <translation>Hossz (hexa, üres = az egész fájl):</translation>
     </message>
     <message>
         <source>Load refused: </source>
-        <translation type="unfinished"></translation>
+        <translation>Betöltés elutasítva: </translation>
     </message>
     <message>
         <source>Fill Block</source>
-        <translation type="unfinished"></translation>
+        <translation>Blokk kitöltése</translation>
     </message>
     <message>
         <source>Value (hex bytes):</source>
-        <translation type="unfinished"></translation>
+        <translation>Érték (hexa bájtok):</translation>
     </message>
     <message>
         <source>Fill refused: </source>
-        <translation type="unfinished"></translation>
+        <translation>Kitöltés elutasítva: </translation>
+    </message>
+    <message>
+        <source>Addr:</source>
+        <translation>Cím:</translation>
+    </message>
+    <message>
+        <source>CPU View</source>
+        <translation>CPU-nézet</translation>
+    </message>
+    <message>
+        <source>Slot %1 (page --)</source>
+        <translation>%1. slot (lap: --)</translation>
+    </message>
+    <message>
+        <source>Page %1</source>
+        <translation>%1. lap</translation>
+    </message>
+    <message>
+        <source>Slot %1 (%2)</source>
+        <translation>%1. slot (%2)</translation>
+    </message>
+</context>
+<context>
+    <name>MmuPanel</name>
+    <message>
+        <source>Next MMU Mappings</source>
+        <translation>Next MMU-lapozás</translation>
+    </message>
+    <message>
+        <source>Slot</source>
+        <translation>Slot</translation>
+    </message>
+    <message>
+        <source>Page</source>
+        <translation>Lap</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Típus</translation>
+    </message>
+    <message>
+        <source>Memory</source>
+        <translation>Memória</translation>
+    </message>
+    <message>
+        <source>Bank:</source>
+        <translation>Bank:</translation>
+    </message>
+    <message>
+        <source>Lock:</source>
+        <translation>Zár:</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <translation>Igen</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nem</translation>
+    </message>
+</context>
+<context>
+    <name>OperandMenu</name>
+    <message>
+        <source>Watch &apos;%1&apos; ($%2)</source>
+        <translation>„%1” figyelése ($%2)</translation>
+    </message>
+    <message>
+        <source>Watch $%1</source>
+        <translation>$%1 figyelése</translation>
+    </message>
+    <message>
+        <source>Watch (%1) = $%2</source>
+        <translation>(%1) = $%2 figyelése</translation>
+    </message>
+    <message>
+        <source>Break on Read %1</source>
+        <translation>Megállás olvasáskor: %1</translation>
+    </message>
+    <message>
+        <source>Break on Write %1</source>
+        <translation>Megállás íráskor: %1</translation>
     </message>
 </context>
 <context>
@@ -2684,89 +3038,91 @@ Csak a módosított hozzárendelések kerülnek a beállításfájlba.</translat
     </message>
     <message>
         <source>Rename Label</source>
-        <translation type="unfinished"></translation>
+        <translation>Címke átnevezése</translation>
     </message>
     <message>
         <source>Add Label</source>
-        <translation type="unfinished"></translation>
+        <translation>Címke hozzáadása</translation>
     </message>
     <message>
         <source>Label for %1:</source>
-        <translation type="unfinished"></translation>
+        <translation>Címke ehhez: %1:</translation>
     </message>
     <message>
         <source>Label</source>
-        <translation type="unfinished"></translation>
+        <translation>Címke</translation>
     </message>
     <message>
         <source>Add Comment</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjegyzés hozzáadása</translation>
     </message>
     <message>
         <source>Edit Comment</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjegyzés szerkesztése</translation>
     </message>
     <message>
         <source>Comment for %1 (empty text removes it):</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjegyzés ehhez: %1 (üres szöveggel törlődik):</translation>
     </message>
     <message>
         <source>Comment</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjegyzés</translation>
     </message>
     <message>
         <source>Rename Label...</source>
-        <translation type="unfinished"></translation>
+        <translation>Címke átnevezése…</translation>
     </message>
     <message>
         <source>Add Label...</source>
-        <translation type="unfinished"></translation>
+        <translation>Címke hozzáadása…</translation>
     </message>
     <message>
         <source>Edit Comment...</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjegyzés szerkesztése…</translation>
     </message>
     <message>
         <source>Add Comment...</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjegyzés hozzáadása…</translation>
     </message>
     <message>
         <source>this label comes from the loaded symbols: rename it to override it</source>
-        <translation type="unfinished"></translation>
+        <translation>ez a címke a betöltött szimbólumokból jön: átnevezéssel felülírható</translation>
     </message>
     <message>
         <source>this label comes from %1: rename it to override it</source>
-        <translation type="unfinished"></translation>
+        <translation>ez a címke innen jön: %1; átnevezéssel felülírható</translation>
     </message>
     <message>
         <source>Remove Label</source>
-        <translation type="unfinished"></translation>
+        <translation>Címke törlése</translation>
     </message>
     <message>
         <source>no label here</source>
-        <translation type="unfinished"></translation>
+        <translation>itt nincs címke</translation>
     </message>
     <message>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Hibakeresés</translation>
     </message>
     <message>
         <source>%1 failed: snapshot restore desynced at &apos;%2&apos; - machine state is corrupt; reset to recover</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 sikertelen: a pillanatkép visszaállítása elcsúszott itt: „%2” – a gép állapota sérült; újraindítással állítható helyre</translation>
     </message>
     <message>
         <source>Rewind Failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Sikertelen visszatekerés</translation>
     </message>
     <message>
         <source>%1 could not restore the machine snapshot (subsystem &apos;%2&apos; desynced).
 
 The machine is now in a corrupt, partially-restored state and has been paused. Resuming may crash or behave unpredictably - reset the machine (Machine ▸ Power Reset) to recover cleanly.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: a gép pillanatképét nem sikerült visszaállítani (a(z) „%2” alrendszer elcsúszott).
+
+A gép most sérült, részben visszaállított állapotban van, és szünetel. A folytatás összeomlást vagy kiszámíthatatlan működést okozhat – a tiszta helyreállításhoz indítsa újra a gépet (Gép ▸ Hidegindítás).</translation>
     </message>
     <message>
         <source>Machine State Corrupt</source>
-        <translation type="unfinished"></translation>
+        <translation>Sérült gépállapot</translation>
     </message>
     <message>
         <source>The machine state is corrupt after a failed rewind/step-back (subsystem &apos;%1&apos; did not restore cleanly).
@@ -2774,284 +3130,319 @@ The machine is now in a corrupt, partially-restored state and has been paused. R
 Resuming or stepping may crash or behave unpredictably. Reset the machine (Machine ▸ Power Reset) to recover cleanly.
 
 Proceed anyway?</source>
-        <translation type="unfinished"></translation>
+        <translation>A sikertelen visszatekerés vagy visszalépés után a gép állapota sérült (a(z) „%1” alrendszer nem állt vissza rendesen).
+
+A folytatás vagy a léptetés összeomlást vagy kiszámíthatatlan működést okozhat. A tiszta helyreállításhoz indítsa újra a gépet (Gép ▸ Hidegindítás).
+
+Mégis folytatja?</translation>
     </message>
     <message>
         <source>Step Back</source>
-        <translation type="unfinished"></translation>
+        <translation>Lépés hátra</translation>
     </message>
     <message>
         <source>Rewind To Frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Visszatekerés a képkockára</translation>
     </message>
     <message>
         <source>Load Z88DK MAP File</source>
-        <translation type="unfinished"></translation>
+        <translation>Z88DK MAP-fájl betöltése</translation>
     </message>
     <message>
         <source>MAP Files (*.map);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>MAP-fájlok (*.map);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>MAP Loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>MAP betöltve</translation>
     </message>
     <message>
         <source>Loaded %1 symbols from:
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 szimbólum betöltve innen:
+%2</translation>
     </message>
     <message>
         <source>Load Failed</source>
-        <translation type="unfinished">Sikertelen betöltés</translation>
+        <translation>Sikertelen betöltés</translation>
     </message>
     <message>
         <source>Could not load MAP file:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>A MAP-fájlt nem sikerült betölteni:
+%1</translation>
     </message>
     <message>
         <source>Load Simple MAP File</source>
-        <translation type="unfinished"></translation>
+        <translation>Egyszerű MAP-fájl betöltése</translation>
     </message>
     <message>
         <source>Load sjasmplus Symbol File</source>
-        <translation type="unfinished"></translation>
+        <translation>sjasmplus szimbólumfájl betöltése</translation>
     </message>
     <message>
         <source>sjasmplus Symbol Files (*.sym *.exp);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>sjasmplus szimbólumfájlok (*.sym *.exp);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Load NextBuild Symbols</source>
-        <translation type="unfinished"></translation>
+        <translation>NextBuild szimbólumok betöltése</translation>
     </message>
     <message>
         <source>NextBuild Memory File (Memory.txt *.Memory.txt);;Text Files (*.txt);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>NextBuild memóriafájl (Memory.txt *.Memory.txt);;Szövegfájlok (*.txt);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Symbols Loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Szimbólumok betöltve</translation>
     </message>
     <message>
         <source>Could not load NextBuild symbols from:
 %1
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>A NextBuild szimbólumokat nem sikerült betölteni innen:
+%1
+
+%2</translation>
     </message>
     <message>
         <source>Save Failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Sikertelen mentés</translation>
     </message>
     <message>
         <source>Could not save the annotations to:
 %1
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>A megjegyzéseket nem sikerült ide menteni:
+%1
+
+%2</translation>
     </message>
     <message>
         <source>Save Annotations</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjegyzések mentése</translation>
     </message>
     <message>
         <source>jnext annotations (*.jdp);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>jnext-megjegyzések (*.jdp);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Could not save the breakpoints to:
 %1
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>A töréspontokat nem sikerült ide menteni:
+%1
+
+%2</translation>
     </message>
     <message>
         <source>Breakpoints Not Saved</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem mentett töréspontok</translation>
     </message>
     <message numerus="yes">
         <source>%n breakpoint(s) have no .jds spelling and were left out of %1:</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n töréspontnak nincs .jds-alakja, ezért kimaradt ebből: %1:</numerusform>
         </translation>
     </message>
     <message>
         <source>Save Breakpoints as Script</source>
-        <translation type="unfinished"></translation>
+        <translation>Töréspontok mentése szkriptként</translation>
     </message>
     <message>
         <source>Debugger scripts (*.jds);;All files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Hibakereső-szkriptek (*.jds);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Could not load breakpoints from:
 %1
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>A töréspontokat nem sikerült betölteni innen:
+%1
+
+%2</translation>
     </message>
     <message>
         <source>Load Breakpoints from Script</source>
-        <translation type="unfinished"></translation>
+        <translation>Töréspontok betöltése szkriptből</translation>
     </message>
     <message>
         <source>Unsaved Annotations</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem mentett megjegyzések</translation>
     </message>
     <message>
         <source>The labels and comments have changed since they were last saved.</source>
-        <translation type="unfinished"></translation>
+        <translation>A címkék és a megjegyzések megváltoztak a legutóbbi mentés óta.</translation>
     </message>
     <message>
         <source>Open Annotations</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjegyzések megnyitása</translation>
     </message>
     <message>
         <source>Open Failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Sikertelen megnyitás</translation>
     </message>
     <message>
         <source>Could not open the annotations:
 %1
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>A megjegyzéseket nem sikerült megnyitni:
+%1
+
+%2</translation>
     </message>
     <message>
         <source>Import skoolkit Control Files</source>
-        <translation type="unfinished"></translation>
+        <translation>skoolkit vezérlőfájlok importálása</translation>
     </message>
     <message>
         <source>Import Ghidra Symbols</source>
-        <translation type="unfinished"></translation>
+        <translation>Ghidra szimbólumok importálása</translation>
     </message>
     <message>
         <source>skoolkit control files (*.ctl);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>skoolkit vezérlőfájlok (*.ctl);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Ghidra symbol files (*.txt);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Ghidra szimbólumfájlok (*.txt);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Import Failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Sikertelen importálás</translation>
     </message>
     <message>
         <source>Nothing was imported:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Semmi nem lett importálva:
+%1</translation>
     </message>
     <message>
         <source>Import Done</source>
-        <translation type="unfinished"></translation>
+        <translation>Importálás kész</translation>
     </message>
     <message>
         <source>imported into the labels and comments (Save Annotations keeps them)</source>
-        <translation type="unfinished"></translation>
+        <translation>importálva a címkék és a megjegyzések közé (a Megjegyzések mentése megőrzi őket)</translation>
     </message>
     <message>
         <source>Export skoolkit Control Files</source>
-        <translation type="unfinished"></translation>
+        <translation>skoolkit vezérlőfájlok exportálása</translation>
     </message>
     <message>
         <source>Export Ghidra Symbols</source>
-        <translation type="unfinished"></translation>
+        <translation>Ghidra szimbólumok exportálása</translation>
     </message>
     <message>
         <source>Export Failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Sikertelen exportálás</translation>
     </message>
     <message>
         <source>Could not export to:
 %1
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült ide exportálni:
+%1
+
+%2</translation>
     </message>
     <message>
         <source>Export Done</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportálás kész</translation>
     </message>
     <message>
         <source>written to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>kiírva ide: %1</translation>
     </message>
     <message>
         <source>Load Source Map</source>
-        <translation type="unfinished"></translation>
+        <translation>Forrástérkép betöltése</translation>
     </message>
     <message>
         <source>Source Maps (*.sld *.sld.txt *.map);;SLD Source Map (*.sld *.sld.txt);;z88dk Map (*.map);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Forrástérképek (*.sld *.sld.txt *.map);;SLD forrástérkép (*.sld *.sld.txt);;z88dk-térkép (*.map);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Source Map Identity Mismatch</source>
-        <translation type="unfinished"></translation>
+        <translation>A forrástérkép nem egyezik</translation>
     </message>
     <message>
         <source>The program in memory no longer matches this source map. This can happen when the program stores variables in its binary address range, but it can also mean the source map belongs to another build.
 
 Load it anyway?</source>
-        <translation type="unfinished"></translation>
+        <translation>A memóriában lévő program már nem egyezik ezzel a forrástérképpel. Ez előfordulhat, ha a program a saját bináris címtartományában tárol változókat, de az is lehet, hogy a forrástérkép egy másik fordításhoz tartozik.
+
+Mégis betölti?</translation>
     </message>
     <message>
         <source>Loaded %1 source traces and %2 labels from:
 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 forráskövetés és %2 címke betöltve innen:
+%3</translation>
     </message>
     <message>
         <source>Loaded %1 source traces from:
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 forráskövetés betöltve innen:
+%2</translation>
     </message>
     <message>
         <source>
 with 1 z88dk listing</source>
-        <translation type="unfinished"></translation>
+        <translation>
+1 z88dk-listával</translation>
     </message>
     <message>
         <source>
 with %1 z88dk listings</source>
-        <translation type="unfinished"></translation>
+        <translation>
+%1 z88dk-listával</translation>
     </message>
     <message>
         <source>Source Map Loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Forrástérkép betöltve</translation>
     </message>
     <message>
         <source>Could not load source map:
 %1
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>A forrástérképet nem sikerült betölteni:
+%1
+
+%2</translation>
     </message>
     <message>
         <source>Source Step Into</source>
-        <translation type="unfinished"></translation>
+        <translation>Belépés a forrásban</translation>
     </message>
     <message>
         <source>Source Step Over</source>
-        <translation type="unfinished"></translation>
+        <translation>Átlépés a forrásban</translation>
     </message>
     <message>
         <source>Source Step Out</source>
-        <translation type="unfinished"></translation>
+        <translation>Kilépés a forrásban</translation>
     </message>
     <message>
         <source>Source Step Back</source>
-        <translation type="unfinished"></translation>
+        <translation>Lépés hátra a forrásban</translation>
     </message>
     <message>
         <source>Reverse Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>Folytatás visszafelé</translation>
     </message>
     <message>
         <source>Beam position on the frame.  Light = paper (256x192), mid = border, dark = blanking.
 Updated only while the emulator is paused.</source>
-        <translation type="unfinished"></translation>
+        <translation>A sugár helye a képkockán.  Világos = papír (256x192), közepes = keret, sötét = kioltás.
+Csak akkor frissül, amikor az emulátor szünetel.</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -3066,189 +3457,195 @@ Updated only while the emulator is paused.</source>
     <name>ScriptPanel</name>
     <message>
         <source>Load...</source>
-        <translation type="unfinished"></translation>
+        <translation>Betöltés…</translation>
     </message>
     <message>
         <source>Reload</source>
-        <translation type="unfinished"></translation>
+        <translation>Újratöltés</translation>
     </message>
     <message>
         <source>Unload All</source>
-        <translation type="unfinished"></translation>
+        <translation>Összes eltávolítása</translation>
     </message>
     <message>
         <source>Record...</source>
-        <translation type="unfinished"></translation>
+        <translation>Felvétel…</translation>
     </message>
     <message>
         <source>Capture</source>
-        <translation type="unfinished"></translation>
+        <translation>Rögzítés</translation>
     </message>
     <message>
         <source>Stop Recording</source>
-        <translation type="unfinished"></translation>
+        <translation>Felvétel leállítása</translation>
     </message>
     <message>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>Fájl</translation>
     </message>
     <message>
         <source>Rule</source>
-        <translation type="unfinished"></translation>
+        <translation>Szabály</translation>
     </message>
     <message>
         <source>Event</source>
-        <translation type="unfinished"></translation>
+        <translation>Esemény</translation>
     </message>
     <message>
         <source>State</source>
-        <translation type="unfinished"></translation>
+        <translation>Állapot</translation>
     </message>
     <message>
         <source>Hits</source>
-        <translation type="unfinished"></translation>
+        <translation>Találat</translation>
     </message>
     <message>
         <source>scripting is not available in this window</source>
-        <translation type="unfinished"></translation>
+        <translation>ebben az ablakban nincs szkriptkezelés</translation>
     </message>
     <message>
         <source>Load Debugger Script</source>
-        <translation type="unfinished"></translation>
+        <translation>Hibakereső-szkript betöltése</translation>
     </message>
     <message>
         <source>Debugger scripts (*.jds);;All files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Hibakereső-szkriptek (*.jds);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Script Not Loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>A szkript nincs betöltve</translation>
     </message>
     <message>
         <source>%1 was not loaded:
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 nem lett betöltve:
+
+%2</translation>
     </message>
     <message>
         <source>Not every script reloaded:
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem minden szkript töltődött újra:
+
+%1</translation>
     </message>
     <message>
         <source>the recording did not start</source>
-        <translation type="unfinished"></translation>
+        <translation>a felvétel nem indult el</translation>
     </message>
     <message>
         <source>Record Script</source>
-        <translation type="unfinished"></translation>
+        <translation>Szkript felvétele</translation>
     </message>
     <message>
         <source>Not Recording</source>
-        <translation type="unfinished"></translation>
+        <translation>Nincs felvétel</translation>
     </message>
     <message>
         <source>Could not record to %1:
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült ide felvenni: %1:
+
+%2</translation>
     </message>
     <message>
         <source>Recording Not Written</source>
-        <translation type="unfinished"></translation>
+        <translation>A felvétel nincs kiírva</translation>
     </message>
     <message>
         <source>%1 could not be written; see the script log.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 nem írható ki; lásd a szkriptnaplót.</translation>
     </message>
     <message>
         <source>error (disabled)</source>
-        <translation type="unfinished"></translation>
+        <translation>hiba (kikapcsolva)</translation>
     </message>
     <message>
         <source>disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>kikapcsolva</translation>
     </message>
     <message>
         <source>spent (once)</source>
-        <translation type="unfinished"></translation>
+        <translation>lefutott (egyszeri)</translation>
     </message>
     <message>
         <source>armed</source>
-        <translation type="unfinished"></translation>
+        <translation>élesítve</translation>
     </message>
     <message>
         <source>, verdict not reached</source>
-        <translation type="unfinished"></translation>
+        <translation>, az ítélet nem született meg</translation>
     </message>
     <message>
         <source>Scripting is not available.</source>
-        <translation type="unfinished"></translation>
+        <translation>A szkriptkezelés nem érhető el.</translation>
     </message>
     <message>
         <source>No script loaded.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nincs betöltött szkript.</translation>
     </message>
     <message>
         <source>PASS: exit 0</source>
-        <translation type="unfinished"></translation>
+        <translation>PASS: kilépési kód 0</translation>
     </message>
     <message>
         <source>FAIL: exit %1</source>
-        <translation type="unfinished"></translation>
+        <translation>FAIL: kilépési kód %1</translation>
     </message>
     <message>
         <source> (the machine paused; the GUI never exits from a script)</source>
-        <translation type="unfinished"></translation>
+        <translation> (a gép szünetel; a grafikus felület szkriptből soha nem lép ki)</translation>
     </message>
     <message numerus="yes">
         <source>FAIL: %n stop(s), the last: %1</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>FAIL: %n megállás, az utolsó: %1</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>ERROR: %n rule(s) disabled by a run-time error</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>ERROR: %n szabályt kikapcsolt egy futásidejű hiba</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>%n verdict(s) not reached yet</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n ítélet még nem született meg</numerusform>
         </translation>
     </message>
     <message>
         <source>Running: no verdict declared or reached</source>
-        <translation type="unfinished"></translation>
+        <translation>Fut: nincs megadott vagy megszületett ítélet</translation>
     </message>
     <message numerus="yes">
         <source>%n script(s): </source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n szkript: </numerusform>
         </translation>
     </message>
     <message>
         <source>Not recording.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nincs felvétel.</translation>
     </message>
     <message numerus="yes">
         <source>%1: %n input edge(s), </source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%1: %n bemeneti él, </numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>%n capture(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n rögzítés</numerusform>
         </translation>
     </message>
     <message>
         <source>Last recording: %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utolsó felvétel: %1.</translation>
     </message>
 </context>
 <context>
@@ -3274,445 +3671,563 @@ Updated only while the emulator is paused.</source>
     <name>SourcePanel</name>
     <message>
         <source>Breakpoints and line numbers</source>
-        <translation type="unfinished"></translation>
+        <translation>Töréspontok és sorszámok</translation>
     </message>
     <message>
         <source>Source step:</source>
-        <translation type="unfinished"></translation>
+        <translation>Lépés a forrásban:</translation>
     </message>
     <message>
         <source>Into</source>
-        <translation type="unfinished"></translation>
+        <translation>Be</translation>
     </message>
     <message>
         <source>Run to the next source statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Futtatás a következő forrásutasításig</translation>
     </message>
     <message>
         <source>Over</source>
-        <translation type="unfinished"></translation>
+        <translation>Át</translation>
     </message>
     <message>
         <source>Run to the next source statement, not inside a deeper call</source>
-        <translation type="unfinished"></translation>
+        <translation>Futtatás a következő forrásutasításig, de nem egy mélyebb hívásban</translation>
     </message>
     <message>
         <source>Out</source>
-        <translation type="unfinished"></translation>
+        <translation>Ki</translation>
     </message>
     <message>
         <source>Run until a statement in the calling routine</source>
-        <translation type="unfinished"></translation>
+        <translation>Futtatás a hívó rutin egy utasításáig</translation>
     </message>
     <message>
         <source>Back</source>
-        <translation type="unfinished"></translation>
+        <translation>Vissza</translation>
     </message>
     <message>
         <source>Rewind to the previous source statement (needs trace and rewind)</source>
-        <translation type="unfinished"></translation>
+        <translation>Visszatekerés az előző forrásutasításra (nyomkövetés és visszatekerés kell hozzá)</translation>
     </message>
     <message>
         <source>Reverse</source>
-        <translation type="unfinished"></translation>
+        <translation>Visszafelé</translation>
     </message>
     <message>
         <source>Rewind to the previous source breakpoint (needs trace and rewind)</source>
-        <translation type="unfinished"></translation>
+        <translation>Visszatekerés az előző forrástöréspontig (nyomkövetés és visszatekerés kell hozzá)</translation>
     </message>
     <message>
         <source>Load Source Map...</source>
-        <translation type="unfinished"></translation>
+        <translation>Forrástérkép betöltése…</translation>
     </message>
     <message>
         <source>Load a source map: an sjasmplus SLD or a z88dk -debug map</source>
-        <translation type="unfinished"></translation>
+        <translation>Forrástérkép betöltése: sjasmplus SLD vagy z88dk -debug térkép</translation>
     </message>
     <message>
         <source>Load Memory.txt...</source>
-        <translation type="unfinished"></translation>
+        <translation>Memory.txt betöltése…</translation>
     </message>
     <message>
         <source>Load NextBuild / Boriel ZX Basic symbols</source>
-        <translation type="unfinished"></translation>
+        <translation>NextBuild / Boriel ZX Basic szimbólumok betöltése</translation>
     </message>
     <message>
         <source>Locate File...</source>
-        <translation type="unfinished"></translation>
+        <translation>Fájl megkeresése…</translation>
     </message>
     <message>
         <source>Find the source file the map names; its directory is searched from now on</source>
-        <translation type="unfinished"></translation>
+        <translation>A térképben megnevezett forrásfájl megkeresése; mostantól a mappájában is keres</translation>
     </message>
     <message>
         <source>Go to PC Line</source>
-        <translation type="unfinished"></translation>
+        <translation>Ugrás a PC sorára</translation>
     </message>
     <message>
         <source>Show the line the PC is on again</source>
-        <translation type="unfinished"></translation>
+        <translation>Újra a PC sorát mutatja</translation>
     </message>
     <message>
         <source>File:</source>
-        <translation type="unfinished"></translation>
+        <translation>Fájl:</translation>
     </message>
     <message>
         <source>Source file</source>
-        <translation type="unfinished"></translation>
+        <translation>Forrásfájl</translation>
     </message>
     <message>
         <source>Open a source file the map names, to browse it and set breakpoints in its gutter</source>
-        <translation type="unfinished"></translation>
+        <translation>Egy, a térképben megnevezett forrásfájl megnyitása böngészésre és a margóján töréspontok beállítására</translation>
     </message>
     <message>
         <source>No source map loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Nincs betöltött forrástérkép</translation>
     </message>
     <message>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Másolás</translation>
     </message>
     <message>
         <source>Copy with Addresses</source>
-        <translation type="unfinished"></translation>
+        <translation>Másolás címekkel</translation>
     </message>
     <message>
         <source>Copy the selected lines with their file, line and addresses</source>
-        <translation type="unfinished"></translation>
+        <translation>A kijelölt sorok másolása a fájllal, a sorszámmal és a címekkel</translation>
     </message>
     <message>
         <source>Select All</source>
-        <translation type="unfinished"></translation>
+        <translation>Az összes kijelölése</translation>
     </message>
     <message>
         <source>Locate %1</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 megkeresése</translation>
     </message>
     <message>
         <source>%1 (%1);;All files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (%1);;Minden fájl (*)</translation>
     </message>
     <message>
         <source>Locate File</source>
-        <translation type="unfinished"></translation>
+        <translation>Fájl megkeresése</translation>
     </message>
     <message>
         <source>%1 is not %2. Choose the file the source map names.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 nem %2. Azt a fájlt válassza ki, amelyet a forrástérkép megnevez.</translation>
     </message>
     <message>
         <source>Source files are now also searched for in:
 %1
 
 Save this directory in Preferences (Paths &gt; Source search path) for later sessions?</source>
-        <translation type="unfinished"></translation>
+        <translation>A forrásfájlokat mostantól itt is keresi:
+%1
+
+Elmenti ezt a mappát a Beállításokba (Útvonalak &gt; Forráskeresési útvonal) a későbbi futásokhoz?</translation>
     </message>
     <message>
         <source>Running</source>
-        <translation type="unfinished"></translation>
+        <translation>Fut</translation>
     </message>
     <message>
         <source>  also: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>  még: %1</translation>
     </message>
     <message>
         <source>Source map &apos;%1&apos; does not match the program in memory: %2. Load it again to use it.</source>
-        <translation type="unfinished"></translation>
+        <translation>A(z) „%1” forrástérkép nem egyezik a memóriában lévő programmal: %2. Töltse be újra, ha használni szeretné.</translation>
     </message>
     <message>
         <source>No source map loaded: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nincs betöltött forrástérkép: %1</translation>
     </message>
     <message>
         <source>
 Source map not verified yet: it is checked when the dot command runs</source>
-        <translation type="unfinished"></translation>
+        <translation>
+A forrástérkép még nincs ellenőrizve: a dot parancs futásakor ellenőrzi</translation>
     </message>
     <message>
         <source>
 Source map not verified yet: it is checked when the program first runs its code</source>
-        <translation type="unfinished"></translation>
+        <translation>
+A forrástérkép még nincs ellenőrizve: akkor ellenőrzi, amikor a program először futtatja a kódját</translation>
     </message>
     <message>
         <source>$%1 (%2): no source mapping; use the disassembly</source>
-        <translation type="unfinished"></translation>
+        <translation>$%1 (%2): nincs forrás-hozzárendelés; használja a visszafordítást</translation>
     </message>
     <message>
         <source>%1:%2 - the line counts the m4 output of this file, which the build did not keep; use the disassembly</source>
-        <translation type="unfinished"></translation>
+        <translation>%1:%2 – a sorszám a fájl m4-kimenetére vonatkozik, amelyet a fordítás nem őrzött meg; használja a visszafordítást</translation>
     </message>
     <message>
         <source>%1:%2 - source file not found</source>
-        <translation type="unfinished"></translation>
+        <translation>%1:%2 – a forrásfájl nem található</translation>
     </message>
     <message>
         <source>%1:%2 - %3 has only %4 lines; it is not the text the build used</source>
-        <translation type="unfinished"></translation>
+        <translation>%1:%2 – a(z) %3 csak %4 soros; nem ezt a szöveget használta a fordítás</translation>
     </message>
     <message>
         <source>  (browsing; the PC is at %1:%2, $%3)</source>
-        <translation type="unfinished"></translation>
+        <translation>  (böngészés; a PC itt van: %1:%2, $%3)</translation>
     </message>
     <message>
         <source>  (browsing; the PC is in no source line)</source>
-        <translation type="unfinished"></translation>
+        <translation>  (böngészés; a PC egyik forrássorban sincs)</translation>
     </message>
     <message>
         <source>%1:%2  $%3  %4 (m4 output, from %5)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1:%2  $%3  %4 (m4-kimenet, forrás: %5)</translation>
     </message>
     <message>
         <source>%1:%2  $%3  %4</source>
-        <translation type="unfinished"></translation>
+        <translation>%1:%2  $%3  %4</translation>
     </message>
     <message>
         <source>Could not open %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült megnyitni: %1</translation>
     </message>
     <message>
         <source>%1 - the map&apos;s lines count the m4 output of this file, which the build did not keep; use the disassembly</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 – a térkép sorszámai a fájl m4-kimenetére vonatkoznak, amelyet a fordítás nem őrzött meg; használja a visszafordítást</translation>
     </message>
     <message>
         <source>%1 - source file not found</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 – a forrásfájl nem található</translation>
     </message>
     <message>
         <source>  (m4 output, from %1)</source>
-        <translation type="unfinished"></translation>
+        <translation>  (m4-kimenet, forrás: %1)</translation>
     </message>
     <message>
         <source>suspended breakpoint at %1</source>
-        <translation type="unfinished"></translation>
+        <translation>felfüggesztett töréspont itt: %1</translation>
     </message>
     <message>
         <source>breakpoint at %1</source>
-        <translation type="unfinished"></translation>
+        <translation>töréspont itt: %1</translation>
     </message>
     <message>
         <source> (%1 of %2 places)</source>
-        <translation type="unfinished"></translation>
+        <translation> (%1 / %2 hely)</translation>
     </message>
     <message>
         <source>no code at %1</source>
-        <translation type="unfinished"></translation>
+        <translation>itt nincs kód: %1</translation>
     </message>
     <message>
         <source>breakpoint at %1, not mapped now</source>
-        <translation type="unfinished"></translation>
+        <translation>töréspont itt: %1, most nincs belapozva</translation>
     </message>
     <message>
         <source>code at %1, not mapped now; click to set</source>
-        <translation type="unfinished"></translation>
+        <translation>kód itt: %1, most nincs belapozva; kattintással beállítható</translation>
     </message>
     <message>
         <source>no breakpoint; click to set</source>
-        <translation type="unfinished"></translation>
+        <translation>nincs töréspont; kattintással beállítható</translation>
     </message>
     <message>
         <source>Toggle Breakpoint</source>
-        <translation type="unfinished"></translation>
+        <translation>Töréspont be/ki</translation>
     </message>
     <message>
         <source>Run to Here</source>
-        <translation type="unfinished"></translation>
+        <translation>Futtatás idáig</translation>
     </message>
     <message>
         <source>Follow</source>
-        <translation type="unfinished"></translation>
+        <translation>Követés</translation>
     </message>
     <message>
         <source>%1 in Memory</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 a memóriában</translation>
     </message>
     <message>
         <source>Show in Disassembly</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjelenítés a visszafordításban</translation>
     </message>
     <message>
         <source>%1 is not mapped now</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 most nincs belapozva</translation>
+    </message>
+</context>
+<context>
+    <name>StackPanel</name>
+    <message>
+        <source>Address</source>
+        <translation>Cím</translation>
+    </message>
+    <message>
+        <source>Word</source>
+        <translation>Szó</translation>
+    </message>
+    <message>
+        <source>High Byte</source>
+        <translation>Felső bájt</translation>
+    </message>
+    <message>
+        <source>Low Byte</source>
+        <translation>Alsó bájt</translation>
+    </message>
+    <message>
+        <source>Memory</source>
+        <translation>Memória</translation>
     </message>
 </context>
 <context>
     <name>SymbolsPanel</name>
     <message>
         <source>Filter symbols</source>
-        <translation type="unfinished"></translation>
+        <translation>Szimbólumok szűrése</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Név</translation>
     </message>
     <message>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Cím</translation>
     </message>
     <message>
         <source>Memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Memória</translation>
     </message>
     <message>
         <source>not mapped at $%1 now: %2 is not paged in</source>
-        <translation type="unfinished"></translation>
+        <translation>most nincs belapozva itt: $%1: %2 nincs belapozva</translation>
     </message>
     <message>
         <source>any</source>
-        <translation type="unfinished"></translation>
+        <translation>bármelyik</translation>
     </message>
     <message>
         <source>%1 of %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 / %2</translation>
     </message>
     <message>
         <source>Show in Disassembly</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjelenítés a visszafordításban</translation>
     </message>
     <message>
         <source>Show in Source</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjelenítés a forrásban</translation>
     </message>
     <message>
         <source>no source line at $%1</source>
-        <translation type="unfinished"></translation>
+        <translation>nincs forrássor itt: $%1</translation>
     </message>
     <message>
         <source>Show in Memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Megjelenítés a memóriában</translation>
     </message>
 </context>
 <context>
     <name>VariablesPanel</name>
     <message>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Név</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Típus</translation>
     </message>
     <message>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Érték</translation>
     </message>
     <message>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Cím</translation>
     </message>
     <message>
         <source>Locals</source>
-        <translation type="unfinished"></translation>
+        <translation>Helyi változók</translation>
     </message>
     <message>
         <source>Globals and statics</source>
-        <translation type="unfinished"></translation>
+        <translation>Globális és statikus változók</translation>
     </message>
     <message>
         <source>More than one static of this name exists in the function, so a Watch could not tell them apart</source>
-        <translation type="unfinished"></translation>
+        <translation>A függvényben több ilyen nevű statikus változó van, ezért egy figyelő nem tudná megkülönböztetni őket</translation>
     </message>
     <message>
         <source>A Watch is a name, and the name %1 reaches the innermost declaration, not this one</source>
-        <translation type="unfinished"></translation>
+        <translation>A figyelő egy név, és a(z) %1 név a legbelső deklarációt éri el, nem ezt</translation>
     </message>
     <message>
         <source>Watch</source>
-        <translation type="unfinished"></translation>
+        <translation>Figyelés</translation>
     </message>
     <message>
         <source>Edit Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Érték szerkesztése</translation>
     </message>
     <message>
         <source>&lt;not C code&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;nem C-kód&gt;</translation>
     </message>
     <message>
         <source> (current)</source>
-        <translation type="unfinished"></translation>
+        <translation> (aktuális)</translation>
+    </message>
+</context>
+<context>
+    <name>VideoLayerView</name>
+    <message>
+        <source>Background colour (NR 0x4A = $%1)</source>
+        <translation>Háttérszín (NR 0x4A = $%1)</translation>
+    </message>
+    <message>
+        <source>ULA shadow (bank 7)</source>
+        <translation>ULA árnyék (7. bank)</translation>
+    </message>
+    <message>
+        <source>ULA primary (bank 5)</source>
+        <translation>ULA elsődleges (5. bank)</translation>
+    </message>
+    <message>
+        <source> - LIVE: the ULA is reading this bank</source>
+        <translation> – ÉLŐ: az ULA ezt a bankot olvassa</translation>
+    </message>
+    <message>
+        <source> - NOT live: the ULA is reading bank %1</source>
+        <translation> – NEM élő: az ULA a(z) %1. bankot olvassa</translation>
+    </message>
+</context>
+<context>
+    <name>VideoPanel</name>
+    <message>
+        <source>Raster:</source>
+        <translation>Raszter:</translation>
+    </message>
+    <message>
+        <source>Region:</source>
+        <translation>Terület:</translation>
+    </message>
+    <message>
+        <source>ULA fetch:</source>
+        <translation>ULA-olvasás:</translation>
+    </message>
+    <message>
+        <source>Layers:      </source>
+        <translation>Rétegek:     </translation>
+    </message>
+    <message>
+        <source>Priority:    </source>
+        <translation>Prioritás:   </translation>
+    </message>
+    <message>
+        <source>ULA Palette: </source>
+        <translation>ULA-paletta: </translation>
+    </message>
+    <message>
+        <source>All layers</source>
+        <translation>Minden réteg</translation>
+    </message>
+    <message>
+        <source>All layers (composite)</source>
+        <translation>Minden réteg (összetett)</translation>
+    </message>
+    <message>
+        <source>ULA screen (bank 5/7)</source>
+        <translation>ULA-képernyő (5./7. bank)</translation>
+    </message>
+    <message>
+        <source>Primary (bank 5)</source>
+        <translation>Elsődleges (5. bank)</translation>
+    </message>
+    <message>
+        <source>Shadow (bank 7)</source>
+        <translation>Árnyék (7. bank)</translation>
+    </message>
+    <message>
+        <source>Active bank</source>
+        <translation>Aktív bank</translation>
+    </message>
+    <message>
+        <source>Shadow bank</source>
+        <translation>Árnyékbank</translation>
+    </message>
+    <message>
+        <source>Background</source>
+        <translation>Háttér</translation>
+    </message>
+    <message>
+        <source>Background colour (NR 0x4A)</source>
+        <translation>Háttérszín (NR 0x4A)</translation>
     </message>
 </context>
 <context>
     <name>WatchPanel</name>
     <message>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>Hozzáadás</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Szerkesztés</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation type="unfinished">Eltávolítás</translation>
+        <translation>Törlés</translation>
     </message>
     <message>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Cím</translation>
     </message>
     <message>
         <source>Label</source>
-        <translation type="unfinished"></translation>
+        <translation>Címke</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Típus</translation>
     </message>
     <message>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Érték</translation>
     </message>
     <message>
         <source>Memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Memória</translation>
     </message>
     <message>
         <source>out of scope: %1 is not on the call stack</source>
-        <translation type="unfinished"></translation>
+        <translation>hatókörön kívül: %1 nincs a hívási veremben</translation>
     </message>
     <message>
         <source>Address, symbol or expression:</source>
-        <translation type="unfinished"></translation>
+        <translation>Cím, szimbólum vagy kifejezés:</translation>
     </message>
     <message>
         <source>Label:</source>
-        <translation type="unfinished"></translation>
+        <translation>Címke:</translation>
     </message>
     <message>
         <source>Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>Bájt</translation>
     </message>
     <message>
         <source>Word</source>
-        <translation type="unfinished"></translation>
+        <translation>Szó</translation>
     </message>
     <message>
         <source>Long</source>
-        <translation type="unfinished"></translation>
+        <translation>Hosszú szó</translation>
     </message>
     <message>
         <source>Expression</source>
-        <translation type="unfinished"></translation>
+        <translation>Kifejezés</translation>
     </message>
     <message>
         <source>Type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Típus:</translation>
     </message>
     <message>
         <source>Not an expression: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem kifejezés: %1</translation>
     </message>
     <message>
         <source>Not an address or symbol: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem cím vagy szimbólum: %1</translation>
     </message>
     <message>
         <source>Add Watch</source>
-        <translation type="unfinished"></translation>
+        <translation>Figyelő hozzáadása</translation>
     </message>
     <message>
         <source>Edit Watch</source>
-        <translation type="unfinished"></translation>
+        <translation>Figyelő szerkesztése</translation>
+    </message>
+    <message>
+        <source>e.g. 4000, $4000 or a symbol (an expression with Type Expression)</source>
+        <translation>pl. 4000, $4000 vagy egy szimbólum (kifejezés a Kifejezés típussal)</translation>
     </message>
 </context>
 <context>

@@ -1814,16 +1814,16 @@ bool DebuggerWindow::prompt_bp_address(const QString& title, uint16_t& addr,
 }
 
 void DebuggerWindow::show_add_data_bp_dialog(int type) {
-    QString type_name;
+    QString title;
     switch (type) {
-        case BreakpointModel::Read:      type_name = "Read"; break;
-        case BreakpointModel::Write:     type_name = "Write"; break;
-        case BreakpointModel::ReadWrite: type_name = "Read/Write"; break;
-        default:                         type_name = "Data"; break;
+        case BreakpointModel::Read:      title = tr("Add Read Breakpoint"); break;
+        case BreakpointModel::Write:     title = tr("Add Write Breakpoint"); break;
+        case BreakpointModel::ReadWrite: title = tr("Add Read/Write Breakpoint"); break;
+        default:                         title = tr("Add Data Breakpoint"); break;
     }
 
     uint16_t addr = 0;
-    if (!prompt_bp_address(tr("Add %1 Breakpoint").arg(type_name), addr)) return;
+    if (!prompt_bp_address(title, addr)) return;
 
     // GH #220 — no repaint here. The model notifies, the Breakpoints panel
     // redraws, and the disassembly gutter correctly does not: it draws Execute

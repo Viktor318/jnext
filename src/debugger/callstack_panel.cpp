@@ -26,8 +26,8 @@ void CallStackPanel::create_ui() {
     table_->setFont(mono);
     // CAP-SRC — "Called from": the caller's source line, looked up on the page
     // the caller ran from, when a source map is loaded.
-    table_->setHorizontalHeaderLabels({"#", "Type", "Caller", "Target", "Called from",
-                                         "Caller memory", "Target memory"});   // GH #360
+    table_->setHorizontalHeaderLabels({"#", tr("Type"), tr("Caller"), tr("Target"), tr("Called from"),
+                                         tr("Caller memory"), tr("Target memory")});   // GH #360
     table_->verticalHeader()->setVisible(false);
     table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     table_->setSelectionMode(QAbstractItemView::SingleSelection);

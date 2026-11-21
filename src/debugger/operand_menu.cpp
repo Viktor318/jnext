@@ -4,6 +4,7 @@
 #include "debugger/watch_panel.h"
 
 #include <QAction>
+#include <QCoreApplication>
 #include <QMenu>
 #include <QString>
 
@@ -22,7 +23,7 @@ void add_operand_actions(QMenu& menu, QObject* ctx, const MenuOperands& ops,
     if (any_watch) {
         menu.addSeparator();
         auto named = [&](const MenuOperands::Named& n) {
-            auto* a = menu.addAction(QStringLiteral("Watch '%1' ($%2)")
+            auto* a = menu.addAction(QCoreApplication::translate("OperandMenu", "Watch '%1' ($%2)")
                                          .arg(QString::fromStdString(n.first), hex4(n.second)));
             QObject::connect(a, &QAction::triggered, ctx, [watches, n]() {
                 watches->add_watch(n.second, n.first);
@@ -33,13 +34,13 @@ void add_operand_actions(QMenu& menu, QObject* ctx, const MenuOperands& ops,
         if (ops.immediate) {
             const uint16_t imm = *ops.immediate;
             const std::string label = ops.immediate_label;
-            auto* a = menu.addAction(QStringLiteral("Watch $%1").arg(hex4(imm)));
+            auto* a = menu.addAction(QCoreApplication::translate("OperandMenu", "Watch $%1").arg(hex4(imm)));
             QObject::connect(a, &QAction::triggered, ctx, [watches, imm, label]() {
                 watches->add_watch(imm, label);
             });
         }
         for (const auto& rp : ops.regs) {
-            auto* a = menu.addAction(QStringLiteral("Watch (%1) = $%2")
+            auto* a = menu.addAction(QCoreApplication::translate("OperandMenu", "Watch (%1) = $%2")
                                          .arg(QString::fromLatin1(rp.name), hex4(rp.value)));
             QObject::connect(a, &QAction::triggered, ctx, [watches, rp]() {
                 watches->add_watch(rp.value, std::string("(") + rp.name + ")");
@@ -55,11 +56,11 @@ void add_operand_actions(QMenu& menu, QObject* ctx, const MenuOperands& ops,
     if (!(ops.symbol || ops.immediate || !ops.regs.empty())) return;
     menu.addSeparator();
     auto pair = [&](const QString& what, uint16_t addr) {
-        auto* r = menu.addAction(QStringLiteral("Break on Read %1").arg(what));
+        auto* r = menu.addAction(QCoreApplication::translate("OperandMenu", "Break on Read %1").arg(what));
         QObject::connect(r, &QAction::triggered, ctx, [bps, addr]() {
             if (bps) bps->add(BreakpointModel::Read, addr);
         });
-        auto* w = menu.addAction(QStringLiteral("Break on Write %1").arg(what));
+        auto* w = menu.addAction(QCoreApplication::translate("OperandMenu", "Break on Write %1").arg(what));
         QObject::connect(w, &QAction::triggered, ctx, [bps, addr]() {
             if (bps) bps->add(BreakpointModel::Write, addr);
         });

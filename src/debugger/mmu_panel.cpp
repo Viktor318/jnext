@@ -38,7 +38,7 @@ void MmuPanel::create_ui() {
     };
 
     // --- Next MMU Mappings ---
-    auto* mmu_title = new QLabel("Next MMU Mappings", this);
+    auto* mmu_title = new QLabel(tr("Next MMU Mappings"), this);
     mmu_title->setFont(mono_bold);
     mmu_title->setAlignment(Qt::AlignCenter);
     top_layout->addWidget(mmu_title);
@@ -47,9 +47,9 @@ void MmuPanel::create_ui() {
     mmu_grid->setSpacing(1);
     mmu_grid->setContentsMargins(0, 0, 0, 0);
 
-    const char* mmu_hdrs[] = {"Slot", "Page", "Type", "Memory"};
+    const char* mmu_hdrs[] = {QT_TR_NOOP("Slot"), QT_TR_NOOP("Page"), QT_TR_NOOP("Type"), QT_TR_NOOP("Memory")};
     for (int c = 0; c < 4; ++c) {
-        auto* lbl = new QLabel(mmu_hdrs[c], this);
+        auto* lbl = new QLabel(tr(mmu_hdrs[c]), this);
         lbl->setFont(mono_bold);
         lbl->setAlignment(Qt::AlignCenter);
         mmu_grid->addWidget(lbl, 0, c);
@@ -89,7 +89,7 @@ void MmuPanel::create_ui() {
     auto* bank_grid = new QGridLayout();
     bank_grid->setSpacing(1);
 
-    auto add_bank_row = [&](int row, const char* label, QLabel*& value) {
+    auto add_bank_row = [&](int row, const QString& label, QLabel*& value) {
         auto* name = new QLabel(label, this);
         name->setFont(mono_small);
         name->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -101,9 +101,9 @@ void MmuPanel::create_ui() {
         bank_grid->addWidget(value, row, 1);
     };
 
-    add_bank_row(0, "Bank:", bank_128k_);
-    add_bank_row(1, "ROM:", rom_select_);
-    add_bank_row(2, "Lock:", paging_locked_);
+    add_bank_row(0, tr("Bank:"), bank_128k_);
+    add_bank_row(1, QStringLiteral("ROM:"), rom_select_);
+    add_bank_row(2, tr("Lock:"), paging_locked_);
 
     top_layout->addLayout(bank_grid);
     top_layout->addStretch();
@@ -146,7 +146,7 @@ void MmuPanel::refresh() {
     bank_128k_->setText(QString::number(p7ffd & 0x07));
     rom_select_->setText(QString::number((p7ffd >> 4) & 1));
     bool locked = (p7ffd >> 5) & 1;
-    paging_locked_->setText(locked ? "Yes" : "No");
+    paging_locked_->setText(locked ? tr("Yes") : tr("No"));
     paging_locked_->setStyleSheet(locked
         ? "QLabel { color: " + palette_tint::css(palette_tint::ink(QApplication::palette(), QColor(0xCC, 0x00, 0x00))) +
               "; font-weight: bold; }"

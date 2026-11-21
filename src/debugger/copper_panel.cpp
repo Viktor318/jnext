@@ -44,7 +44,7 @@ void CopperPanel::create_ui() {
 
     // Instruction table
     table_ = new QTableWidget(DISPLAY_ROWS, 4, this);
-    table_->setHorizontalHeaderLabels({"Addr", "Raw", "Type", "Details"});
+    table_->setHorizontalHeaderLabels({tr("Addr"), tr("Raw"), tr("Type"), tr("Details")});
     table_->setFont(mono);
     table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);

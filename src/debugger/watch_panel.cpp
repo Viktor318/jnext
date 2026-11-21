@@ -262,7 +262,7 @@ bool WatchPanel::show_watch_dialog(const QString& title, uint16_t& addr,
     auto* form = new QFormLayout(&dlg);
 
     auto* addr_edit = new QLineEdit(&dlg);
-    addr_edit->setPlaceholderText("e.g. 4000, $4000 or a symbol (an expression with Type Expression)");
+    addr_edit->setPlaceholderText(tr("e.g. 4000, $4000 or a symbol (an expression with Type Expression)"));
     addr_edit->setText(type == EXPR ? QString::fromStdString(expr) : QString::asprintf("%04X", addr));
     form->addRow(tr("Address, symbol or expression:"), addr_edit);
 
@@ -374,7 +374,7 @@ void WatchPanel::on_edit_watch() {
 void WatchPanel::update_table() {
     table_->setRowCount(static_cast<int>(watches_.size()));
 
-    static const char* type_names[] = {"Byte", "Word", "Long", "Expression"};
+    static const char* type_names[] = {QT_TR_NOOP("Byte"), QT_TR_NOOP("Word"), QT_TR_NOOP("Long"), QT_TR_NOOP("Expression")};
 
     for (int i = 0; i < static_cast<int>(watches_.size()); ++i) {
         const auto& w = watches_[i];

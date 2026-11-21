@@ -50,7 +50,7 @@ void MemoryPanel::create_ui() {
     auto* top_bar = new QHBoxLayout();
     top_bar->setSpacing(6);
 
-    auto* addr_label = new QLabel("Addr:", this);
+    auto* addr_label = new QLabel(tr("Addr:"), this);
     top_bar->addWidget(addr_label);
 
     addr_input_ = new QLineEdit(this);
@@ -70,9 +70,9 @@ void MemoryPanel::create_ui() {
     });
 
     page_selector_ = new QComboBox(this);
-    page_selector_->addItem("CPU View");
+    page_selector_->addItem(tr("CPU View"));
     for (int i = 0; i < 8; ++i) {
-        page_selector_->addItem(QString("Slot %1 (page --)").arg(i));
+        page_selector_->addItem(tr("Slot %1 (page --)").arg(i));
     }
     // GH #278 WP8 — any physical page, mapped in a slot or not.
     page_selector_->addItem(tr("Page..."));
@@ -221,7 +221,7 @@ bool MemoryPanel::choose_page() {
     const unsigned v = text.toUInt(&num, 16);
     if (!num || v > 0xDF) return false;          // 0xE0.. has no backing store
     page_ = static_cast<int>(v);
-    page_selector_->setItemText(PAGE_ITEM, QString::asprintf("Page %02X", page_));
+    page_selector_->setItemText(PAGE_ITEM, tr("Page %1").arg(QString::asprintf("%02X", page_)));
     return true;
 }
 
@@ -275,7 +275,7 @@ void MemoryPanel::update_page_selector() {
         // un-shifted ROM page and read as RAM page 00. A slot paged to nothing
         // (NR >= 0xE0) is FLOAT. The words are not upper-cased (GH #278 WP0).
         page_selector_->setItemText(i + 1,
-            QString("Slot %1 (%2)").arg(i).arg(QString::fromStdString(
+            tr("Slot %1 (%2)").arg(i).arg(QString::fromStdString(
                 jnext::dbg::space_tag(own_space(slot_info[i])))));
     }
 }
