@@ -453,6 +453,8 @@ endif()
 # The toolbar icon set, shared by both Qt libraries (src/toolbar_icons/).
 if(ENABLE_QT_UI OR ENABLE_DEBUGGER)
     add_subdirectory(src/toolbar_icons)
+    # hungarian-ui: the interface translations, for jnext_gui and the debugger alike.
+    add_subdirectory(src/gui/translations)
 endif()
 
 if(ENABLE_QT_UI)

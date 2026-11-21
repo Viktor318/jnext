@@ -36,21 +36,16 @@ list(FILTER SOURCES EXCLUDE REGEX "${JNEXT_GENERATED_DIR_REGEX}")
 if(NOT JNEXT_CRT_GL_AVAILABLE)
     list(FILTER SOURCES EXCLUDE REGEX "/(crt_gl_overlay|crtemu_impl)\\.cpp$")
 endif()
-add_library(jnext_gui STATIC ${SOURCES} translations/jnext_i18n.qrc)
+# hungarian-ui: ui_language.cpp and the catalogues are jnext_i18n
+# (translations/CMakeLists.txt), so that a debugger-only build has them too.
+list(FILTER SOURCES EXCLUDE REGEX "/ui_language\\.cpp$")
+add_library(jnext_gui STATIC ${SOURCES})
 
-# AUTORCC compiles the interface translations (gui/ui_language.cpp) in.
-# --no-zstd: a cross build runs the HOST's rcc, which may compress with zstd
-# while the target Qt has no zstd support (the MinGW Qt then fails to link with
-# an undefined qResourceFeatureZstd); zlib works with every Qt. Qt 6 only: Qt 5's
-# rcc never compresses with zstd and refuses the option ("Unknown option
-# 'no-zstd'", the qt5-guard build).
-set_target_properties(jnext_gui PROPERTIES AUTOMOC ON AUTORCC ON)
-if(JNEXT_QT_MAJOR EQUAL 6)
-    set_target_properties(jnext_gui PROPERTIES AUTORCC_OPTIONS "--no-zstd")
-endif()
+set_target_properties(jnext_gui PROPERTIES AUTOMOC ON)
 
 target_link_libraries(jnext_gui PUBLIC
     Qt${JNEXT_QT_MAJOR}::Widgets
+    jnext_i18n
     jnext_toolbar_icons
     ${JNEXT_SDL3_TARGET}
     spdlog::spdlog
