@@ -428,9 +428,9 @@ SDL-only build and **--headless**.
 
 **--scale** *N*  
 Window scale 1, 1.5, 2 or 3 for this run, over the saved **Preferences**
-value. 1 is 640x512 pixels, 1.5 is 960x768. The same as `--set
-startup.window_scale`. Qt window only: elsewhere **jnext** warns and
-ignores it.
+value. 1 is 640x512 pixels, 1.5 is 960x768. The same as
+`--set startup.window_scale`. Qt window only: elsewhere **jnext** warns
+and ignores it.
 
 **--crt** *EFFECT*  
 CRT effect for this run: `off`, `scanlines`, `soft`, `tv` or `pc`, the
