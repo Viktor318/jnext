@@ -36,7 +36,7 @@ list(FILTER SOURCES EXCLUDE REGEX "${JNEXT_GENERATED_DIR_REGEX}")
 if(NOT JNEXT_CRT_GL_AVAILABLE)
     list(FILTER SOURCES EXCLUDE REGEX "/(crt_gl_overlay|crtemu_impl)\\.cpp$")
 endif()
-# hungarian-ui: ui_language.cpp and the catalogues are jnext_i18n
+# hungarian-ui: translations/ui_language.cpp and the catalogues are jnext_i18n
 # (translations/CMakeLists.txt), so that a debugger-only build has them too.
 list(FILTER SOURCES EXCLUDE REGEX "/ui_language\\.cpp$")
 add_library(jnext_gui STATIC ${SOURCES})

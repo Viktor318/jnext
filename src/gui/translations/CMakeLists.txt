@@ -6,7 +6,13 @@
 # the root CMakeLists whenever either Qt library is built; jnext_gui links it.
 find_package(Qt${JNEXT_QT_MAJOR} REQUIRED COMPONENTS Core)
 
-add_library(jnext_i18n STATIC ../ui_language.cpp jnext_i18n.qrc)
+# ui_language.cpp lives HERE, not in src/gui: moved with the library, because
+# ccache keys an object on the source's content and path, not on the object it
+# writes, and gcc's PGO instrumentation (LTO) bakes the object path into the
+# .gcda name. Compiled as ../ui_language.cpp from the old place, the CI's restored
+# ccache handed back the jnext_gui object, the profile was written under the old
+# name and the PGO USE build failed with -Werror=missing-profile.
+add_library(jnext_i18n STATIC ui_language.cpp jnext_i18n.qrc)
 
 # --no-zstd: a cross build runs the HOST's rcc, which may compress with zstd
 # while the target Qt has no zstd support (the MinGW Qt then fails to link with
