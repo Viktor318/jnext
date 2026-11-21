@@ -175,6 +175,12 @@ say "bundle"
 # runtime (libstdc++, libgcc_s, libwinpthread) overrides Qt's copies: the exe is
 # linked against the compiler's.
 rm -rf "$BUNDLE_ROOT"; mkdir -p "$BUNDLE_ROOT/bin" "$BUNDLE_ROOT/lib/qt6"
+# The distribution's own MinGW DLLs first (e.g. zlib1.dll from libz-mingw-w64-dev,
+# which the Fuse build installs and CMake may then pick), so that Qt's and ours,
+# linked after them, win where both have one.
+for f in /usr/x86_64-w64-mingw32/bin/*.dll /usr/x86_64-w64-mingw32/lib/*.dll; do
+    [ -f "$f" ] && ln -sf "$f" "$BUNDLE_ROOT/bin/"
+done
 for f in "$QT_WIN"/bin/*.dll "$SYSROOT"/bin/*.dll; do ln -sf "$f" "$BUNDLE_ROOT/bin/"; done
 for d in libstdc++-6.dll libgcc_s_seh-1.dll libwinpthread-1.dll; do
     p=$($CXX_W -print-file-name="$d")
@@ -193,7 +199,7 @@ D=$STAGE/$NAME
 # jnext links spdlog statically here; the bundler's "libspdlog.dll not found"
 # note is about the Fedora build and is dropped.
 if ! bout=$(MINGW_SYSROOT=$BUNDLE_ROOT bash "$BUNDLER" "$BUILD/jnext.exe" "$D" 2>&1); then
-    echo "$bout"; die "bundling failed / sikertelen csomagolás"
+    grep -v 'libspdlog' <<<"$bout"; die "bundling failed / sikertelen csomagolás"
 fi
 grep -v 'libspdlog' <<<"$bout" || true
 for f in jnext.exe Qt6Core.dll Qt6Gui.dll Qt6Widgets.dll platforms/qwindows.dll SDL3.dll; do
