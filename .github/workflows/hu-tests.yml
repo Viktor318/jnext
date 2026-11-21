@@ -64,6 +64,12 @@ jobs:
       # Az SD-kártyaképet NEM tesszük a GitHub gyorsítótárába (az is GitHubra
       # kerülés lenne): a jnext minden futáskor maga tölti le az ideiglenes gépre,
       # és a futás végén a géppel együtt törlődik.
+      # A `make unit-test` az SD-képet csak a végén tölti le (`sdcard-image` az utolsó
+      # előfeltétele), a traceability-check viszont előtte már futtatja a ROM-ot igénylő
+      # sorokat. Gyorsítótár nélkül ezért előbb le kell tölteni.
+      - name: make sdcard-image
+        run: LANG=C make sdcard-image
+
       - name: make unit-test
         run: LANG=C make unit-test
 
