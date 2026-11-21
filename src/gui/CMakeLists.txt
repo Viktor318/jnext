@@ -41,8 +41,13 @@ add_library(jnext_gui STATIC ${SOURCES} translations/jnext_i18n.qrc)
 # AUTORCC compiles the interface translations (gui/ui_language.cpp) in.
 # --no-zstd: a cross build runs the HOST's rcc, which may compress with zstd
 # while the target Qt has no zstd support (the MinGW Qt then fails to link with
-# an undefined qResourceFeatureZstd); zlib works with every Qt.
-set_target_properties(jnext_gui PROPERTIES AUTOMOC ON AUTORCC ON AUTORCC_OPTIONS "--no-zstd")
+# an undefined qResourceFeatureZstd); zlib works with every Qt. Qt 6 only: Qt 5's
+# rcc never compresses with zstd and refuses the option ("Unknown option
+# 'no-zstd'", the qt5-guard build).
+set_target_properties(jnext_gui PROPERTIES AUTOMOC ON AUTORCC ON)
+if(JNEXT_QT_MAJOR EQUAL 6)
+    set_target_properties(jnext_gui PROPERTIES AUTORCC_OPTIONS "--no-zstd")
+endif()
 
 target_link_libraries(jnext_gui PUBLIC
     Qt${JNEXT_QT_MAJOR}::Widgets
