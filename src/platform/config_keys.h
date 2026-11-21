@@ -63,6 +63,7 @@ enum class KeyId : uint8_t {
     StartupTapeAutoPlay,
     StartupWhenSlowPrefer,
     StartupFastBootSeconds,
+    StartupFastBootHideScreen,
     StartupLanguage,
     AudioGainDb,
     AudioGainBeeperDb,
@@ -101,6 +102,7 @@ enum class KeyId : uint8_t {
     DebuggerPhysicalAddresses,
     DebuggerSize,
     DebuggerPosition,
+    DebuggerLayout,
     Count
 };
 
@@ -159,6 +161,9 @@ inline constexpr Key KEYS[] = {
     { KeyId::StartupFastBootSeconds, "startup", "fast_boot_seconds", Type::Int, 0, 60,
       "0..60", "--fast-boot", QT | SDL, false, Owner::AppConfig, nullptr,
       "Seconds of a plain Next start run at maximum speed, 0 = off" },
+    { KeyId::StartupFastBootHideScreen, "startup", "fast_boot_hide_screen", Type::Bool, 0, 0,
+      "true|false", nullptr, QT | SDL, false, Owner::AppConfig, nullptr,
+      "Keep the window black while fast boot runs" },
     { KeyId::StartupLanguage, "startup", "language", Type::Word, 0, 0,
       "auto|en|hu", nullptr, QT, false, Owner::AppConfig, nullptr,
       "Language of the window and the debugger, auto = the system's" },
@@ -277,6 +282,9 @@ inline constexpr Key KEYS[] = {
     { KeyId::DebuggerPosition, "debugger", "position", Type::Text, 0, 0,
       "", nullptr, QT, true, Owner::DebuggerWindow,
       "it is the remembered window geometry; no control sets it", "Debugger window position" },
+    { KeyId::DebuggerLayout, "debugger", "layout", Type::Text, 0, 0,
+      "", nullptr, QT, true, Owner::DebuggerWindow,
+      "it is the remembered panel layout; Window > Reset Layout restores the default", "Debugger panel layout" },
 };
 
 inline constexpr size_t KEY_COUNT = sizeof(KEYS) / sizeof(KEYS[0]);

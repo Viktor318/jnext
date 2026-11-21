@@ -1,0 +1,89 @@
+name: HU unit tests (manual)
+
+# A magyar ág (hungarian-ui) saját, kézzel indítható tesztfutása a GitHub gépein.
+# Ugyanazokat a make-célokat futtatja, mint a ci.yml `test (unit)` lába, ugyanabban
+# a fedora:45 konténerben, de a PGO-s `make gui-release` nélkül: a unit tesztek a
+# build/ fát használják, a kiadási fordítás csak a regresszióhoz kell.
+#
+# Indítás: gh workflow run hu-tests.yml --ref hungarian-ui [-f sdl=false]
+
+on:
+  workflow_dispatch:
+    inputs:
+      sdl:
+        description: "Az SDL-only konfiguráció tesztjei is (make unit-test-sdl)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: HU unit tests
+    runs-on: ubuntu-latest
+    container: fedora:45
+    timeout-minutes: 150
+    env:
+      FPGA_CORE_REF: b047011d82bf3086f2b7db76451c6254506f5fe8   # CORE VERSION 3.02.03
+    steps:
+      - name: Install git
+        run: dnf install -y git
+
+      - name: Check out
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install build + test dependencies
+        run: bash test/ci-deps.sh test
+
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Check out the ZX Next FPGA core (VHDL citation oracle)
+        run: |
+          FPGA_CORE_DIR="$RUNNER_TEMP/fpga-core"
+          JNEXT_FPGA_SRC="$FPGA_CORE_DIR/cores/zxnext/src"
+          git clone --filter=blob:none --no-checkout \
+            https://gitlab.com/SpectrumNext/ZX_Spectrum_Next_FPGA.git "$FPGA_CORE_DIR"
+          git -C "$FPGA_CORE_DIR" sparse-checkout init --cone
+          git -C "$FPGA_CORE_DIR" sparse-checkout set cores/zxnext/src
+          git -C "$FPGA_CORE_DIR" checkout "$FPGA_CORE_REF"
+          test -d "$JNEXT_FPGA_SRC" || { echo "FPGA core missing at $JNEXT_FPGA_SRC"; exit 1; }
+          echo "JNEXT_FPGA_SRC=$JNEXT_FPGA_SRC" >> "$GITHUB_ENV"
+
+      - name: Cache ccache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ccache
+          key: hu-ccache-fedora45-${{ github.sha }}
+          restore-keys: |
+            hu-ccache-fedora45-
+
+      # Az SD-kártyaképet a jnext maga tölti le futáskor; ez csak a gyorsítótára,
+      # a futó gépen marad, soha nem kerül a tárolóba vagy műtermékbe.
+      - name: Cache NextZXOS SD-card image
+        uses: actions/cache@v5
+        with:
+          path: ~/.jnext/sdcard
+          key: hu-sdcard-image-distro-26.11-fedora45
+
+      - name: make unit-test
+        run: LANG=C make unit-test
+
+      - name: make unit-test-sdl
+        if: inputs.sdl
+        run: LANG=C make unit-test-sdl
+
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: hu-unit-test-logs
+          path: |
+            build/test-summary.tsv
+            build/test-logs
+            build/sdl-unit-test/test-logs
+          if-no-files-found: ignore
+          retention-days: 7

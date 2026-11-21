@@ -61,6 +61,7 @@
 #include "debugger/stack_panel.h"
 #include "debugger/symbols_panel.h"
 #include "debugger/video_panel.h"
+#include "put_on_show.h"
 #include "debugger/watch_panel.h"
 #include "memory/mmu.h"
 #include "platform/emulator_boot.h"
@@ -75,6 +76,7 @@
 #include <QComboBox>
 #include <QDialog>
 #include <QTabWidget>
+#include "dock_lookup.h"
 #include <QDir>
 #include <QFile>
 #include <QFileDialog>
@@ -205,6 +207,9 @@ struct Fixture {
     }
 
     DebuggerWindow* dbg() const { return mgr->debugger_window_ptr(); }
+
+    /// GH #498: the open window tracks calls only while the Call Stack (or Variables) is on show.
+    void callstack_on_show() { put_on_show(dbg(), dbg()->callstack_panel()); }
 
     void load(uint16_t addr, std::initializer_list<uint8_t> bytes) {
         for (uint8_t b : bytes) emu.mmu().write(addr++, b);
@@ -908,6 +913,7 @@ static void test_pause_edge() {
     } else {
         load_pause_edge_program(fx);
         fx.enable();
+        fx.callstack_on_show();   // GH #498
         DebuggerWindow* dbg = fx.dbg();
 
         // Park the disassembly far from the program while paused, on a page
@@ -1697,6 +1703,7 @@ static void test_enable_seeds() {
             fx.load(PROG, {0x18, 0xFE});
             fx.regs(PROG);
             fx.enable();
+            fx.callstack_on_show();   // GH #498
             fx.tick();
             // GH #278 WP4c — the GUI's breakpoint, carried by the BACKEND across
             // the boot (CTL-12 rule 2): the platform restore that used to carry
@@ -2655,6 +2662,7 @@ static void test_map_load() {
     fx.load(0x9000, {0x21, 0x00, 0x91, 0x18, 0xFE});      // LD HL,$9100 / JR $
     fx.regs(PROG);
     fx.enable();
+    fx.callstack_on_show();   // GH #498
     DebuggerWindow* dbg = fx.dbg();
     QMenu* load_menu = submenu_named(menu_named(dbg->menuBar(), "Map"), "Load MAP File");
 
@@ -3359,6 +3367,7 @@ static void test_annotations_ui() {
         fx.regs(0x8000);
         fx.backend->set_user_label(P10, 0xC000, "banked");
         fx.enable();
+        fx.callstack_on_show();   // GH #498
         fx.mgr->breakpoints().add(BreakpointModel::Execute, 0xC000);
         fx.mgr->on_step_into();
         DebuggerWindow* dbg = fx.dbg();
@@ -4619,16 +4628,18 @@ static void test_nav_window() {
             MemoryPanel* mem = fx.dbg()->memory_panel();
             auto* combo = mem->findChild<QComboBox*>();
             if (combo) combo->setCurrentIndex(1);   // Slot 0
-            auto* tabs = qobject_cast<QTabWidget*>(mem->parentWidget()->parentWidget());
-            if (tabs) tabs->setCurrentIndex(0);     // Stack
+            // GH #377: Memory is a dock now; "its tab is shown" reads the group's tab bar.
+            QDockWidget* mem_dock = dock_of_panel(fx.dbg(), mem);
+            QDockWidget* stack_dock = dock_of_panel(fx.dbg(), fx.dbg()->stack_panel());
+            if (stack_dock) stack_dock->raise();    // Stack
             DisasmPanel* dis = fx.dbg()->disasm_panel();
             dis->show_address(PROG);                // the caret on the LD
             dis->follow();
             check("QNAVW-04", desc,
-                  combo && tabs && combo->currentIndex() == 0 && mem->selected_address() == 0x5C40 &&
-                      tabs->currentWidget() == mem,
+                  combo && mem_dock && combo->currentIndex() == 0 && mem->selected_address() == 0x5C40 &&
+                      dock_group_shown_title(mem_dock) == QStringLiteral("Memory"),
                   fmt("view %d selected %04X tab is memory %d", combo ? combo->currentIndex() : -1,
-                      mem->selected_address(), tabs ? tabs->currentWidget() == mem : 0));
+                      mem->selected_address(), mem_dock ? dock_group_shown_title(mem_dock) == QStringLiteral("Memory") : 0));
         }
     }
 
@@ -4704,14 +4715,17 @@ static void test_nav_window() {
                     for (QAction* a : top->menu()->actions())
                         if (a->text().remove(QLatin1Char('&')) == QLatin1String("Symbols")) sym = a;
             SymbolsPanel* sp = fx.dbg()->symbols_panel();
-            auto* tabs = sp ? qobject_cast<QTabWidget*>(sp->parentWidget()->parentWidget()) : nullptr;
-            if (tabs) tabs->setCurrentIndex(0);
+            QDockWidget* sym_dock = dock_of_panel(fx.dbg(), sp);   // GH #377: a dock, not a tab page
+            QDockWidget* video_dock = dock_of_panel(fx.dbg(), fx.dbg()->findChild<VideoPanel*>());
+            if (video_dock) video_dock->raise();                   // Video, the first tab
             if (sym) sym->trigger();
             QLineEdit* filter = sp ? sp->findChild<QLineEdit*>() : nullptr;
             check("QNAVW-07", desc,
-                  sym && tabs && filter && tabs->currentWidget() == sp && fx.dbg()->focusWidget() == filter,
+                  sym && sym_dock && filter && dock_group_shown_title(sym_dock) == QStringLiteral("Symbols") &&
+                      fx.dbg()->focusWidget() == filter,
                   fmt("action=%d tab raised=%d filter focused=%d", sym != nullptr,
-                      tabs && tabs->currentWidget() == sp, filter && fx.dbg()->focusWidget() == filter));
+                      sym_dock && dock_group_shown_title(sym_dock) == QStringLiteral("Symbols"),
+                      filter && fx.dbg()->focusWidget() == filter));
         }
     }
 }

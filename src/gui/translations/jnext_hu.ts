@@ -360,6 +360,14 @@
         <source>Target memory</source>
         <translation>Cél memóriája</translation>
     </message>
+    <message>
+        <source>Frames marked * were rebuilt from the stack when call tracking started: interrupts are missing, and stale stack data can look like a call.</source>
+        <translation>A *-gal jelölt sorokat a híváskövetés indulásakor a veremből építette vissza: a megszakítások hiányoznak, és a veremben maradt régi adat is hívásnak látszhat.</translation>
+    </message>
+    <message>
+        <source>rebuilt from the stack</source>
+        <translation>a veremből visszaépítve</translation>
+    </message>
 </context>
 <context>
     <name>CopperPanel</name>
@@ -1001,6 +1009,14 @@
     <message>
         <source>Add Data Breakpoint</source>
         <translation>Adattöréspont hozzáadása</translation>
+    </message>
+    <message>
+        <source>&amp;Panels</source>
+        <translation>&amp;Panelek</translation>
+    </message>
+    <message>
+        <source>&amp;Reset Layout</source>
+        <translation>Elrendezés &amp;visszaállítása</translation>
     </message>
 </context>
 <context>
@@ -2170,6 +2186,34 @@ Restart now?
         <source>Hide the menus, the toolbar and the status bar (Shift+F11 brings them back)</source>
         <translation>A menük, az eszköztár és az állapotsor elrejtése (a Shift+F11 visszahozza őket)</translation>
     </message>
+    <message>
+        <source>Save Bug Report...</source>
+        <translation>Hibajelentés mentése…</translation>
+    </message>
+    <message>
+        <source>Save Bug Report</source>
+        <translation>Hibajelentés mentése</translation>
+    </message>
+    <message>
+        <source>jnext bug reports (*.jnext-bug.zip)</source>
+        <translation>jnext-hibajelentések (*.jnext-bug.zip)</translation>
+    </message>
+    <message>
+        <source>Bug report failed: %1</source>
+        <translation>Sikertelen hibajelentés: %1</translation>
+    </message>
+    <message>
+        <source>included</source>
+        <translation>benne van</translation>
+    </message>
+    <message>
+        <source>not included: %1</source>
+        <translation>nincs benne: %1</translation>
+    </message>
+    <message>
+        <source>Bug report saved: %1 (memory: %2)</source>
+        <translation>Hibajelentés mentve: %1 (memória: %2)</translation>
+    </message>
 </context>
 <context>
     <name>MemoryPanel</name>
@@ -3020,6 +3064,14 @@ Csak a módosított hozzárendelések kerülnek a beállításfájlba.</translat
     <message>
         <source>%1x (%2x%3)</source>
         <translation>%1x (%2×%3)</translation>
+    </message>
+    <message>
+        <source>Hide the screen during fast boot</source>
+        <translation>A képernyő elrejtése gyors indítás közben</translation>
+    </message>
+    <message>
+        <source>Keep the window black while fast boot runs, so the first picture is the screen it ends on (normally the NextZXOS menu). Any key shows the screen at once. Takes effect at the next start.</source>
+        <translation>A gyors indítás alatt az ablak fekete marad, így az első kép az lesz, amelyiken az indítás véget ér (általában a NextZXOS menüje). Bármelyik billentyű azonnal megjeleníti a képet. A következő indításkor lép életbe.</translation>
     </message>
 </context>
 <context>

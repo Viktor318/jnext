@@ -50,8 +50,9 @@ The format is detected from the extension: \f[CR].nex\f[R],
 \f[CR].tap\f[R], \f[CR].tzx\f[R], \f[CR].wav\f[R], \f[CR].rzx\f[R].
 (\f[CR].rzx\f[R] is accepted here and plays back, as
 \f[B]\-\-rzx\-play\f[R].)
-A \f[CR].zip\f[R] archive holding one of them loads that program (see
-the \f[CR].zip\f[R] entry of \f[B]LOADING PROGRAMS\f[R]).
+A \f[CR].zip\f[R] archive holding one of them loads that program, and a
+NEX in one also gets its directory in the archive (see the
+\f[CR].zip\f[R] entry of \f[B]LOADING PROGRAMS\f[R]).
 .RS
 .PP
 \f[CR].jns\f[R] is jnext\(cqs own whole\-machine snapshot (see
@@ -463,6 +464,9 @@ It applies to the launch only: a later hard reset boots at normal speed.
 It never changes the emulated machine.
 To reach the firmware menu, press SPACE while the splash shows, or set
 it to 0.
+\f[CR]\-\-set startup.fast_boot_hide_screen=true\f[R] keeps the window
+black until fast boot ends, so the first picture is the screen it ends
+on; screenshots, recordings and the debugger still see the real screen.
 \f[B]\-\-headless\f[R] runs uncapped already, so there it has no effect,
 and \f[B]jnext\f[R] warns.
 The same as \f[CR]\-\-set startup.fast_boot_seconds\f[R].
@@ -825,6 +829,9 @@ unless \f[B]\-\-esxdos\-stub\-writable\f[R] is also given, and in place
 of the in\-memory file.
 To keep the in\-memory file, load the NEX without
 \f[B]\-\-esxdos\-stub\f[R].
+A NEX loaded from a \f[CR].zip\f[R] that holds its data files is served
+its directory in the archive with no flag at all (see the
+\f[CR].zip\f[R] entry of \f[B]LOADING PROGRAMS\f[R]).
 .RE
 .TP
 \f[B]\-\-esxdos\-stub\-root\f[R] \f[I]DIR\f[R]
@@ -833,7 +840,8 @@ file and directory calls, instead of the single in\-memory file.
 Implies \f[B]\-\-esxdos\-stub\f[R].
 Read\-only unless \f[B]\-\-esxdos\-stub\-writable\f[R] is also given.
 \f[I]DIR\f[R] replaces the default of \f[B]\-\-esxdos\-stub\f[R], the
-directory of the loaded NEX.
+directory of the loaded NEX, and the directory of a NEX loaded from a
+\f[CR].zip\f[R] that holds its data files.
 .RS
 .PP
 \f[B]Which programs see \f[BI]DIR\f[B], and which do not.\f[R] A NEX
@@ -879,7 +887,9 @@ This option is for programs jnext loads itself.
 Allow the guest to create, truncate, write, delete and rename files,
 make and remove directories, and set or clear the read\-only bit of
 files under \f[B]\-\-esxdos\-stub\-root\f[R], or in the directory of the
-loaded NEX when no root is given: the program can delete any file there.
+loaded NEX when no root is given (for a NEX from a \f[CR].zip\f[R], in
+the extracted copy, never in the archive): the program can delete any
+file there.
 Off by default, and deliberately a separate flag: a guest write changes
 a real file on the host immediately, and rewinding the emulator cannot
 undo it.
@@ -1657,6 +1667,20 @@ A previous export\(cqs \f[CR]CPU.ghidra.txt\f[R],
 \f[CR]*.ghidra.txt\f[R] included, is never touched.
 A failed export is logged and jnext exits with status 1.
 .TP
+\f[B]\-\-bug\-report\f[R] \f[I]PATH\f[R]
+When jnext exits, write a bug report to \f[I]PATH\f[R]: one zip file
+with the state of the machine and of jnext, for reading, not for
+replaying.
+If \f[I]PATH\f[R] is an existing directory, or ends in a slash (a
+backslash on Windows), the report is written inside it, named
+\f[I]PROGRAM\f[R]\f[CR].YYYYMMDDhhmm.jnext\-bug.zip\f[R] (local time;
+\f[I]PROGRAM\f[R] is the last program loaded, \f[CR]jnext\f[R] if none,
+and \f[CR]\-2\f[R], \f[CR]\-3\f[R]\&...
+is added when the name is taken).
+Otherwise \f[I]PATH\f[R] is the file.
+A failed write is logged and jnext exits with status 1.
+See \f[B]BUG REPORTS\f[R].
+.TP
 \f[B]\-\-magic\-port\f[R] \f[I]PORT\f[R]
 Enable the magic debug port at \f[I]PORT\f[R] (hex, \f[CR]0x\f[R] prefix
 optional, for example \f[CR]0x00FF\f[R]).
@@ -1752,6 +1776,12 @@ All frontends.
 \f[CR]startup.fast_boot_seconds\f[R] \f[I]0..60\f[R]
 Seconds of a plain Next start run at maximum speed, 0 = off;
 \f[B]\-\-fast\-boot\f[R].
+The Qt window and the SDL\-only build.
+.TP
+\f[CR]startup.fast_boot_hide_screen\f[R] \f[I]true|false\f[R]
+Keep the window black while fast boot runs; any key, a pause or a
+debugger stop shows the screen at once.
+Default false.
 The Qt window and the SDL\-only build.
 .TP
 \f[CR]startup.language\f[R] \f[I]auto|en|hu\f[R]
@@ -2289,6 +2319,40 @@ directory) that is removed when \f[B]jnext\f[R] exits.
 In the window, a \f[CR].pok\f[R] file in the archive (the one named like
 the program, else the only one) is offered under \f[B]Machine > POK
 Trainers\&...\f[R].
+.RS
+.PP
+\f[B]A NEX with its data files.\f[R] When the program is a
+\f[CR].nex\f[R] and the directory it is in inside the archive (the
+archive\(cqs top level, or a folder such as \f[CR]game/\f[R]) holds
+other files, that directory is extracted whole, with its subdirectories,
+and served to the NEX through the esxDOS stand\-in, with no
+\f[B]\-\-esxdos\-stub\f[R]: the program opens its files by name, as it
+would from a directory on disk (\f[CR]game/G.NEX\f[R] with
+\f[CR]game/data/L1.BIN\f[R] opens \f[CR]data/L1.BIN\f[R]; case does not
+matter).
+The NEX is the program the archive loads when it is the only NEX and
+every other program in it lies in a subdirectory below its own, such as
+\f[CR]data/sfx.wav\f[R]; a NEX and a \f[CR].tap\f[R] side by side, or
+two NEX in one directory, are several programs, refused on the command
+line and asked in the window.
+It is read\-only unless \f[B]\-\-esxdos\-stub\-writable\f[R] is given,
+which lets the guest change the extracted copy, never the archive, and
+the changes are gone when \f[B]jnext\f[R] exits.
+An explicit \f[B]\-\-esxdos\-stub\-root\f[R] wins: the archive is still
+extracted, its files are not served.
+Files above the NEX\(cqs directory are not extracted.
+Before anything is written, the whole archive is checked: a member with
+an absolute path or \f[CR]..\f[R] anywhere, two members whose paths
+differ only in case, a file that is also a directory, a name ending in a
+dot or a space, a path over 255 bytes, or files adding up to over 256
+MiB refuse the load with the reason, and a member that cannot be read
+(bad CRC, encrypted) refuses it too, leaving nothing behind.
+A folder spelled in two cases in the archive (\f[CR]data/\f[R] and
+\f[CR]DATA/\f[R]) is one folder, written under the spelling that comes
+first, so the result is the same on every host.
+An archive whose NEX has nothing beside it extracts the NEX alone, as
+before, and gets no directory.
+.RE
 .PP
 \f[CR].tap\f[R] and \f[CR].tzx\f[R] load in real time instead with
 \f[B]\-\-tape\-realtime\f[R] (or by unchecking \f[B]Tape > Fast
@@ -2504,9 +2568,10 @@ link\(cqs own directory).
 It lasts from the NEX load until the next reset, soft reset or load: a
 NEX loaded later, through \f[B]File > Load NEX File\&...\f[R], a recent
 file, \f[CR]run NAME.nex\f[R] or the debugger, gets its own directory.
-A NEX taken out of a \f[CR].zip\f[R] has no directory on disk and gets
-none, and neither do a snapshot, a tape or a program injected with
-\f[B]\-\-inject\f[R].
+A NEX taken out of a \f[CR].zip\f[R] that holds nothing beside it has no
+directory on disk and gets none (one that holds its data files gets
+them, see the \f[CR].zip\f[R] entry above), and neither do a snapshot, a
+tape or a program injected with \f[B]\-\-inject\f[R].
 A \f[CR].jns\f[R] does not record it.
 .PP
 And it is not for use alongside a booted NextZXOS.
@@ -2658,6 +2723,68 @@ It does contain \f[B]all of RAM\f[R], which on a Next includes NextZXOS
 and DivMMC ROM code paged into it.
 Those are not redistributable: keep your snapshots rather than posting
 them, and hand somebody a \f[CR].nex\f[R] instead.
+.SH BUG REPORTS
+\f[B]\-\-bug\-report\f[R] \f[I]PATH\f[R] saves, when jnext exits, one
+zip file that holds what a developer needs to understand a failure: the
+state of the machine and of jnext at that moment.
+In the Qt window \f[B]File > Save Bug Report\&...\f[R] saves one at
+once: it opens a save dialog in your home folder that proposes the name
+below.
+It is a snapshot for reading, not a session to replay.
+It holds:
+.IP \(bu 2
+the jnext version, the host operating system and architecture, the
+frontend and the settings in use (the command line and, in the Qt
+frontend, the settings file), with host paths blanked;
+.IP \(bu 2
+the machine, decoded: the CPU registers, every NextREG with its name,
+the paging map, the ULA, Layer 2, sprite, tilemap and Copper state, the
+palettes, the interrupt, DivMMC and Multiface flags, the audio chips;
+.IP \(bu 2
+the screenshot, and each of the seven video layers on its own;
+.IP \(bu 2
+the last 500 lines of the log at info level and above;
+.IP \(bu 2
+the debugger\(cqs state: the run state, breakpoints, the call stack and
+the recent instruction trace;
+.IP \(bu 2
+the SD card\(cqs name, size and SHA\-256, never its bytes;
+.IP \(bu 2
+the program file you loaded, byte for byte (a \f[CR].jns\f[R] snapshot,
+which holds the machine\(cqs whole memory, is the exception: only its
+SHA\-256 and size are recorded).
+It is your file, and you are responsible for what you attach: jnext does
+not check it against anything;
+.IP \(bu 2
+\f[B]memory, only when no firmware has run\f[R]: RAM, the CPU\(cqs 64 KB
+view, the sprite patterns, a disassembly, the bytes at the stack pointer
+and the opcode bytes of the trace.
+That is a \f[CR]\-\-no\-sdcard\f[R] session whose memory has not seen
+the boot ROM run or a saved state loaded since it was cleared.
+In every other session, memory holds NextZXOS, ROM or DivMMC firmware
+from the card, so the report carries the machine state but none of its
+memory, and the manifest says why.
+.PP
+jnext never puts NextZXOS, ROM or any other distribution content in a
+report, and no byte of the SD card.
+The program file you loaded is yours, goes in as it is and is your
+responsibility.
+The card is named and identified by its SHA\-256 only.
+The serial (UART) FIFOs and the SD buffers of the machine state are left
+out, because they can carry what the program or NextZXOS exchanged with
+the card or the network.
+.PP
+Your user name and every absolute path on your computer are blanked in
+the file (\f[CR]<user>\f[R] and \f[CR]<path>/name\f[R]).
+Look through a report before you attach it anyway.
+.PP
+To read a report, \f[CR]tools/jnext\-bug\-view.py\f[R] in the jnext
+sources shows it as a page, or as text with \f[CR]\-\-text\f[R]; it
+needs only Python 3, and refuses a file that is not a jnext bug report.
+.PP
+\f[CR]manifest.json\f[R] lists every member of the file and what was
+left out and why.
+A file is a report when it has that manifest, whatever its name.
 .SH HEADLESS MODE, SCREENSHOTS AND RECORDING
 \f[B]\-\-headless\f[R] runs the emulator with no window and no audio
 device, as fast as the host allows: the mode built for scripting and CI.
@@ -3154,7 +3281,8 @@ RUNNING\f[R]), Record MPEG4 Video (Ctrl+F5) / Stop (Ctrl+F6), Play RZX /
 Record RZX / Stop RZX, Save Screenshot (Alt+S), Quick Screenshot
 (Alt+K), Save Snapshot (Alt+Shift+S), Quick Save Snapshot
 (Alt+Shift+F5), Quick Load Snapshot (Alt+Shift+F9) (see \f[B]JNEXT
-SNAPSHOTS\f[R] above), Quit (Alt+Q or Alt+F4).
+SNAPSHOTS\f[R] above), Save Bug Report\&...
+(see \f[B]BUG REPORTS\f[R]), Quit (Alt+Q or Alt+F4).
 .RS
 .PP
 \f[B]Save Screenshot\&...\f[R] asks for a name; the extension chooses
@@ -4223,6 +4351,13 @@ The program to run (\f[CR].nex\f[R], \f[CR].tap\f[R], \f[CR].tzx\f[R],
 \f[CR].wav\f[R], a \f[CR].rzx\f[R] recording, or a \f[CR].jns\f[R],
 \f[CR].sna\f[R], \f[CR].szx\f[R] or \f[CR].z80\f[R] snapshot); without
 it the machine boots to the NextZXOS menu.
+A \f[CR].zip\f[R] is accepted when the program in it is a
+\f[CR].nex\f[R]: the NEX gets its directory in the archive (see the
+\f[CR].zip\f[R] entry of \f[B]LOADING PROGRAMS\f[R]), read\-only unless
+\f[CR]args: [\(aq\-\-esxdos\-stub\-writable\(aq]\f[R] is given, and what
+it writes is not kept by \f[CR]keepWrites\f[R].
+\f[CR]player.load()\f[R] accepts the same.
+Any other \f[CR].zip\f[R] is refused.
 \f[CR]{card: \(aq/PATH/x.nex\(aq}\f[R] runs a NEX that is on the SD
 card: its path lies inside one entry of \f[CR]card.dirs\f[R], the
 directory that holds it is copied out of the card with everything below
@@ -4539,8 +4674,10 @@ The Quick Save retention is stored under \f[CR][snapshot]\f[R] as
 unrecognised value keeps the default.
 The debugger window\(cqs layout is stored under \f[CR][debugger]\f[R]:
 \f[CR]size\f[R] (\f[CR]W, H\f[R]), \f[CR]position\f[R] (\f[CR]X, Y\f[R],
-written only while the window is detached) and \f[CR]attached\f[R]
-(\f[CR]true\f[R]/\f[CR]false\f[R]).
+written only while the window is detached), \f[CR]attached\f[R]
+(\f[CR]true\f[R]/\f[CR]false\f[R]) and \f[CR]layout\f[R] (the
+arrangement of its panels, one line of plain text; deleting it, or
+Window > Reset Layout, restores the default).
 An older \f[CR]\(ti/.jnext/Debugger.conf\f[R] is merged into this
 section once and removed.
 All section names are lowercase.
@@ -4549,9 +4686,10 @@ never read it.
 Every setting above can also be set for one run, without touching the
 file (the Recent Files history, the joystick controller names
 \f[CR]joy1_device_name\f[R] and \f[CR]joy2_device_name\f[R],
-\f[CR][config] version\f[R] and the debugger window\(cqs \f[CR]size\f[R]
-and \f[CR]position\f[R] are refused), with \f[B]\-\-set\f[R]
-\f[I]section.key=value\f[R] (see \f[B]Settings for \-\-set\f[R]).
+\f[CR][config] version\f[R] and the debugger window\(cqs
+\f[CR]size\f[R], \f[CR]position\f[R] and \f[CR]layout\f[R] are refused),
+with \f[B]\-\-set\f[R] \f[I]section.key=value\f[R] (see \f[B]Settings
+for \-\-set\f[R]).
 .TP
 \f[CR]\(ti/.jnext/screenshots/\f[R]
 Where \f[B]File > Quick Screenshot\f[R] writes, unless
@@ -4564,6 +4702,13 @@ Snapshot\f[R] reads (the newest \f[CR].jns\f[R] in it).
 Created on the first save.
 Quick Save keeps the newest 20 files it made (see
 \f[B]\-\-quick\-snapshot\-keep\f[R]).
+.TP
+\f[CR]*.jnext\-bug.zip\f[R]
+A bug report (see \f[B]BUG REPORTS\f[R]), named
+\f[CR]PROGRAM.YYYYMMDDhhmm.jnext\-bug.zip\f[R] by
+\f[B]\-\-bug\-report\f[R] \f[I]DIR\f[R]\f[CR]/\f[R] and proposed under
+that name by \f[B]File > Save Bug Report\&...\f[R].
+Where it goes is your choice; jnext keeps no folder of them.
 .TP
 \f[CR]\(ti/.jnext/warm\-start/\f[R]
 The recorded NextZXOS\-resident machine a \f[B]\-\-load\f[R] of a
@@ -4621,6 +4766,9 @@ This holds in the GUI, the SDL\-only build and under
 \f[B]\-\-headless\f[R] alike.
 The error is logged, the machine keeps running without the program, and
 the non\-zero status is reported when \f[B]jnext\f[R] exits.
+.PP
+It exits 1 when a \f[B]\-\-bug\-report\f[R] file cannot be written, the
+way it does for a failed \f[B]\-\-export\-skoolkit\f[R].
 .PP
 SIGTERM, or SIGINT (Ctrl\-C in the terminal), ends \f[B]jnext\f[R] the
 way closing the window does: recordings and captures are finished and no
@@ -4689,6 +4837,9 @@ Report bugs at \c
 .UR https://github.com/jorgegv/jnext/issues
 .UE \c
 \&.
+Attach a bug report (\f[B]File > Save Bug Report\&...\f[R], or
+\f[B]\-\-bug\-report\f[R] \f[I]DIR\f[R]\f[CR]/\f[R]): see \f[B]BUG
+REPORTS\f[R].
 .SH AUTHORS
 Main author: Jorge Gonzalez, aka ZXjogv \c
 .MT zx@jogv.es

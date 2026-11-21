@@ -5,6 +5,7 @@
 #include <QString>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "core/emulator_config.h"
@@ -49,6 +50,8 @@ struct AppConfigData {
 
     // GH #499 - seconds of a plain Next start run at maximum speed (0 = off). A launch setting.
     int         fast_boot_seconds      = fast_boot::DEFAULT_SECONDS;
+    // GH #544 - keep the window black while fast boot runs. A launch setting.
+    bool        fast_boot_hide_screen  = false;
 
     // The language of the window and the debugger (startup.language). A launch
     // setting: read before the first window exists (gui/ui_language.h).
@@ -222,6 +225,11 @@ public:
 
     AppConfigData&       data()       { return data_; }
     const AppConfigData& data() const { return data_; }
+
+    /// GH #492 - the settings file as `section.key` -> text, for the bug report: every row of
+    /// `config_keys::KEYS` that the file holds (the `[debugger_keys]` family by whatever keys it has),
+    /// as written. Nothing is blanked here; the report writer blanks what could name the host.
+    std::vector<std::pair<std::string, std::string>> file_for_report() const;
 
     /// True once load() has run and found an on-disk settings file (i.e. this
     /// is not the very first run / a fresh temp file). Informational only —

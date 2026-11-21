@@ -78,6 +78,7 @@ PreferencesDialog::PreferencesDialog(const AppConfigData& current, QWidget* pare
     cpu_speed_combo_->setCurrentIndex(cpu_speed_combo_->findData(static_cast<int>(current.cpu_speed)));
     emu_speed_spin_->setValue(current.emulator_speed_percent);
     fast_boot_spin_->setValue(current.fast_boot_seconds);
+    fast_boot_hide_check_->setChecked(current.fast_boot_hide_screen);
     language_combo_->setCurrentIndex(language_combo_->findData(static_cast<int>(current.ui_language)));
     when_slow_combo_->setCurrentIndex(
         when_slow_combo_->findData(static_cast<int>(current.when_slow_prefer)));
@@ -208,6 +209,14 @@ QWidget* PreferencesDialog::build_startup_tab() {
            "Takes effect at the next start."));
     form->addRow(tr("Fast boot:"), fast_boot_spin_);
 
+    // GH #544 - a launch setting too.
+    fast_boot_hide_check_ = new QCheckBox(tr("Hide the screen during fast boot"), tab);
+    fast_boot_hide_check_->setObjectName(QStringLiteral("fastBootHideCheck"));
+    fast_boot_hide_check_->setToolTip(
+        tr("Keep the window black while fast boot runs, so the first picture is the screen it ends on "
+           "(normally the NextZXOS menu). Any key shows the screen at once. "
+           "Takes effect at the next start."));
+    form->addRow(QString(), fast_boot_hide_check_);
     // startup.language - a launch setting like Fast boot: the window and the
     // debugger are built in one language, so a change shows at the next start.
     // The language names are written in their own language, as is usual in a
@@ -693,6 +702,7 @@ AppConfigData PreferencesDialog::collect() const {
     cfg.cpu_speed    = static_cast<CpuSpeed>(cpu_speed_combo_->currentData().toInt());
     cfg.emulator_speed_percent = emu_speed_spin_->value();
     cfg.fast_boot_seconds = fast_boot_spin_->value();
+    cfg.fast_boot_hide_screen = fast_boot_hide_check_->isChecked();
     cfg.ui_language = static_cast<ui_language::Choice>(language_combo_->currentData().toInt());
     cfg.when_slow_prefer = static_cast<audio_pacing::WhenSlowPrefer>(
         when_slow_combo_->currentData().toInt());

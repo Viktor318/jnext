@@ -992,6 +992,8 @@ my %NO_MATRIX_SECTION = (
     'halt_batch_observer_test'=> 'cycle-batching equivalence with an ESP-01 or a debugger client attached (GH #489): batching off vs on, per frame; the oracle is the unbatched path of the same emulator (jnext-internal)',
     'halt_batch_observer_native_test'=> 'cycle-batching equivalence with an ESP-01 attached (GH #489): the rows that need a live ESP worker thread; batching off vs on, per frame; the oracle is the unbatched path of the same emulator (jnext-internal)',
     'call_stack_fetch_test'   => 'debugger call-stack tracker fed from the CPU\'s M1 fetch buffer (GH #489): frames through the emulator path; the oracle is Z80/Z80N instruction semantics and the interrupt response, the tracker itself being jnext-internal',
+    'call_stack_reconstruct_test' => 'debugger call-stack tracker rebuild from the stack (GH #498): the oracle is the Z80 CALL / RST encodings (UM0080), the tracker itself being jnext-internal',
+    'debug_pre_block_test'    => 'debugger per-instruction armed block skipped while idle (GH #498): the cached gate against its recomputation, and the block run vs skipped on the same program; jnext-internal',
     'halt_batch_boot_test'    => 'cycle-batching equivalence on the NextZXOS cold boot (GH #452): batching off vs on, per frame; the oracle is the unbatched path of the same emulator (jnext-internal)',
     'halt_batch_corpus_1_test'=> 'cycle-batching equivalence over every kept NEX program (GH #452): batching off vs on, per frame, video + audio + full state; the oracle is the unbatched path of the same emulator (jnext-internal)',
     'halt_batch_corpus_2_test'=> 'cycle-batching equivalence over every kept NEX program (GH #452): batching off vs on, per frame, video + audio + full state; the oracle is the unbatched path of the same emulator (jnext-internal)',
@@ -1147,6 +1149,9 @@ my %NO_MATRIX_SECTION = (
     'browser_policy_test' => 'browser page rAF callback gate and refusals (host UI, GH #463)',
     'quit_signal_test' => 'SIGINT/SIGTERM as a quit request (host process behaviour; GH #364)',
     'no_sdcard_test' => '--no-sdcard (GH #540): a NEX with no SD card and no ROMs, an emulator convenience like the esxDOS stand-in; a real Next always has its ROMs, so the core has nothing to cite',
+    'bug_report_test' => 'bug report writer (GH #492): a host-side diagnostic file; its oracles are the debugger facade, files on disk and the issue rules, with no VHDL counterpart',
+    'bug_view_test' => 'bug report viewer tools/jnext-bug-view.py (host tool run as python3 in a child; GH #492): no VHDL counterpart',
+    'bug_report_ui_test' => 'File > Save Bug Report... in the Qt window (host GUI, GH #492): the menu, the real dialog, the report written',
     'no_sdcard_ui_test' => '--no-sdcard in the window: Insert / Eject SD Card disabled, "SD: none" (host GUI, GH #540)',
 
     # ── CLI, configuration, logging, profiling ───────────────────────
@@ -1183,6 +1188,7 @@ my %NO_MATRIX_SECTION = (
     # here would make this document's content depend on the host's build
     # configuration, which a traceability record must not.
     'window_attach_test'        => 'host window-attach geometry (GH #39 contract, no VHDL oracle)',
+    'dock_layout_test'          => 'debugger dockable-panel layout grammar (GH #377; host UI, no VHDL oracle)',
     'tstate_counter_test'       => 'debugger CPU panel T-state counter start point and accumulate policy (host GUI, no VHDL oracle)',
     'reg_edit_test'             => 'debugger CPU panel register edit parsing (host UI policy; no VHDL oracle)',
     'nav_history_test'          => 'debugger Disassembly/Source back/forward history (host UI policy; no VHDL oracle)',
@@ -1242,6 +1248,7 @@ my %NO_MATRIX_SECTION = (
     'zrcp_adapter_test'         => 'ZRCP remote-debugger adapter (GH #280; ZEsarUX 12.0 transcripts, jnext-internal); the T80N core has no debugger',
     'debugger_persistent_bp_test' => 'debugger window raise-on-hit (host GUI lifecycle, GH #219)',
     'debugger_halt_batch_test' => 'debugger window open vs the HALT batch (host GUI lifecycle, GH #489): batching off vs on, per frame; the oracle is the unbatched path of the same emulator (jnext-internal)',
+    'debugger_panel_data_test' => 'debugger window collects call frames and the raster walk per panel on show (host GUI policy, GH #498): the issue\'s switching rule; the A/B oracle is the same machine with the window closed (jnext-internal)',
     'debugger_inspect_watchpoint_test' => 'debugger INSPECTION reads vs watchpoints (jnext-internal); the T80N core has no panels reading its bus',
     'debugger_video_panel_test' => 'debugger panel RENDERING; the hardware it displays is traced in `## Compositor`/`## Layer2`/`## ULA Video` (GUI-gated build)',
     'debugger_audio_panel_test' => 'debugger panel RENDERING; the hardware it displays is traced in `## Audio` (GUI-gated build)',
@@ -1249,6 +1256,7 @@ my %NO_MATRIX_SECTION = (
     'debugger_window_size_test' => 'debugger window geometry (host GUI)',
     'debugger_window_grow_test' => 'debugger window geometry (host GUI)',
     'debugger_accel_test'       => 'debugger keyboard accelerators (host GUI)',
+    'debugger_dock_test'        => 'debugger dockable panels, saved layout, Window > Panels and Reset Layout (host GUI)',
     'debugger_keymap_test'      => 'user-redefinable debugger key bindings (host GUI + jnext.conf, GH #1); the commands they invoke are traced by the suites of the hardware each one drives',
     'debugger_menu_test'        => 'debugger menu reachability (host GUI)',
     'debugger_disasm_copy_test' => 'disassembly-panel selection and clipboard text (host GUI, GH #21); the disassembler it copies is traced in `## Z80N`',

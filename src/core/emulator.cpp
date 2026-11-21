@@ -298,6 +298,11 @@ bool Emulator::init(const EmulatorConfig& cfg, bool preserve_memory)
     if (!preserve_memory) {
         ram_.reset();
         rom_.reset();
+        // GH #492: RAM is clean again. Only a --no-sdcard machine (no ROM or firmware
+        // bytes in it at all) starts clean for the bug report; the boot ROM
+        // install below and load_state() withhold it afterwards.
+        ram_withheld_ = cfg.no_sdcard ? RamWithheld::None : RamWithheld::CardSession;
+        program_files_.clear();
     }
     // preserve_memory=true == soft reset (RESET_SOFT / NR 0x02 bit 0).
     // VHDL distinguishes the two reset domains: some MMU-side flip-flops
@@ -1297,8 +1302,8 @@ bool Emulator::init(const EmulatorConfig& cfg, bool preserve_memory)
                     "undo them");
         }
     } else {
-        // No explicit root: an implicit one (the loaded NEX's directory, set
-        // by load_nex()) does not outlive a re-init, like direct_nex_esxdos_.
+        // No explicit root: an implicit one (the loaded NEX's directory or a data
+        // archive's, set by load_nex()) does not outlive a re-init, like direct_nex_esxdos_.
         esxdos_hostfs_.clear();
     }
     const bool esxdos_tracing = Log::esxdos()->should_log(spdlog::level::trace);
@@ -7133,6 +7138,8 @@ bool Emulator::init(const EmulatorConfig& cfg, bool preserve_memory)
             const size_t   embedded_size = embedded_nextboot_rom_size();
             boot_rom_.assign(embedded_data, embedded_data + embedded_size);
             mmu_.set_boot_rom(boot_rom_.data(), boot_rom_.size());
+            // GH #492: the boot ROM runs from PC 0 and may copy itself into RAM.
+            if (ram_withheld_ == RamWithheld::None) ram_withheld_ = RamWithheld::BootRomRan;
             Log::emulator()->info("Boot ROM loaded from embedded nextboot.rom ({} bytes), overlay active at 0x0000-0x{:04X}",
                                   boot_rom_.size(), boot_rom_.size() - 1);
         }
@@ -7713,6 +7720,39 @@ bool Emulator::init(const EmulatorConfig& cfg, bool preserve_memory)
     return true;
 }
 
+// GH #492 - bug report support: the RAM rule's latch and the program files.
+
+Emulator::RamWithheld Emulator::ram_withheld() const
+{
+    return ram_withheld_;
+}
+
+void Emulator::note_program_file_(const std::string& path)
+{
+    namespace fs = std::filesystem;
+    std::error_code ec;
+    ProgramFile pf;
+    const fs::path abs = fs::absolute(path, ec);
+    pf.path = ec ? path : abs.string();
+    pf.name = fs::path(pf.path).filename().string();
+    ec.clear();
+    const auto size = fs::file_size(pf.path, ec);
+    pf.size = ec ? 0 : static_cast<uint64_t>(size);
+    ec.clear();
+    const auto mtime = fs::last_write_time(pf.path, ec);
+    pf.mtime = ec ? 0 : static_cast<int64_t>(mtime.time_since_epoch().count());
+    // The same file loaded again replaces its entry (its size and time are new);
+    // the list is short by construction, but a script loading tapes in a loop
+    // must not grow it without bound.
+    for (auto it = program_files_.begin(); it != program_files_.end(); ++it) {
+        if (it->path == pf.path) { program_files_.erase(it); break; }
+    }
+    program_files_.push_back(std::move(pf));
+    constexpr size_t kMaxProgramFiles = 32;
+    if (program_files_.size() > kMaxProgramFiles)
+        program_files_.erase(program_files_.begin());
+}
+
 bool Emulator::inject_binary(const std::string& path, uint16_t org, uint16_t pc)
 {
     std::ifstream f(path, std::ios::binary | std::ios::ate);
@@ -7740,6 +7780,7 @@ bool Emulator::inject_binary(const std::string& path, uint16_t org, uint16_t pc)
     for (size_t i = 0; i < buf.size(); ++i) {
         mmu_.write(static_cast<uint16_t>(org + i), buf[i]);
     }
+    note_program_file_(path);   // GH #492
 
     // GH #164 — see resume_from_park(). This call names an entry point and
     // sets PC to it; a parked CPU would never reach it.
@@ -8678,6 +8719,7 @@ bool Emulator::load_nex(const std::string& path)
     // to plain init() whenever a recording is not available; see
     // init_for_load_from_file().
     init_for_load_from_file();
+    note_program_file_(path);   // GH #492
 
     if (!loader.apply(*this)) return false;
     active_nex_path_ = std::filesystem::absolute(path).lexically_normal().string();
@@ -8685,8 +8727,36 @@ bool Emulator::load_nex(const std::string& path)
     // With --esxdos-stub and no --esxdos-stub-root, the NEX's own directory is
     // the esxDOS root (read-only unless --esxdos-stub-writable). It follows
     // every NEX load, and init() ends it. A NEX extracted from an archive has
-    // no directory of its own on disk.
-    if (config_.esxdos_stub && config_.esxdos_stub_root.empty()) {
+    // no directory of its own on disk, unless it came out of a data archive
+    // (GH #541): then the directory the archive's NEX was in is served, with no
+    // --esxdos-stub needed, and an explicit --esxdos-stub-root still wins.
+    std::string data_archive;
+    if (program_archive::in_archive_directory(active_nex_path_, data_archive)) {
+        if (!config_.esxdos_stub_root.empty()) {
+            Log::emulator()->info(
+                "the files of '{}' are not served: --esxdos-stub-root {} is",
+                data_archive, config_.esxdos_stub_root);
+        } else {
+            const std::string dir =
+                std::filesystem::path(active_nex_path_).parent_path().string();
+            std::string why;
+            if (!esxdos_hostfs_.configure(dir, config_.esxdos_stub_writable, why)) {
+                Log::emulator()->error(
+                    "esxdos host directory: cannot serve '{}': {}", dir, why);
+            } else {
+                Log::emulator()->info(
+                    "esxdos host directory: {} ({}), the files of '{}'",
+                    esxdos_hostfs_.root().string(),
+                    config_.esxdos_stub_writable ? "read-write" : "read-only",
+                    data_archive);
+                if (config_.esxdos_stub_writable)
+                    Log::emulator()->warn(
+                        "--esxdos-stub-writable: guest writes, deletions and renames "
+                        "change the extracted copy immediately, never the archive; "
+                        "rewinding the emulator cannot undo them");
+            }
+        }
+    } else if (config_.esxdos_stub && config_.esxdos_stub_root.empty()) {
         std::string archive, member;
         if (program_archive::extracted_from(path, archive, member)) {
             Log::emulator()->info(
@@ -9015,6 +9085,7 @@ bool Emulator::load_sna(const std::string& path)
     if (!loader.load(path)) return false;
     if (!switch_to_snapshot_machine_(path, "sna")) return false;   // GH #323: before the machine is touched
     init(config_);   // re-initialise in place first (see init(), GH #239)
+    note_program_file_(path);   // GH #492
     if (!loader.apply(*this)) return false;
     // A snapshot puts the CPU in its interrupt mode without executing an IM
     // instruction, which is what the IM latch behind NR 0xC0 bits 2:1 (and
@@ -9081,6 +9152,7 @@ bool Emulator::load_tap(const std::string& path, bool fast_load)
     tape_poll_.reset();
     tape_ = std::move(loader);
     tape_deck_changed_();   // GH #408
+    note_program_file_(path);   // GH #492
     Log::emulator()->info("TAP: tape attached - {} blocks, mode: {}",
                            tape_.block_count(), tape_.fast_load() ? "fast" : "realtime");
 
@@ -9189,6 +9261,7 @@ bool Emulator::load_tzx(const std::string& path, bool fast_load)
     tape_poll_.reset();
     tzx_tape_ = std::move(loader);
     tape_deck_changed_();   // GH #408
+    note_program_file_(path);   // GH #492
     Log::emulator()->info("TZX: tape attached, mode: {}",
                            tzx_tape_.fast_load() ? "fast" : "realtime");
 
@@ -9221,6 +9294,7 @@ bool Emulator::load_szx(const std::string& path)
     if (!loader.load(path)) return false;
     if (!switch_to_snapshot_machine_(path, "szx")) return false;   // GH #323: before the machine is touched
     init(config_);   // re-initialise in place first (see init(), GH #239)
+    note_program_file_(path);   // GH #492
     if (!loader.apply(*this)) return false;
     im2_.set_im_mode(cpu_.get_registers().IM);   // see load_sna()
     return true;
@@ -9232,6 +9306,7 @@ bool Emulator::load_z80(const std::string& path)
     if (!loader.load(path)) return false;
     if (!switch_to_snapshot_machine_(path, "z80")) return false;   // GH #323: before the machine is touched
     init(config_);   // re-initialise in place first (see init(), GH #239)
+    note_program_file_(path);   // GH #492
     if (!loader.apply(*this)) return false;
     im2_.set_im_mode(cpu_.get_registers().IM);   // see load_sna()
     return true;
@@ -9247,6 +9322,7 @@ bool Emulator::load_wav(const std::string& path)
 
     wav_tape_ = std::move(loader);
     tape_deck_changed_();   // GH #408
+    note_program_file_(path);   // GH #492
     Log::emulator()->info("WAV: tape attached (always real-time)");
 
     // Eject any other tape to avoid conflicts.
@@ -9387,6 +9463,9 @@ bool Emulator::load_rzx(const std::string& path)
     // load_sna/load_szx above already reset (which un-parks); without one,
     // playback drives whatever machine is currently loaded.
     resume_from_park("RZX playback started");
+
+    // The embedded snapshot's init() cleared the list: the recording is the program.
+    note_program_file_(path);   // GH #492
 
     // Wire up port override for playback.
     rzx_player_.start(std::move(rec));
@@ -10795,7 +10874,9 @@ void Emulator::run_frame()
         // the render hint, the per-instruction VideoTiming walk and the rewind
         // step modes read raster_live() / attached() instead, so nothing but
         // the check itself is switched on by the flag.
-        if (debug_state_.armed()) {
+        // GH #498: pre_block_live() is armed() && (something in this block can answer "yes"): an
+        // attached client with no breakpoint, step, subscription, verify window or pause skips it.
+        if (debug_state_.pre_block_live()) {
             // Check if an external trigger (e.g. magic breakpoint) already
             // paused the emulator during the previous instruction's execute().
             if (debug_state_.paused())
@@ -14909,6 +14990,12 @@ void Emulator::close_fast_boot_(const char* reason)
 
 bool Emulator::load_state(StateReader& r)
 {
+    // GH #492: a state from outside this session's own rewind ring carries RAM the
+    // bug report cannot vouch for. FIRST, like the epoch bump: a restore that fails
+    // part way has overwritten RAM too. A ring restore (rewind, step back) is this
+    // init's own history: the ring is recreated at every hard init.
+    if (!debug_state_.restoring_from_rewind() && ram_withheld_ == RamWithheld::None)
+        ram_withheld_ = RamWithheld::StateRestored;
     // GH #369: FIRST, not after the clock fields: a restore that fails at a
     // sentinel returns with the machine partly written (its time included), and
     // the epoch must have moved on that path too.

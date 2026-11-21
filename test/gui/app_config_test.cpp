@@ -1734,6 +1734,24 @@ static void test_source_scheme(QTemporaryDir& dir) {
           saved_word);
 }
 
+// AC-102 / AC-103 (GH #544): `[startup] fast_boot_hide_screen`, a Bool launch setting, default off.
+// Oracle: the key row (Bool, default false) and the plan's round-trip; read back from the real file.
+static void test_fast_boot_hide(QTemporaryDir& dir) {
+    set_group("AC-FBHIDE");
+    const QString p0 = fresh_ini_path(dir, "fbhide-default");
+    AppConfig d(p0);
+    d.load();
+    check("AC-102", "fast_boot_hide_screen defaults to false (a fresh struct and a load with no file)",
+          !AppConfigData().fast_boot_hide_screen && !d.data().fast_boot_hide_screen);
+    const QString p1 = fresh_ini_path(dir, "fbhide-true");
+    { AppConfig w(p1); w.load(); w.data().fast_boot_hide_screen = true; w.save(); }
+    AppConfig r(p1);
+    r.load();
+    const std::string raw = raw_text(p1, "startup/fast_boot_hide_screen");
+    check("AC-103", "fast_boot_hide_screen=true saves as [startup] fast_boot_hide_screen=true and loads back true",
+          r.data().fast_boot_hide_screen && raw == "true", raw);
+}
+
 // GH #505: the second SD card's saved path.
 static void test_sd_card2(QTemporaryDir& dir) {
     set_group("AC-SDCARD2");
@@ -1752,7 +1770,7 @@ static void test_sd_card2(QTemporaryDir& dir) {
               raw.value("sd_card2_path").toString() == QStringLiteral("/home/user/sd/second, card.img"));
 }
 
-// AC-102..104 (hungarian-ui): startup.language, the interface language.
+// AC-HU-01..03 (hungarian-ui): startup.language, the interface language.
 // Oracle: the key row (auto|en|hu; an unknown word keeps Auto), ui_language.h's
 // contract (Auto follows the first system UI language) and the catalogue
 // compiled in from src/gui/translations (a known Preferences text in Hungarian).
@@ -1767,7 +1785,7 @@ static void test_ui_language(QTemporaryDir& dir) {
         ui_language::resolve(Choice::Auto, {}) == "en" &&
         ui_language::resolve(Choice::English, {QStringLiteral("hu-HU")}) == "en" &&
         ui_language::resolve(Choice::Hungarian, {QStringLiteral("es-ES")}) == "hu";
-    check("AC-102", "ui_language::resolve(): Auto gives hu only when the FIRST system UI language is Hungarian, "
+    check("AC-HU-01", "ui_language::resolve(): Auto gives hu only when the FIRST system UI language is Hungarian, "
                     "en otherwise (none given included); English and Hungarian ignore the system",
           resolve_ok);
 
@@ -1788,7 +1806,7 @@ static void test_ui_language(QTemporaryDir& dir) {
     merge_cli_assignments(merged, {{ config_keys::KeyId::StartupLanguage, {}, "hu" }});
     const bool only_lang = merged.ui_language == Choice::Hungarian &&
                            merged.window_scale_x2 == before.window_scale_x2 && merged.silent == before.silent;
-    check("AC-103", "ui_language defaults to Auto; a file with language=HU loads Hungarian and =de loads Auto; "
+    check("AC-HU-02", "ui_language defaults to Auto; a file with language=HU loads Hungarian and =de loads Auto; "
                     "save() writes language=en for English; merge_cli_assignments() changes only that field",
           def && h.data().ui_language == Choice::Hungarian && u.data().ui_language == Choice::Auto &&
               saved_word == "en" && only_lang,
@@ -1803,7 +1821,7 @@ static void test_ui_language(QTemporaryDir& dir) {
     const QString text = QCoreApplication::translate("PreferencesDialog", "Language:");
     const QString qt_text = QCoreApplication::translate("QPlatformTheme", "Cancel");
     ui_language::set_session_choice(Choice::Auto);
-    check("AC-104", "with Hungarian chosen, install() loads the compiled-in catalogues: jnext's "
+    check("AC-HU-03", "with Hungarian chosen, install() loads the compiled-in catalogues: jnext's "
                     "(PreferencesDialog \"Language:\" -> \"Nyelv:\") and Qt's (QPlatformTheme \"Cancel\" -> \"Mégse\")",
           got == "hu" && text == QString::fromUtf8("Nyelv:") && qt_text == QString::fromUtf8("Mégse"),
           (got + " | " + text + " | " + qt_text).toStdString());
@@ -1840,6 +1858,7 @@ int main() {
     test_merge_cli_assignments(dir);
     test_source_dirs(dir);
     test_source_scheme(dir);
+    test_fast_boot_hide(dir);
     test_sd_card2(dir);
     test_ui_language(dir);
 

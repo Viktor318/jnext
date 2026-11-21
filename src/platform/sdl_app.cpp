@@ -8,6 +8,7 @@
 #include "platform/cli_delay.h"
 #include "platform/auto_exit.h"
 #include "platform/coverage_startup.h"   // GH #388
+#include "platform/bug_report_at_exit.h"
 #include "platform/re_export_at_exit.h"   // GH #389
 #ifndef __EMSCRIPTEN__
 #include "platform/recording_info.h"   // GH #26 WP6
@@ -15,6 +16,7 @@
 #include "platform/rzx_startup.h"
 #include "platform/quit_signal.h"   // GH #364
 #include "platform/frame_sequencer.h"   // RENDER_INTERVAL_MS, shared with QtApp
+#include "platform/fast_boot.h"
 #include "platform/render_policy.h"
 #include "platform/quick_snapshot_chord.h"   // GH #321
 #include "core/quick_snapshot.h"
@@ -788,11 +790,15 @@ bool SdlApp::tick(uint32_t& sleep_ms) {
         // take_redraw_request() is read unconditionally so it is consumed.
         const bool redraw = display_.take_redraw_request();
         ++present_ticks_;
-        if (render_policy::upload_needed(emulator_.framebuffer_generation(),
-                                         last_uploaded_gen_, redraw)) {
-            display_.upload_frame(fb, fb_w, fb_h);
+        // GH #544: while the screen is hidden (fast boot), one held black frame.
+        const fast_boot::Shown shown = fast_boot::shown_frame(
+            emulator_.fast_boot_hides_screen(), fb, fb_w, fb_h, emulator_.framebuffer_generation());
+        if (render_policy::upload_needed(shown.generation, last_uploaded_gen_, redraw)) {
+            const uint32_t* const up = shown.pixels;
+            display_.upload_frame(up, fb_w, fb_h);
             display_.present();
-            last_uploaded_gen_ = emulator_.framebuffer_generation();
+            last_uploaded_gen_ = shown.generation;
+            last_uploaded_pixels_ = up;
             ++present_uploads_;
             ++uploads_total_;
         }
@@ -905,6 +911,8 @@ void SdlApp::shutdown() {
     if (debugger_) log_coverage_summary(*debugger_);   // GH #388
     // GH #389: --export-skoolkit / --export-ghidra, after the coverage they map is final.
     if (debugger_ && !write_re_exports_at_exit(*debugger_, config_) && exit_code_ == 0) exit_code_ = 1;
+    // GH #492: --bug-report, after the exports, so its log tail ends at the exit.
+    if (debugger_ && !write_bug_report_at_exit(emulator_, *debugger_, config_, "sdl", sdl_toolkit_version()) && exit_code_ == 0) exit_code_ = 1;
     // A requested screenshot that was never written is a failure, not a
     // footnote — same contract as QtApp::shutdown(). Reachable here if the
     // capture was still deferred (no frame rendered on its tick) when

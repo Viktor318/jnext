@@ -27,6 +27,7 @@
 #include "debugger/breakpoint_model.h"
 #include "debugger/debugger_manager.h"
 #include "debugger/debugger_window.h"
+#include "put_on_show.h"
 
 #include <QApplication>
 #include <QMainWindow>
@@ -110,6 +111,16 @@ struct Fixture {
         // subscription of the GUI's observer client, which outlives the window.
         mgr->breakpoints().add(BreakpointModel::Execute, BP_ADDR);
         mgr->set_enabled(false);                       // user closes it again
+    }
+
+
+    ~Fixture() {
+        // The window is parentless and outlives the manager's teardown: delete it while the backend lives
+        // (as panel_data_test does), or a later event-loop run paints it over a destroyed machine.
+        if (!mgr) return;
+        DebuggerWindow* w = mgr->debugger_window_ptr();
+        mgr->set_enabled(false, /*prompt_on_corrupt=*/false);
+        delete w;
     }
 
     bool window_visible() const {
@@ -337,6 +348,8 @@ int main(int argc, char** argv) {
                                 !fx.backend->call_stack_enabled() &&
                                 !fx.emu.call_stack().enabled();
         fx.mgr->set_enabled(true);                 // and once more, to be sure it
+        // GH #498: the open window tracks calls while the Call Stack is on show.
+        put_on_show(fx.mgr->debugger_window_ptr(), fx.mgr->debugger_window_ptr()->callstack_panel());
         const bool open_on = fx.backend->attached() && fx.backend->armed() &&
                              fx.backend->live_raster() &&
                              fx.backend->call_stack_enabled();
@@ -366,6 +379,8 @@ int main(int argc, char** argv) {
             auto* host = new QMainWindow;
             auto* mgr  = new DebuggerManager(host, backend, host);
             mgr->set_enabled(true);
+            // GH #498: the open window tracks calls while the Call Stack is on show.
+            put_on_show(mgr->debugger_window_ptr(), mgr->debugger_window_ptr()->callstack_panel());
             open_on = backend.attached() && backend.armed() && backend.live_raster() &&
                       backend.call_stack_enabled();
             DebuggerWindow* w = mgr->debugger_window_ptr();

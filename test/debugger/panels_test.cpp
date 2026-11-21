@@ -79,6 +79,7 @@
 #include <QApplication>
 #include <QMenuBar>
 #include <QTabWidget>
+#include "dock_lookup.h"
 #include <QBoxLayout>
 #include <QCheckBox>
 #include <QComboBox>
@@ -1030,6 +1031,87 @@ static void test_callstack_panel() {
               fmt("at_nmi=%d rows=%d top=%s|%s|%s", at_nmi, row_count(&panel),
                   s(cell(&panel, 0, 1)).c_str(), s(cell(&panel, 0, 2)).c_str(),
                   s(cell(&panel, 0, 3)).c_str()));
+    }
+
+    // GH #498 - a frame rebuilt from the stack when tracking started mid-run is marked CALL*,
+    // with a note that says what that means; tracked frames carry neither.
+    // Oracle: Z80 CALL nn pushes caller + 3 (UM0080); the tracker's mark is the panel's contract.
+    {
+        const QString note_text =
+            "Frames marked * were rebuilt from the stack when call tracking started: "
+            "interrupts are missing, and stale stack data can look like a call.";
+        auto run_call = [](bool tracked_from_start, Emulator& emu) {
+            poke(emu, 0x8000, {0xCD, 0x00, 0x90});   // CALL $9000
+            poke(emu, 0x9000, {0x18, 0xFE});         // JR $
+            Z80Registers r = emu.cpu().get_registers();
+            r.PC = 0x8000; r.SP = 0xFF00; r.IFF1 = 0; r.IFF2 = 0;
+            emu.cpu().set_registers(r);
+            if (tracked_from_start) emu.call_stack().set_enabled(true);
+            emu.execute_single_instruction();
+            if (!tracked_from_start) {
+                emu.call_stack().set_enabled(true);
+                emu.call_stack().reconstruct(emu.cpu().get_registers().SP);
+            }
+        };
+        {
+            Emulator emu;
+            const bool built = build(emu, MachineType::ZX48K);
+            run_call(false, emu);
+            jnext::dbg::Debugger dbg(emu);
+            CallStackPanel panel(&dbg);
+            panel.set_paused(true);
+            panel.refresh();
+            QLabel* note = panel.findChild<QLabel*>("callStackNote");
+            check("QCSN-01",
+                  "a frame rebuilt from the stack is listed CALL*, and the note naming what the mark means is shown",
+                  built && row_count(&panel) == 1 && cell(&panel, 0, 1) == "CALL*" &&
+                      cell(&panel, 0, 2) == "8000" && cell(&panel, 0, 3) == "9000" && note &&
+                      !note->isHidden() && note->text() == note_text,
+                  fmt("rows=%d type=%s note=%d", row_count(&panel), s(cell(&panel, 0, 1)).c_str(), note != nullptr));
+        }
+        {
+            Emulator emu;
+            const bool built = build(emu, MachineType::ZX48K);
+            run_call(true, emu);
+            jnext::dbg::Debugger dbg(emu);
+            CallStackPanel panel(&dbg);
+            panel.set_paused(true);
+            panel.refresh();
+            QLabel* note = panel.findChild<QLabel*>("callStackNote");
+            check("QCSN-02",
+                  "a tracked frame is listed CALL, and the rebuilt-frames note stays hidden",
+                  built && row_count(&panel) == 1 && cell(&panel, 0, 1) == "CALL" && note && note->isHidden(),
+                  fmt("rows=%d type=%s note=%d", row_count(&panel), s(cell(&panel, 0, 1)).c_str(), note != nullptr));
+        }
+        {
+            // QCSN-03 / QCSN-04: the tooltip of a rebuilt frame's Type cell, and its removal when the same row is
+            // reused by a tracked frame.
+            Emulator emu;
+            const bool built = build(emu, MachineType::ZX48K);
+            run_call(false, emu);
+            jnext::dbg::Debugger dbg(emu);
+            CallStackPanel panel(&dbg);
+            panel.set_paused(true);
+            panel.refresh();
+            auto tip = [&]() {
+                auto* t = panel.findChild<QTableWidget*>();
+                QTableWidgetItem* it = t ? t->item(0, 1) : nullptr;
+                return it ? it->toolTip() : QStringLiteral("<no cell>");
+            };
+            const QString rebuilt_tip = tip();
+            check("QCSN-03", "a rebuilt frame's Type cell carries the tooltip 'rebuilt from the stack'",
+                  built && cell(&panel, 0, 1) == "CALL*" && rebuilt_tip == "rebuilt from the stack", s(rebuilt_tip));
+            // The tracker restarts (off, on), the same CALL runs again tracked: row 0 is reused.
+            emu.call_stack().set_enabled(false);
+            emu.call_stack().set_enabled(true);
+            Z80Registers r = emu.cpu().get_registers();
+            r.PC = 0x8000; r.SP = 0xFF00;
+            emu.cpu().set_registers(r);
+            emu.execute_single_instruction();
+            panel.refresh();
+            check("QCSN-04", "the same row reused by a tracked frame loses the tooltip and the mark",
+                  row_count(&panel) == 1 && cell(&panel, 0, 1) == "CALL" && tip().isEmpty(), s(tip()));
+        }
     }
 }
 
@@ -3845,12 +3927,9 @@ static void test_script_panel() {
         const bool started = fx.ok && host.start(*fx.backend, o);
         if (fx.ok) fx.mgr->set_script_host(&host);
         DebuggerWindow* w = fx.ok ? fx.dbg() : nullptr;
-        QTabWidget* tabs = nullptr;
-        int script_tab = -1;
-        if (w)
-            for (QTabWidget* t : w->findChildren<QTabWidget*>())
-                for (int i = 0; i < t->count(); ++i)
-                    if (t->tabText(i) == QStringLiteral("Script")) { tabs = t; script_tab = i; }
+        // GH #377: the Script panel is the widget of a dock titled "Script" (it was a QTabWidget page).
+        QDockWidget* script_dock = w ? dock_of_panel(w, w->script_panel()) : nullptr;
+        const bool script_tab = script_dock && script_dock->windowTitle() == QStringLiteral("Script");
         QStringList items;
         if (w)
             for (QAction* m : w->menuBar()->actions())
@@ -3878,11 +3957,11 @@ static void test_script_panel() {
                          "menu with Load Script…, Reload Scripts and Unload Scripts (the last two act) and, "
                          "after a separator, the recorder's three (WP6); "
                          "the panel drives the manager's script host",
-              started && tabs && tabs->widget(script_tab) == w->script_panel() &&
+              started && script_tab &&
                   items == QStringList({"&Load Script...", "&Reload Scripts", "&Unload Scripts", "",
                                         "Re&cord Script...", "Capture &Screen", "S&top Recording"}) && loads &&
                   after_reload == 1 && after_unload == 0,
-              fmt("tab=%d items=%s reload=%zu unload=%zu", script_tab, s(items.join('|')).c_str(),
+              fmt("tab=%d items=%s reload=%zu unload=%zu", int(script_tab), s(items.join('|')).c_str(),
                   after_reload, after_unload));
         if (fx.ok) fx.mgr->set_script_host(nullptr);
         host.unload_all();
@@ -6678,16 +6757,14 @@ static void test_graphics_panel() {
         std::string got = "no window";
         bool ok = false;
         if (fx.ok) {
-            for (QTabWidget* tw : fx.dbg()->findChildren<QTabWidget*>()) {
-                int g = -1, sp = -1;
-                for (int i = 0; i < tw->count(); ++i) {
-                    if (tw->tabText(i) == "Graphics") g = i;
-                    if (tw->tabText(i) == "Sprites") sp = i;
-                }
-                if (g < 0) continue;
+            // GH #377: the panels are tabbed docks; the group's tab bar gives the order.
+            GraphicsPanel* gp = fx.dbg()->findChild<GraphicsPanel*>();
+            QDockWidget* gd = dock_of_panel(fx.dbg(), gp);
+            if (gd) {
+                const QStringList titles = dock_group_titles(gd);
+                const int g = int(titles.indexOf("Graphics")), sp = int(titles.indexOf("Sprites"));
                 got = "Graphics at " + std::to_string(g) + ", Sprites at " + std::to_string(sp);
-                GraphicsPanel* gp = qobject_cast<GraphicsPanel*>(tw->widget(g));
-                QTabWidget* st = gp ? gp->findChild<QTabWidget*>("gfxSubTabs") : nullptr;
+                QTabWidget* st = gp->findChild<QTabWidget*>("gfxSubTabs");
                 ok = sp >= 0 && g == sp + 1 && st && st->count() == 3 && st->tabText(0) == "Patterns" &&
                      st->tabText(1) == "Tiles" && st->tabText(2) == "Palettes";
             }
@@ -6936,18 +7013,19 @@ static void test_graphics_panel() {
     {
         WindowFixture fx(MachineType::ZXN_ISSUE2);
         GraphicsPanel* gp = fx.ok ? fx.dbg()->findChild<GraphicsPanel*>() : nullptr;
-        QTabWidget* host = nullptr;
-        if (gp) for (QTabWidget* tw : fx.dbg()->findChildren<QTabWidget*>())
-            if (tw->indexOf(gp) >= 0) host = tw;
+        // GH #377: the Graphics panel is a dock tabbed with the others: "not current" is another dock of the
+        // group raised, "current" is its own dock raised.
+        QDockWidget* host = gp ? dock_of_panel(fx.dbg(), gp) : nullptr;
+        QDockWidget* video = fx.ok ? dock_of_panel(fx.dbg(), fx.dbg()->findChild<VideoPanel*>()) : nullptr;
         bool ok = false;
         std::string got = "no panel";
-        if (gp && host) {
-            host->setCurrentIndex(0);   // Video
+        if (gp && host && video) {
+            video->raise();   // Video
             QApplication::processEvents();
             const int before = gp->render_count();
             gp->refresh();
             const int hidden = gp->render_count();
-            host->setCurrentWidget(gp);
+            host->raise();
             QApplication::processEvents();
             const int mid = gp->render_count();
             gp->refresh();

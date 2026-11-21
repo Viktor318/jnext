@@ -6,7 +6,7 @@ One line per feature. Details are in the user guide (`doc/user-guide`) and the d
 - ZX Spectrum 48K, 128K, +2A/+3, Pentagon 128 and ZX Spectrum Next machine types
 - Pentagon personality on the Next (`--machine pentagon`): 128K ROM and paging, uncontended 50 Hz timing, Covox on 0xFB
 - **Native NextZXOS cold boot** through the authentic FPGA chain (bootrom → TBBLUE.FW → NextZXOS) from an SD card image
-- Fast boot: a plain Next start runs its first 15 seconds at full speed with the sound off, until any key (`--fast-boot SECONDS`, Preferences > Startup)
+- Fast boot: a plain Next start runs its first 15 seconds at full speed with the sound off, until any key, optionally with the screen hidden until it ends (`--fast-boot SECONDS`, Preferences > Startup)
 - FUSE-based Z80 core with all standard opcodes (100% pass rate on FUSE test suite)
 - All 26 Z80N extended opcodes (NEXTREG, MUL, LDIRX, barrel shifts, etc.)
 - Accurate memory contention for 48K, 128K, and +3 timing models
@@ -105,12 +105,13 @@ One line per feature. Details are in the user guide (`doc/user-guide`) and the d
 - WAV: RIFF/PCM EAR bit playback (8/16-bit, mono/stereo) with sub-sample edge interpolation
 - RZX playback in every frontend, on the machine the recording was made on
 - RZX recording on 48K, 128K or +3 (refused on a Next)
-- Programs inside `.zip` archives (`game.tap.zip`, `game.nex.zip`) load directly via `--load`, a bare filename or File > Load
+- Programs inside `.zip` archives (`game.tap.zip`, `game.nex.zip`) load directly via `--load`, a bare filename or File > Load; a zipped NEX game also gets the data files beside it, served through the esxDOS stand-in (command line, File > Load, web page `file`)
 - POK trainer files (WoS `.pok`): Machine > POK Trainers... applies and removes trainers on the running machine
 - POK trainers from the command line: `--delayed-pok-frames N FILE` with `--pok-trainers`
 
 ## GUI (Qt 6)
 - Native Qt 6 main window with menu bar, toolbar, and status bar
+- File > Save Bug Report... writes one zip with the machine and jnext state (registers, NextREGs, paging, video, settings, screenshots, log tail, debugger state, the program); RAM only in a `--no-sdcard` session, never any NextZXOS or ROM content
 - Monochrome SVG toolbar icons that follow a light or dark theme live
 - Light and dark mode: windows (debugger included) follow the desktop colour scheme live (`JNEXT_COLOR_SCHEME=dark|light` forces one)
 - Hi-DPI pixel-perfect rendering: window scale 1x, 1.5x, 2x, 3x (640×512 … 1920×1536; at 1.5x a Spectrum pixel is exactly 3×3)
@@ -176,6 +177,7 @@ One line per feature. Details are in the user guide (`doc/user-guide`) and the d
 - Disassembly PC line shows where a taken jump, call or return goes: an up/down arrow, the destination line marked when in view, the target of RET and JP (HL)
 - Trace log (circular buffer, export to file)
 - Stepping: Step Into (F6), Step Over (F7), Step Out (F8), Run to EOF, Run to EOSL
+- Dockable debugger panels: move, tab, float and close any panel but the Disassembly; the layout is remembered; Window > Panels and Window > Reset Layout
 - Debugger window: File > Reload Last File (Alt+L) reloads the rebuilt program with its maps, breakpoints kept
 - Redefinable debugger keys: all twenty debugger commands under Settings > Preferences > Debugger Keys
 - Backwards execution (rewind): frame snapshot ring buffer, Step Back (Shift+F7), Frame Back (Shift+F6), rewind slider
@@ -213,6 +215,7 @@ One line per feature. Details are in the user guide (`doc/user-guide`) and the d
 - `.rzx` recordings play in a page, and a page records one from JavaScript (`player.startRzxRecording()` / `stopRzxRecording()` return the file for download).
 
 ## CLI
+- `--bug-report PATH` writes the same bug report when jnext exits (a directory gets `PROGRAM.YYYYMMDDhhmm.jnext-bug.zip`)
 - `--machine`, `--load`, `--headless`, `--tape-realtime`, `--tape-save`, `--esxdos-stub`
 - `--esxdos-stub-root DIR`, `--esxdos-stub-writable` (host directory for a loaded NEX / dot commands)
 - `--sdcard` mounts an SD image, the source of all ROMs; falls back to `~/.jnext/sdcard/cspect-next-1gb-fixed.img`, offering a download

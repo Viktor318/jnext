@@ -277,6 +277,8 @@ void AppConfig::load() {
         if (ok && fast_boot_s >= config_keys::info(KeyId::StartupFastBootSeconds).lo
                && fast_boot_s <= config_keys::info(KeyId::StartupFastBootSeconds).hi)
             data_.fast_boot_seconds = fast_boot_s;
+        data_.fast_boot_hide_screen = settings_.value(
+            N(KeyId::StartupFastBootHideScreen), data_.fast_boot_hide_screen).toBool();
 
         // startup.language: one of the table's words; anything else keeps Auto.
         {
@@ -487,6 +489,7 @@ void AppConfig::save() const {
     settings_.setValue(N(KeyId::StartupEmulatorSpeedPercent), data_.emulator_speed_percent);
     settings_.setValue(N(KeyId::StartupFastBootSeconds), data_.fast_boot_seconds);
     settings_.setValue(N(KeyId::StartupLanguage), ui_language_to_key(data_.ui_language));
+    settings_.setValue(N(KeyId::StartupFastBootHideScreen), data_.fast_boot_hide_screen);
     settings_.setValue(N(KeyId::StartupWindowScale), window_scale_to_key(data_.window_scale_x2));
     settings_.setValue(N(KeyId::StartupCrtFilter), data_.crt_filter);
     settings_.setValue(N(KeyId::StartupCrtShader), data_.crt_shader);
@@ -607,4 +610,28 @@ int window_scale_x2_from_key(const std::string& word) {
     static constexpr int kHalves[] = {2, 3, 4, 6};
     const int i = config_keys::word_index(config_keys::info(KeyId::StartupWindowScale).values, word);
     return (i >= 0 && i < 4) ? kHalves[i] : -1;
+}
+
+// GH #492 - see the declaration.
+std::vector<std::pair<std::string, std::string>> AppConfig::file_for_report() const
+{
+    namespace ck = config_keys;
+    settings_.sync();
+    auto text = [](const QVariant& v) {
+        if (v.userType() == QMetaType::QStringList) return v.toStringList().join(QLatin1Char(',')).toStdString();
+        return v.toString().toStdString();
+    };
+    std::vector<std::pair<std::string, std::string>> out;
+    for (const ck::Key& k : ck::KEYS) {
+        if (k.id == ck::KeyId::DebuggerKey) {
+            settings_.beginGroup(QString::fromLatin1(k.section));
+            for (const QString& child : settings_.childKeys())
+                out.emplace_back(std::string(k.section) + "." + child.toStdString(), text(settings_.value(child)));
+            settings_.endGroup();
+            continue;
+        }
+        const QString path = QString::fromLatin1(k.section) + QLatin1Char('/') + QString::fromLatin1(k.name);
+        if (settings_.contains(path)) out.emplace_back(std::string(k.section) + "." + k.name, text(settings_.value(path)));
+    }
+    return out;
 }

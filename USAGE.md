@@ -35,6 +35,7 @@ the two can never disagree. For building jnext from source, see
     programs](#a-host-directory-for-directly-loaded-programs)
   - [POK trainers](#pok-trainers)
 - [JNEXT SNAPSHOTS](#jnext-snapshots)
+- [BUG REPORTS](#bug-reports)
 - [HEADLESS MODE, SCREENSHOTS AND
   RECORDING](#headless-mode-screenshots-and-recording)
   - [SCREENSHOT FORMATS](#screenshot-formats)
@@ -142,8 +143,8 @@ not the one given here.
 Load a program. The format is detected from the extension: `.nex`,
 `.jns`, `.sna`, `.szx`, `.z80`, `.tap`, `.tzx`, `.wav`, `.rzx`. (`.rzx`
 is accepted here and plays back, as **--rzx-play**.) A `.zip` archive
-holding one of them loads that program (see the `.zip` entry of
-**LOADING PROGRAMS**).
+holding one of them loads that program, and a NEX in one also gets its
+directory in the archive (see the `.zip` entry of **LOADING PROGRAMS**).
 
 `.jns` is jnext’s own whole-machine snapshot (see **JNEXT SNAPSHOTS**
 below). Loading one restores the machine it was taken on, including the
@@ -459,9 +460,12 @@ timeline (**--delayed-screenshot**, **--delayed-automatic-exit**,
 **--delayed-pok-frames**, **--script**) or when a recording runs. It
 applies to the launch only: a later hard reset boots at normal speed. It
 never changes the emulated machine. To reach the firmware menu, press
-SPACE while the splash shows, or set it to 0. **--headless** runs
-uncapped already, so there it has no effect, and **jnext** warns. The
-same as `--set startup.fast_boot_seconds`.
+SPACE while the splash shows, or set it to 0.
+`--set startup.fast_boot_hide_screen=true` keeps the window black until
+fast boot ends, so the first picture is the screen it ends on;
+screenshots, recordings and the debugger still see the real screen.
+**--headless** runs uncapped already, so there it has no effect, and
+**jnext** warns. The same as `--set startup.fast_boot_seconds`.
 
 **--when-slow-prefer** *WHAT*  
 What to sacrifice on a host that cannot emulate in real time: `audio`
@@ -754,14 +758,17 @@ With a NEX to load (**--load**, or a bare file name) and no
 if it had been given as *DIR* (below): read-only unless
 **--esxdos-stub-writable** is also given, and in place of the in-memory
 file. To keep the in-memory file, load the NEX without
-**--esxdos-stub**.
+**--esxdos-stub**. A NEX loaded from a `.zip` that holds its data files
+is served its directory in the archive with no flag at all (see the
+`.zip` entry of **LOADING PROGRAMS**).
 
 **--esxdos-stub-root** *DIR*  
 Serve the host directory *DIR* to the guest through the esxDOS file and
 directory calls, instead of the single in-memory file. Implies
 **--esxdos-stub**. Read-only unless **--esxdos-stub-writable** is also
 given. *DIR* replaces the default of **--esxdos-stub**, the directory of
-the loaded NEX.
+the loaded NEX, and the directory of a NEX loaded from a `.zip` that
+holds its data files.
 
 **Which programs see *DIR*, and which do not.** A NEX loaded with
 **--load** sees it, and so do dot commands: those reach the filesystem
@@ -797,7 +804,8 @@ programs jnext loads itself.
 Allow the guest to create, truncate, write, delete and rename files,
 make and remove directories, and set or clear the read-only bit of files
 under **--esxdos-stub-root**, or in the directory of the loaded NEX when
-no root is given: the program can delete any file there. Off by default,
+no root is given (for a NEX from a `.zip`, in the extracted copy, never
+in the archive): the program can delete any file there. Off by default,
 and deliberately a separate flag: a guest write changes a real file on
 the host immediately, and rewinding the emulator cannot undo it. Reads
 are fully rewindable; writes, deletions and renames are not.
@@ -1434,6 +1442,16 @@ are replaced or removed; any other file there, any other `*.ghidra.txt`
 included, is never touched. A failed export is logged and jnext exits
 with status 1.
 
+**--bug-report** *PATH*  
+When jnext exits, write a bug report to *PATH*: one zip file with the
+state of the machine and of jnext, for reading, not for replaying. If
+*PATH* is an existing directory, or ends in a slash (a backslash on
+Windows), the report is written inside it, named
+*PROGRAM*`.YYYYMMDDhhmm.jnext-bug.zip` (local time; *PROGRAM* is the
+last program loaded, `jnext` if none, and `-2`, `-3`… is added when the
+name is taken). Otherwise *PATH* is the file. A failed write is logged
+and jnext exits with status 1. See **BUG REPORTS**.
+
 **--magic-port** *PORT*  
 Enable the magic debug port at *PORT* (hex, `0x` prefix optional, for
 example `0x00FF`).
@@ -1517,6 +1535,11 @@ Automatic tape play and stop; **--tape-auto-play** and
 `startup.fast_boot_seconds` *0..60*  
 Seconds of a plain Next start run at maximum speed, 0 = off;
 **--fast-boot**. The Qt window and the SDL-only build.
+
+`startup.fast_boot_hide_screen` *true\|false*  
+Keep the window black while fast boot runs; any key, a pause or a
+debugger stop shows the screen at once. Default false. The Qt window and
+the SDL-only build.
 
 `startup.language` *auto\|en\|hu*  
 Language of the window and the debugger, auto = the system’s. Read at
@@ -1963,6 +1986,33 @@ that is removed when **jnext** exits. In the window, a `.pok` file in
 the archive (the one named like the program, else the only one) is
 offered under **Machine \> POK Trainers…**.
 
+**A NEX with its data files.** When the program is a `.nex` and the
+directory it is in inside the archive (the archive’s top level, or a
+folder such as `game/`) holds other files, that directory is extracted
+whole, with its subdirectories, and served to the NEX through the esxDOS
+stand-in, with no **--esxdos-stub**: the program opens its files by
+name, as it would from a directory on disk (`game/G.NEX` with
+`game/data/L1.BIN` opens `data/L1.BIN`; case does not matter). The NEX
+is the program the archive loads when it is the only NEX and every other
+program in it lies in a subdirectory below its own, such as
+`data/sfx.wav`; a NEX and a `.tap` side by side, or two NEX in one
+directory, are several programs, refused on the command line and asked
+in the window. It is read-only unless **--esxdos-stub-writable** is
+given, which lets the guest change the extracted copy, never the
+archive, and the changes are gone when **jnext** exits. An explicit
+**--esxdos-stub-root** wins: the archive is still extracted, its files
+are not served. Files above the NEX’s directory are not extracted.
+Before anything is written, the whole archive is checked: a member with
+an absolute path or `..` anywhere, two members whose paths differ only
+in case, a file that is also a directory, a name ending in a dot or a
+space, a path over 255 bytes, or files adding up to over 256 MiB refuse
+the load with the reason, and a member that cannot be read (bad CRC,
+encrypted) refuses it too, leaving nothing behind. A folder spelled in
+two cases in the archive (`data/` and `DATA/`) is one folder, written
+under the spelling that comes first, so the result is the same on every
+host. An archive whose NEX has nothing beside it extracts the NEX alone,
+as before, and gets no directory.
+
 `.tap` and `.tzx` load in real time instead with **--tape-realtime** (or
 by unchecking **Tape \> Fast Load** in the GUI).
 
@@ -2138,9 +2188,10 @@ the one the path names (for a symbolic link, the link’s own directory).
 It lasts from the NEX load until the next reset, soft reset or load: a
 NEX loaded later, through **File \> Load NEX File…**, a recent file,
 `run NAME.nex` or the debugger, gets its own directory. A NEX taken out
-of a `.zip` has no directory on disk and gets none, and neither do a
-snapshot, a tape or a program injected with **--inject**. A `.jns` does
-not record it.
+of a `.zip` that holds nothing beside it has no directory on disk and
+gets none (one that holds its data files gets them, see the `.zip` entry
+above), and neither do a snapshot, a tape or a program injected with
+**--inject**. A `.jns` does not record it.
 
 And it is not for use alongside a booted NextZXOS. Implying
 **--esxdos-stub** means it inherits the same shadowing: with NextZXOS
@@ -2265,6 +2316,57 @@ rather than deflated, so the file can be read with `unzip -p`.
 It does contain **all of RAM**, which on a Next includes NextZXOS and
 DivMMC ROM code paged into it. Those are not redistributable: keep your
 snapshots rather than posting them, and hand somebody a `.nex` instead.
+
+## BUG REPORTS
+
+**--bug-report** *PATH* saves, when jnext exits, one zip file that holds
+what a developer needs to understand a failure: the state of the machine
+and of jnext at that moment. In the Qt window **File \> Save Bug
+Report…** saves one at once: it opens a save dialog in your home folder
+that proposes the name below. It is a snapshot for reading, not a
+session to replay. It holds:
+
+- the jnext version, the host operating system and architecture, the
+  frontend and the settings in use (the command line and, in the Qt
+  frontend, the settings file), with host paths blanked;
+- the machine, decoded: the CPU registers, every NextREG with its name,
+  the paging map, the ULA, Layer 2, sprite, tilemap and Copper state,
+  the palettes, the interrupt, DivMMC and Multiface flags, the audio
+  chips;
+- the screenshot, and each of the seven video layers on its own;
+- the last 500 lines of the log at info level and above;
+- the debugger’s state: the run state, breakpoints, the call stack and
+  the recent instruction trace;
+- the SD card’s name, size and SHA-256, never its bytes;
+- the program file you loaded, byte for byte (a `.jns` snapshot, which
+  holds the machine’s whole memory, is the exception: only its SHA-256
+  and size are recorded). It is your file, and you are responsible for
+  what you attach: jnext does not check it against anything;
+- **memory, only when no firmware has run**: RAM, the CPU’s 64 KB view,
+  the sprite patterns, a disassembly, the bytes at the stack pointer and
+  the opcode bytes of the trace. That is a `--no-sdcard` session whose
+  memory has not seen the boot ROM run or a saved state loaded since it
+  was cleared. In every other session, memory holds NextZXOS, ROM or
+  DivMMC firmware from the card, so the report carries the machine state
+  but none of its memory, and the manifest says why.
+
+jnext never puts NextZXOS, ROM or any other distribution content in a
+report, and no byte of the SD card. The program file you loaded is
+yours, goes in as it is and is your responsibility. The card is named
+and identified by its SHA-256 only. The serial (UART) FIFOs and the SD
+buffers of the machine state are left out, because they can carry what
+the program or NextZXOS exchanged with the card or the network.
+
+Your user name and every absolute path on your computer are blanked in
+the file (`<user>` and `<path>/name`). Look through a report before you
+attach it anyway.
+
+To read a report, `tools/jnext-bug-view.py` in the jnext sources shows
+it as a page, or as text with `--text`; it needs only Python 3, and
+refuses a file that is not a jnext bug report.
+
+`manifest.json` lists every member of the file and what was left out and
+why. A file is a report when it has that manifest, whatever its name.
 
 ## HEADLESS MODE, SCREENSHOTS AND RECORDING
 
@@ -2659,7 +2761,8 @@ for the second SD card (see **CHANGING THE CARD WHILE RUNNING**), Record
 MPEG4 Video (Ctrl+F5) / Stop (Ctrl+F6), Play RZX / Record RZX / Stop
 RZX, Save Screenshot (Alt+S), Quick Screenshot (Alt+K), Save Snapshot
 (Alt+Shift+S), Quick Save Snapshot (Alt+Shift+F5), Quick Load Snapshot
-(Alt+Shift+F9) (see **JNEXT SNAPSHOTS** above), Quit (Alt+Q or Alt+F4).
+(Alt+Shift+F9) (see **JNEXT SNAPSHOTS** above), Save Bug Report… (see
+**BUG REPORTS**), Quit (Alt+Q or Alt+F4).
 
 **Save Screenshot…** asks for a name; the extension chooses the format
 (**SCREENSHOT FORMATS** above). **Quick Screenshot** asks nothing: it
@@ -3396,13 +3499,17 @@ nothing is shown there.
 `file` *URL \| {url} \| {data, name} \| {card}*  
 **--load**. The program to run (`.nex`, `.tap`, `.tzx`, `.wav`, a `.rzx`
 recording, or a `.jns`, `.sna`, `.szx` or `.z80` snapshot); without it
-the machine boots to the NextZXOS menu. `{card: '/PATH/x.nex'}` runs a
-NEX that is on the SD card: its path lies inside one entry of
-`card.dirs`, the directory that holds it is copied out of the card with
-everything below it, and that directory is served to the program with
-**--esxdos-stub** (read-only unless `args` has
-**--esxdos-stub-writable**). It cannot be used with card source
-`'none'`, and `load()` refuses it.
+the machine boots to the NextZXOS menu. A `.zip` is accepted when the
+program in it is a `.nex`: the NEX gets its directory in the archive
+(see the `.zip` entry of **LOADING PROGRAMS**), read-only unless
+`args: ['--esxdos-stub-writable']` is given, and what it writes is not
+kept by `keepWrites`. `player.load()` accepts the same. Any other `.zip`
+is refused. `{card: '/PATH/x.nex'}` runs a NEX that is on the SD card:
+its path lies inside one entry of `card.dirs`, the directory that holds
+it is copied out of the card with everything below it, and that
+directory is served to the program with **--esxdos-stub** (read-only
+unless `args` has **--esxdos-stub-writable**). It cannot be used with
+card source `'none'`, and `load()` refuses it.
 
 `keepWrites` *boolean*  
 **--sdcard-writes**, with a file the page manages: what the program
@@ -3645,16 +3752,18 @@ the default. The Quick Save retention is stored under `[snapshot]` as
 **Settings \> Preferences \> Paths**; **--quick-snapshot-keep**
 overrides it for one run, and an unrecognised value keeps the default.
 The debugger window’s layout is stored under `[debugger]`: `size`
-(`W, H`), `position` (`X, Y`, written only while the window is detached)
-and `attached` (`true`/`false`). An older `~/.jnext/Debugger.conf` is
+(`W, H`), `position` (`X, Y`, written only while the window is
+detached), `attached` (`true`/`false`) and `layout` (the arrangement of
+its panels, one line of plain text; deleting it, or Window \> Reset
+Layout, restores the default). An older `~/.jnext/Debugger.conf` is
 merged into this section once and removed. All section names are
 lowercase. CLI options always take precedence over saved values, and
 headless runs never read it. Every setting above can also be set for one
 run, without touching the file (the Recent Files history, the joystick
 controller names `joy1_device_name` and `joy2_device_name`,
-`[config] version` and the debugger window’s `size` and `position` are
-refused), with **--set** *section.key=value* (see **Settings for
---set**).
+`[config] version` and the debugger window’s `size`, `position` and
+`layout` are refused), with **--set** *section.key=value* (see
+**Settings for --set**).
 
 `~/.jnext/screenshots/`  
 Where **File \> Quick Screenshot** writes, unless
@@ -3664,6 +3773,12 @@ Where **File \> Quick Screenshot** writes, unless
 Where **File \> Quick Save Snapshot** writes and **Quick Load Snapshot**
 reads (the newest `.jns` in it). Created on the first save. Quick Save
 keeps the newest 20 files it made (see **--quick-snapshot-keep**).
+
+`*.jnext-bug.zip`  
+A bug report (see **BUG REPORTS**), named
+`PROGRAM.YYYYMMDDhhmm.jnext-bug.zip` by **--bug-report** *DIR*`/` and
+proposed under that name by **File \> Save Bug Report…**. Where it goes
+is your choice; jnext keeps no folder of them.
 
 `~/.jnext/warm-start/`  
 The recorded NextZXOS-resident machine a **--load** of a `.nex` starts
@@ -3715,6 +3830,9 @@ recording given to **--load** or **--rzx-play**. This holds in the GUI,
 the SDL-only build and under **--headless** alike. The error is logged,
 the machine keeps running without the program, and the non-zero status
 is reported when **jnext** exits.
+
+It exits 1 when a **--bug-report** file cannot be written, the way it
+does for a failed **--export-skoolkit**.
 
 SIGTERM, or SIGINT (Ctrl-C in the terminal), ends **jnext** the way
 closing the window does: recordings and captures are finished and no
@@ -3775,7 +3893,9 @@ Project home page: <https://github.com/jorgegv/jnext>
 
 ## BUGS
 
-Report bugs at <https://github.com/jorgegv/jnext/issues>.
+Report bugs at <https://github.com/jorgegv/jnext/issues>. Attach a bug
+report (**File \> Save Bug Report…**, or **--bug-report** *DIR*`/`): see
+**BUG REPORTS**.
 
 ## AUTHORS
 
