@@ -1396,7 +1396,7 @@ int main() {
             "startup.machine_type", "startup.cpu_speed", "startup.emulator_speed_percent", "startup.window_scale",
             "startup.crt_filter", "startup.crt_shader", "startup.crt_shader_style", "startup.silent",
             "startup.tape_fast_load", "startup.tape_auto_play", "startup.when_slow_prefer",
-            "startup.fast_boot_seconds", "startup.fast_boot_hide_screen",
+            "startup.fast_boot_seconds", "startup.fast_boot_hide_screen", "startup.language",
             "audio.gain_db", "audio.gain_beeper_db", "audio.gain_ay0_db", "audio.gain_ay1_db",
             "audio.gain_ay2_db", "audio.gain_dac_db", "screenshot.quick_format", "snapshot.quick_keep",
             "input.joy1_source", "input.joy2_source", "input.mouse_release", "source.colour_scheme",

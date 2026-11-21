@@ -355,6 +355,7 @@ ValueRule config_value_rule(config_keys::KeyId id)
         case K::StartupWhenSlowPrefer:
         case K::StartupFastBootSeconds:
         case K::StartupFastBootHideScreen:
+        case K::StartupLanguage:
         case K::AudioGainDb:
         case K::AudioGainBeeperDb:
         case K::AudioGainAy0Db:
