@@ -96,8 +96,9 @@ if [ ${#missing[@]} -gt 0 ]; then
     sudo apt-get install -y "${missing[@]}"
 fi
 CXX_W=x86_64-w64-mingw32-g++-posix
-gccv=$($CXX_W -dumpversion 2>/dev/null || echo 0)
-[ "${gccv%%.*}" -ge "$MIN_MINGW_GCC" ] || die "MinGW GCC $gccv is too old (Qt $QT_VERSION needs $MIN_MINGW_GCC+). Use Ubuntu 24.04 or newer. / A MinGW túl régi: Ubuntu 24.04 vagy újabb kell."
+gccv=$($CXX_W -dumpversion 2>/dev/null || echo 0)   # e.g. "13-posix"
+gccmajor=${gccv%%[!0-9]*}
+[ "${gccmajor:-0}" -ge "$MIN_MINGW_GCC" ] || die "MinGW GCC $gccv is too old (Qt $QT_VERSION needs $MIN_MINGW_GCC+). Use Ubuntu 24.04 or newer. / A MinGW túl régi: Ubuntu 24.04 vagy újabb kell."
 
 # ── 2. Qt for Windows (+ the Linux host tools: moc, rcc, uic) ─────────────────
 if [ ! -f "$QT_WIN/lib/cmake/Qt6/Qt6Config.cmake" ] || [ ! -x "$QT_HOST/libexec/moc" ]; then
@@ -189,7 +190,12 @@ awk '/^# --- licences/{skip=1} skip&&/^done$/{skip=0; next} !skip' \
     "$REPO/packaging/windows/bundle-dlls.sh" > "$BUNDLER"
 rm -rf "$STAGE"; mkdir -p "$STAGE/$NAME"
 D=$STAGE/$NAME
-MINGW_SYSROOT=$BUNDLE_ROOT bash "$BUNDLER" "$BUILD/jnext.exe" "$D"
+# jnext links spdlog statically here; the bundler's "libspdlog.dll not found"
+# note is about the Fedora build and is dropped.
+if ! bout=$(MINGW_SYSROOT=$BUNDLE_ROOT bash "$BUNDLER" "$BUILD/jnext.exe" "$D" 2>&1); then
+    echo "$bout"; die "bundling failed / sikertelen csomagolás"
+fi
+grep -v 'libspdlog' <<<"$bout" || true
 for f in jnext.exe Qt6Core.dll Qt6Gui.dll Qt6Widgets.dll platforms/qwindows.dll SDL3.dll; do
     [ -f "$D/$f" ] || die "missing from the bundle: $f"
 done
