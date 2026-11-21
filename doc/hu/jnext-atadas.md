@@ -25,7 +25,7 @@ A `CLAUDE.local.md` (a tároló gyökerében, `git add -f`-fel követve, mert a 
 - **A helyi gép sajátosságai:**
   - A tároló hookjai (`.claude/hooks/`, az upstream szerzőé) `jq` és `perl` nélkül minden parancsot letiltanak – Viktor telepítette a `jq`-t. A `block-push.sh` minden `git push`-t letilt, ha nincs előtte `JNEXT_ALLOW_PUSH=1`; a `hungarian-ui`-ra így: `JNEXT_ALLOW_PUSH=1 git push origin hungarian-ui`. A `block-main-write.sh` a `main`-t védi.
   - A `~/.gitconfig` hitelesítője a Git for Windows régi útvonalára mutatott (`…/Git/mingw64/bin/git-credential-manager.exe`); az újabb Git for Windows a `…/Git/ucrt64/bin/` alá teszi. Javítás: `git config --global credential.helper '/mnt/c/Program\ Files/Git/ucrt64/bin/git-credential-manager.exe'`.
-  - A `gh` 2026-11-21-én nem volt telepítve a WSL-ben (`sudo apt install gh`, majd `gh auth login`); addig a `gh workflow run` parancsok onnan nem mennek, a felhőből igen.
+  - A `gh` a WSL-ben is telepítve és bejelentkezve (Viktor, 2026-11-21 este: `sudo apt install -y gh`, `gh auth login`), így a `gh workflow run` / `gh run view` onnan is megy.
 
 ## Viktor céljai és döntései
 
