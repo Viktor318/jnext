@@ -32,6 +32,7 @@ Ez a fájl a tároló `CLAUDE.md`-je mellett érvényes, a helyi (WSL, `~/jnext`
 
 ## Fordítás és tesztelés ezen a gépen
 
+- **A WSL 6 szálra van korlátozva** (Viktor, 2026-11-21: `%USERPROFILE%\.wslconfig`, `[wsl2]` `processors=6`), mert a 20 szálas fordítás a Windowst is lefoglalta. Az `nproc` így 6-ot ad, a `-j$(nproc)` és a tesztek alapértéke rendben van; ennél több párhuzamos munkát ne indíts.
 - Windows-változat: `~/jnext/tools/hu/build-windows-cross.sh` (kapcsolók: `nopull`, `clean`; kimenet `C:\Dev\jnext-bin\jnext\jnext.exe` + zip). Pár perc.
 - Linuxos tesztfordításhoz (Qt6, SDL3, ccache stb.) előbb mérd fel, mi van telepítve a WSL-ben (Ubuntu 26.04), és a hiányzó csomagokat Viktorral egyeztesd (sudo-t kér).
 - A GitHub Actions is használható (Viktor engedélyezte): `gh workflow run "Windows Build (manual)" -R Viktor318/jnext --ref hungarian-ui -f qt6=true -f qt5=false -f win32=false`, és a teljes teszt-CI: `gh workflow run CI -R Viktor318/jnext --ref hungarian-ui`.
