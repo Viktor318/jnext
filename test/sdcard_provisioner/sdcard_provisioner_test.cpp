@@ -3012,6 +3012,16 @@ int main() {
         check("PROV-URL-03", "empty env => canonical kDistroUrl",
               seen_url == sdcard::kDistroUrl, seen_url);
         jtp::unset_env("JNEXT_SDCARD_DISTRO_URL");
+
+        // hungarian-ui: a build without the JNEXT_DEFAULT_DISTRO_URL cache value
+        // (every test build) downloads kDistroUrl; one with it, that address.
+#ifdef JNEXT_DEFAULT_DISTRO_URL
+        const std::string want_default = JNEXT_DEFAULT_DISTRO_URL;
+#else
+        const std::string want_default = sdcard::kDistroUrl;
+#endif
+        check("PROV-URL-04", "default_distro_url() is the build's JNEXT_DEFAULT_DISTRO_URL, else kDistroUrl",
+              std::string(sdcard::default_distro_url()) == want_default, sdcard::default_distro_url());
     }
 
     jtp::make_dir((g_tmpdir + "/.jnext").c_str());

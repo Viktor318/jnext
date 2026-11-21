@@ -47,6 +47,12 @@ namespace sdcard {
 
 // Canonical constants.
 extern const char* const kDistroUrl;           // specnext distro zip URL
+// hungarian-ui: the address this build downloads by default, when
+// $JNEXT_SDCARD_DISTRO_URL is not set: the CMake cache value
+// JNEXT_DEFAULT_DISTRO_URL when the build gave one (tools/hu/
+// build-windows-cross.sh gives NextZXOS 26.11a), else kDistroUrl. kDistroUrl
+// itself stays the distribution the tests, the browser card and the pins use.
+const char* default_distro_url();
 extern const char* const kImageFileName;       // "cspect-next-1gb.img" (raw)
 extern const char* const kFixedImageFileName;  // "cspect-next-1gb-fixed.img"
 

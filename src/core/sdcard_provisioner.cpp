@@ -54,6 +54,14 @@ const Pins kDistribution = {
 
 namespace sdcard {
 
+const char* default_distro_url() {
+#ifdef JNEXT_DEFAULT_DISTRO_URL
+    return JNEXT_DEFAULT_DISTRO_URL;
+#else
+    return kDistroUrl;
+#endif
+}
+
 // ---------------------------------------------------------------------------
 // Paths
 // ---------------------------------------------------------------------------
@@ -999,7 +1007,7 @@ ProvisionResult provision_sd_card(const ProvisionOptions& opts) {
     // --help and the man page.
     const char* env_url = std::getenv("JNEXT_SDCARD_DISTRO_URL");
     const std::string distro_url =
-        (env_url && *env_url) ? std::string(env_url) : std::string(kDistroUrl);
+        (env_url && *env_url) ? std::string(env_url) : std::string(default_distro_url());
     // Which distribution that address is (the zip's file name), and the sidecars that
     // record it beside the images.
     const std::string current_dist = distribution_of_url(distro_url);
