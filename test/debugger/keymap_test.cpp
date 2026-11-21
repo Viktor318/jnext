@@ -496,12 +496,13 @@ void test_preferences_tab() {
 // THE FINDING, AND WHY THE ANSWER IS NOT "REFUSE IT".
 //
 // Conflict detection covers the seventeen debugger actions. It does NOT cover the
-// chords the EMULATOR window already binds, and five of those survive every
+// chords the EMULATOR window already binds, and six of those survive every
 // refusal rule. Measured, not listed by hand — DKH-01 harvests them:
 //
 //     Ctrl+F5  Record MPEG4 Video...      F4   Soft Reset
 //     Ctrl+F6  Stop MPEG4 Recording       F11  Fullscreen
 //     Alt+F4   Quit  (GH #380, next to Alt+Q)
+//     Shift+F11  Picture Only  (hungarian-ui)
 //
 // Bind Run to Ctrl+F5 and, in the EMULATOR window, the recording starts and Run
 // never fires. That is real, and the first cut of this feature said nothing
@@ -525,7 +526,7 @@ void test_preferences_tab() {
 void test_host_chord_enumeration() {
     MainWindowFixture fx;
     if (!fx.ok) {
-        check("DKH-01", "the emulator window's bindable chords are exactly the five known",
+        check("DKH-01", "the emulator window's bindable chords are exactly the six known",
               false, "fixture failed");
         return;
     }
@@ -541,8 +542,8 @@ void test_host_chord_enumeration() {
     got.sort();
     const QString want =
         QStringLiteral("Alt+F4=Quit|Ctrl+F5=Record MPEG4 Video...|Ctrl+F6=Stop MPEG4 Recording|"
-                       "F11=Fullscreen|F4=Soft Reset");
-    check("DKH-01", "the emulator window's bindable chords are exactly the five known",
+                       "F11=Fullscreen|F4=Soft Reset|Shift+F11=Picture Only");
+    check("DKH-01", "the emulator window's bindable chords are exactly the six known",
           got.join(QStringLiteral("|")) == want, got.join(QStringLiteral("|")).toStdString());
 }
 
@@ -1352,6 +1353,31 @@ void test_script_keys() {
     }
 }
 
+// ── QKM-RTI: Debug > Run to Next Interrupt is a bindable window command (GH #372) ──
+//
+// Oracle: the GH #1 keymap contract (apply_keymap() installs every shortcut from the user's
+// keymap; an action bound to `none` carries no shortcut).
+
+void test_run_to_interrupt_key() {
+    DebuggerFixture fx;
+    const char* desc = "run_to_interrupt, bound to Ctrl+F9, is installed on the Debug > Run to Next Interrupt item "
+                       "(and `none` leaves it unbound)";
+    if (!fx.ok) { check("QKM-RTI-01", desc, false, "fixture failed"); return; }
+    QAction* a = action_named(fx.dbg, "Run to Next &Interrupt");
+    const bool unbound_default = a && a->shortcuts().isEmpty();
+    Keymap km;
+    km.set(Action::RunToInterrupt, parsed("Ctrl+F9"));
+    fx.dbg->set_keymap(km);
+    QApplication::processEvents();
+    const bool bound = a && a->shortcut() == to_key_sequence(parsed("Ctrl+F9"));
+    Keymap none;
+    none.set(Action::RunToInterrupt, parsed("none"));
+    fx.dbg->set_keymap(none);
+    QApplication::processEvents();
+    check("QKM-RTI-01", desc, a && unbound_default && bound && a->shortcuts().isEmpty(),
+          a ? a->shortcut().toString().toStdString() : std::string("no such action"));
+}
+
 int main(int argc, char** argv) {
     qputenv("QT_QPA_PLATFORM", "offscreen");
 
@@ -1381,6 +1407,7 @@ int main(int argc, char** argv) {
     test_keymap_survives_a_late_window();
     test_source_keys();
     test_nav_keys();
+    test_run_to_interrupt_key();
     test_debugger_menu_focus();
     test_script_keys();
 

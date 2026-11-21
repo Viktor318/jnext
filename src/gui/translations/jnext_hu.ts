@@ -161,6 +161,90 @@
         <source>Edit Breakpoint</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Reset Hits</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zero the Hits count of every breakpoint of this window.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hits</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Condition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(condition)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Last run-time error: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Interrupt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NMI</source>
+        <translation type="unfinished">NMI</translation>
+    </message>
+    <message>
+        <source>optional: end of the range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To (optional):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>optional, hex: empty = the address rule</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mask (optional):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>optional, e.g. A == 5 and mem[0x9000] != 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Condition (optional):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Count hits only (don&apos;t stop)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A source line cannot have a range end: clear To.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To is not an address or a symbol: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To is below the address.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The mask is not a hex number from 0000 to FFFF: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The port value has bits outside the mask: it can never match.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A mask of FFFF with port 0000 is refused by the debugger.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>CopperPanel</name>
@@ -742,6 +826,14 @@
         <source>Add Execute Breakpoint</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Run to Next &amp;Interrupt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Graphics</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DisasmPanel</name>
@@ -779,6 +871,49 @@
     <message>
         <source>no usable graphics context is available</source>
         <translation>nincs használható grafikus környezet</translation>
+    </message>
+</context>
+<context>
+    <name>GraphicsPanel</name>
+    <message>
+        <source>8-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>4-bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Palette:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Offset:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Click a pattern.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Patterns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Click a tile.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tiles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stored priority bit (bit 15 of the palette word, NR 0x44 bit 7). Only Layer 2 palettes use it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Palettes</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

@@ -147,7 +147,7 @@ Run to `Ctrl+F5` was accepted in silence and then lost to Start Recording in
 the emulator window. The enumeration below is now **harvested from the real
 `QAction`s** (`src/gui/host_chords.cpp`) rather than written out here, because a
 hand-written list is a claim of exhaustiveness that goes stale the next time
-somebody adds a menu item. Measured, it is exactly five:
+somebody adds a menu item. Measured, it is exactly six:
 
 | Chord | Emulator-window action |
 |---|---|
@@ -156,6 +156,7 @@ somebody adds a menu item. Measured, it is exactly five:
 | `F4` | Soft Reset |
 | `F11` | Fullscreen |
 | `Alt+F4` | Quit (the second shortcut, next to `Alt+Q`; GH #380) |
+| `Shift+F11` | Picture Only (hides the menu bar, toolbars and status bar; hungarian-ui) |
 
 **They are accepted, with a warning naming both outcomes.** Refusing them was
 the obvious fix and it is the wrong one, for a reason that is measured rather
@@ -175,7 +176,7 @@ message now names the emulator-window action and says what each window will do.
 Two guards keep that honest, because both halves of it are the kind of claim
 that rots:
 
-* `DKH-01` pins the harvest's CONTENTS. A sixth bindable menu shortcut fails
+* `DKH-01` pins the harvest's CONTENTS. A seventh bindable menu shortcut fails
   the row and forces this table to be updated with it.
 * `DKH-02` pins that nothing inside the **debugger** window claims a bindable
   chord outside the twelve. That case *would* be a true same-window ambiguity —

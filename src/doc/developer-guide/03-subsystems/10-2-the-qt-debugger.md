@@ -25,13 +25,55 @@ the default (`debugger_persistent_bp_test` PBPUI-03 pins the opposite).
 **The breakpoints' owner** is a non-arming observer client, attached by
 `BreakpointModel` (`src/debugger/breakpoint_model.*`) for the manager's
 lifetime. The GUI's breakpoints are its subscriptions: single-address
-`Execute`, `Mem` and `Port` subscriptions with no condition, `once = false` and
-action `Stop`. READ, WRITE and READ_WRITE are one `Mem` subscription with an
+`Execute`, `Mem` and `Port` subscriptions (a `lo..hi` range on the first two, a port `mask`/`value`), and the
+addressless `IntAck` and `Nmi` ones (the Interrupt and NMI types), with `once = false`, and a condition when
+the dialog gave one. A
+breakpoint stops: action `Stop` and no handler. A *count-only* one is action `Continue`
+plus a handler of the model that counts. READ, WRITE and READ_WRITE are one `Mem` subscription with an
 access mask. An I/O address `00`-`FF` is a low-byte match (`port_mask 0x00FF`);
 `0100` and up is exact. Because the observer never detaches and arms
 nothing, a breakpoint survives closing the window, fires with the window shut
 exactly when something else arms the machine, and costs a closed window
 nothing.
+
+`BreakpointModel::Type` and the codec's `BpSpec::Kind` are one numbering (a
+`static_assert` pins it), and the codec owns the type-name table (`bp_kind_name()`)
+and the port rule (`bp_port_mask_for()`): the model has no copy of either. Another
+client's `IntAck` or `Nmi` Stop subscription is a typed but read-only row, with an empty
+Address.
+
+**Hit counts need no backend counter** and follow the script engine's own split
+(`account_static_stops` / `run_rule`). A Stop breakpoint stays a static Stop with no
+handler (ZRCP's `other_breakpoint_at` and the step loops depend on that) and is counted
+in the model's `on_paused()` from `PausedInfo::matched`, for its own ids only. A count-only
+one counts in its handler, which captures the model (its destructor detaches the client,
+which removes the subscription: SES-01). `extras_` holds what the backend cannot report
+(which own ids are count-only), and `publish_()` prunes it and the counts with the listing.
+`sync()` emits `hits_changed()` once when a count moved and the panel rewrites only its
+Hits cells: never `changed()`, which would repaint the gutter every frame. A count dies
+with its subscription (Edit = a new id) and is not saved. The `(type, address, space)`
+API keeps meaning the plain breakpoint, and the gutters read plain members only, so a
+count-only breakpoint at an address is a separate row. `QBPX-15` pins the GUI's counts to
+the engine's `RuleView::hits` for the same rule.
+
+**A breakpoint's identity is its full spec** (`BpSpec`: kind, address, range end, space, port mask, condition,
+count-only). `add(const BpSpec&)` is idempotent on it, and a plain breakpoint and a conditional one at one address are
+two rows. The `(type, address, space)` API and the gutters mean the *plain* breakpoint (`plain_()`: one address, the
+address rule's mask, no condition). `extras_` (by id, own subscriptions only) holds what the backend cannot report:
+count-only, the condition text and the shared slot its predicate writes a run-time error to. `type_of()` types a
+subscription iff the dialog can make that exact one: another client's range or masked port is typed (so its Type and
+Address texts read as before) but stays read-only, and its condition or handler stays typeless. A condition is compiled in
+the kind's payload scope (`bp_scope()`, the checker's own `scope_of`) with `compile_expr`; the same
+`bp_condition_problem()` check the dialog and the codec use refuses a text that does not read back as itself. A
+run-time failure marks `hits_changed()` so the panel refreshes the Condition cell's tooltip.
+
+**Run to Next Interrupt** (Debug menu, the `run_to_interrupt` keymap action, unbound by
+default) is not a backend verb. `DebuggerManager::on_run_to_interrupt()` arms a
+*transient* `IntAck` Stop subscription and calls `run()`: the transient is hidden from the
+panel, exempt from the master switch, and dropped by the backend at the next stop or an
+explicit `pause()` (the DeZog "arm, then continue" contract in `Impl::run_verb`). A refused
+`run()` unsubscribes it. Rows: `QRTI-*` in `debugger_verbs_test`, `QKM-RTI-01` in
+`debugger_keymap_test`.
 
 The model also converts its own rows to and from the breakpoint file codec
 (`script/bp_script.h`, see [3.10.6](13-the-debugger-scripting-language.md)):
@@ -84,13 +126,13 @@ restart of the CPU panel's T-state count and draws that one label.
 
 ## Panels
 
-`DebuggerWindow::create_panels()` creates sixteen:
+`DebuggerWindow::create_panels()` creates eighteen:
 
 | Panel | Reads | Writes |
 |---|---|---|
 | CPU Registers | `registers()`, `paging_ports()`, `ula_screen_regs()`, `time()` (`tstates_total`), `time_epoch()` | `set_register()`, one register per call: an overlay `QLineEdit` over the value labels, a click on a flag (`reg_edit.h`); a click or the menu on an address-like value asks the window to show it (Disassembly, Memory, Source) |
 | MMU | `mmu_slots()`, `paging_ports()` | — |
-| Disassembly | `disasm_one()` over `memory_reader()`, with symbols, the PC line's hint (`disasm_hint::pc_hint()` over `registers()`, `memory_reader()` and `operand_reader()`), Follow (`disasm_hint::follow_target()`) and Back/Forward (`NavHistory`, `nav_history.h`), columns Mem, Addr, BP column (the breakpoint gutter), [Label], mnemonic, opcode bytes, and a selection you can copy as assembly | breakpoints, through the model |
+| Disassembly | `disasm_one()` over `memory_reader()`, with symbols, the PC line's hint (`disasm_hint::pc_hint()` over `registers()`, `memory_reader()` and `operand_reader()`), where the PC goes (`disasm_hint::pc_transfer()`, the destination marker), Follow (`disasm_hint::follow_target()`) and Back/Forward (`NavHistory`, `nav_history.h`), columns Mem, Addr, BP column (the breakpoint gutter), [Label], mnemonic, opcode bytes, and a selection you can copy as assembly | breakpoints, through the model |
 | Memory | `peek(MemSpace::cpu())`, or a slot's or NR page's backing store; the whole view for Find, the block for Save | `poke`, one per chunk (`memtools::split_block`) |
 | Stack | the words at and above SP, through `peek` | — |
 | Call Stack | `call_stack()`, a shadow stack: a CALL, RST, INT or NMI opens a frame; a RET that lands on the newest CALL's return address (or the newest INT or NMI frame's interrupted PC) ends that frame, any other taken RET ends every frame whose return slot is below SP, and an esxDOS call the shim services ends its RST frame; a JP (HL)/(IX)/(IY) onto the newest CALL's return point, or taken with SP above its slot when the routine has stored no copy of its return address above SP (a callee prologue's PUSH or EX (SP)), ends that frame (sccz80's `EX (SP),HL` / `POP r; JP (r)` helpers and `l_case`; a `__z88dk_callee` body's internal jumps keep it); a routine that drops its return address and leaves by a direct JP keeps its frame until a later RET ends it by SP | — |
@@ -98,6 +140,7 @@ restart of the CPU panel's T-state count and draws that one label.
 | Breakpoints | every client's subscriptions, through `BreakpointModel` | the GUI's own |
 | Video | `raster()` in all four counter domains plus the ULA fetch phase, and `render_layer()` for each of the eight views | — |
 | Sprites | `sprites()` | — |
+| Graphics | `pattern_ram()`, `palette()`, `nextreg_peek()` (NR 0x43, 0x4B, 0x4C, 0x14, 0x6B, 0x6F), `peek(MemSpace::page())` of pages 0A/0B/0E, `active_ula_palette_bank()`, `palette_priority()` (the Palettes `Pri` column), `rgb333_to_argb()`; the decoders in `src/debug/gfx_decode.*` | — |
 | Copper | `copper()` | — |
 | NextREG | `nextreg_peek()` for the whole register file | `nextreg_write()` |
 | Audio | `ay_registers()`, `turbosound_enabled()`, `ay_mode()`, `stereo_mode()` | `set_audio_mute_mask()` |
@@ -158,10 +201,10 @@ moved; the greying of a paged label whose page is not what `source_page()` repor
 refresh, because a page can be mapped with no revision change. It never jumps to an unmapped label (Show in Disassembly, Memory and Source are all disabled for one): the Disassembly and the
 Source tab show the CPU's map. Rows: `QSYML-*`.
 
-**Refresh cadence.** Running, `DebuggerManager::refresh_panels()` (`debugger_manager.cpp:1062`)
-redraws the window on every `REFRESH_INTERVAL`-th tick (12, `REFRESH_INTERVAL`, `debugger_manager.h:388`: ~4 Hz). Paused, it
-redraws only when a *stamp* changed since the last redraw (`paused_stamp()`, `debugger_manager.cpp:1051`; `PausedStamp`,
-`debugger_manager.h:257`), and calls `update_actions()` on every tick, since their inputs (an RZX started from
+**Refresh cadence.** Running, `DebuggerManager::refresh_panels()` (`debugger_manager.cpp:1083`)
+redraws the window on every `REFRESH_INTERVAL`-th tick (12, `REFRESH_INTERVAL`, `debugger_manager.h:393`: ~4 Hz). Paused, it
+redraws only when a *stamp* changed since the last redraw (`paused_stamp()`, `debugger_manager.cpp:1072`; `PausedStamp`,
+`debugger_manager.h:262`), and calls `update_actions()` on every tick, since their inputs (an RZX started from
 the main window, the rewind buffer freed) have no verb. A paused machine with nothing happening used to redraw
 everything, the Video tab's composited frame included, fifty times a second. The stamp is:
 
@@ -183,7 +226,7 @@ everything, the Video tab's composited frame included, fifty times a second. The
 - a flag, `source_file_changed`: whether the loaded source file's modification time differs from the one
   loaded (`SourcePanel::file_changed_on_disk()`, `source_panel.cpp:575`), so an edit on disk still shows.
 
-`refresh_window()` (`debugger_manager.cpp:1042`) takes the stamp after the redraw, because a panel may itself touch the backend and
+`refresh_window()` (`debugger_manager.cpp:1063`) takes the stamp after the redraw, because a panel may itself touch the backend and
 that must not read as a change at the next tick. A change of the Source tab's own view that moves nothing in the
 machine (a colour scheme, `follow_pc()`) repaints the tab itself. `take_panel_refresh_count()` counts the
 redraws; the `ticks:` line reports it as `panel-refreshes=`. The emulator window's half of the same issue,
@@ -192,18 +235,18 @@ is in [2.3](../02-architecture/03-a-frame-end-to-end.md).
 
 **The window's opening size.** A window opening at its default size grows to the size where
 nothing scrolls, if the screen has room (`DebuggerWindow::grow_default_size_to_natural()`,
-`debugger_window.cpp:528`, queued from the first `showEvent()`); a size restored from the config file is left
+`debugger_window.cpp:530`, queued from the first `showEvent()`); a size restored from the config file is left
 alone. The size is *measured*: the scroll ranges are the amount of panel area out of view, and the left column
 of tabs is widened by what its pages' `sizeHint()` lack, using the share of a widening the splitter really gave
 it on the previous pass (`fit_last_add_`, `fit_last_lacking_`; bounded by `kMaxInitialFitPasses` = 4
-(`kMaxInitialFitPasses`, `debugger_window.h:211`) and `kMaxWidthFitPasses` = 8 (`kMaxWidthFitPasses`, `debugger_window.h:238`)). The frame, not the client area, must fit the screen
+(`kMaxInitialFitPasses`, `debugger_window.h:212`) and `kMaxWidthFitPasses` = 8 (`kMaxWidthFitPasses`, `debugger_window.h:239`)). The frame, not the client area, must fit the screen
 (`jnext::clamp_window_size_to_screen`). A window manager can answer the fit's requests late and out of order,
 so the fit is bounded in time as well: a resize to a size the fit asked for or started a pass from
 (`fit_sizes_`, `fit_known_size_()`) is the manager's answer, not the user's, and the request is asked again,
 at most `kMaxFitEchoes` = 6 times: the answer queues a pass, and the pass asks again and counts it, once
-(`resizeEvent()`, `debugger_window.cpp:510-521`); any other size is the user's and ends the fit
-(`end_fit_()`, `debugger_window.cpp:499`). The fit also ends by itself `kFitGraceMs` = 1000 ms after its last pass started (every
-pass restarts that wait, `kFitGraceMs`, `debugger_window.cpp:547-552`), after which every size is the user's and the remembered sizes are
+(`resizeEvent()`, `debugger_window.cpp:511-522`); any other size is the user's and ends the fit
+(`end_fit_()`, `debugger_window.cpp:501`). The fit also ends by itself `kFitGraceMs` = 1000 ms after its last pass started (every
+pass restarts that wait, `kFitGraceMs`, `debugger_window.cpp:549-554`), after which every size is the user's and the remembered sizes are
 dropped; the grace does not end the fit while a pass is still queued (`fit_passes_queued_`, `queue_fit_pass_()`), so a stalled event loop cannot
 cut the fit short between a pass and the one it queued. Rows: `GR-06` (a stale answer inside the grace window is asked again), `GR-07` (after it every size is the user's), `GR-08` (an earlier request landing while a pass is queued), `GR-09` (a user resize while the fit runs stands), `GR-10` (each late answer counts once: the 7th stands) and `GR-11` (a loop stalled past the grace window does not end the fit), `GR-12` (the bound holds on the pass's own path), `GR-13` and `GR-14` (the grace waits for the pass a re-ask, or a late answer, queued), in `debugger_window_grow_test`; `GR-09` to `GR-14` use a window no window manager sees.
 
@@ -417,6 +460,38 @@ soon as MREQ goes high), and equal `peek(Cpu)` everywhere else. The panel
 computes the hint in `disassemble_from()` and paints it only while paused, at
 the comment's column; the user comment moves right of it.
 
+Where a taken jump, call or return goes is `disasm_hint::pc_transfer()`, in the same
+files: it is built from `pc_hint()` (a conditional is taken or not) and `follow_target()`
+(every unconditional target), so no decoder is added. `Transfer::dir` is the unsigned
+address compare, because the panel is a linear $0000-$FFFF listing (a `JR` that wraps
+from $FFF0 to $0012 points up). `hidden` is set for `RET`, `RETI`, `RETN` and `JP (rr)`,
+whose target the line does not write; `RET cc` is not hidden, its hint names the target.
+`disassemble_from()` calls it through `follow_data_reader()` at the PC and marks the
+entry whose start address is the target (an exact start, not "covers"), whether or not
+the PC line is in view. The arrow and the `[<- PC]` marker are positioned in
+`paintEvent()` but drawn after the comment, so the items before them keep their order;
+`line_transfer()` and `line_destination()` are the accessors, and `line_hint()` is
+unchanged.
+
+## The Graphics tab
+
+The Graphics tab (`GraphicsPanel`, `src/debugger/graphics_panel.*`) has three sub-tabs: **Patterns** (the
+64 8-bit or 128 4-bit sprite patterns of pattern RAM), **Tiles** (the tilemap's tile definitions) and
+**Palettes** (all eight banks, with `(active)` on the one each layer reads). It reads through the facade only
+and draws only while its tab is the current one (`render_count()` is the test seam). Format and source follow the
+live registers: the tile format, count and base come from NR 0x6B and NR 0x6F, and the transparency from NR 0x4B,
+NR 0x4C and NR 0x14; only the palette bank and offset are the user's. A pattern or tile is drawn untransformed. The
+tile bytes are read from the BRAM the tilemap fetches (pages 0A/0B for bank 5, 0E for bank 7), never from the
+CPU map.
+
+The Qt-free half is `src/debug/gfx_decode.*` (`jnext::dbg::gfx`, a sibling of `mem_tools.h`, not one of the frozen
+facade headers): `decode_pattern()` and `decode_tile()` return, per pixel, the palette index the layer looks up and
+whether the layer draws it, following `sprites.vhd` and `tilemap.vhd`, and `tile_byte_addr()` gives the tile's
+byte address (the 6-bit base add that wraps inside the bank, and the 8 KB wrap of bank 7). The panel applies the
+colour (`palette()` through `rgb333_to_argb()`) itself. `GfxAtlas` is the one widget both atlases use: its
+`image()` is the unscaled picture, with alpha 0 where a pixel is transparent, painted over the Video panel's
+checkerboard.
+
 ## The Memory panel's tools
 
 Find, Save Block, Load Block and Fill Block live in the Memory panel's context menu
@@ -449,4 +524,4 @@ controls), `debugger_panels_test` (each panel's displayed text), `debugger_video
 `debugger_inspect_watchpoint_test`, `debugger_persistent_bp_test`,
 `debugger_keymap_test`, `debugger_menu_test`, `debugger_disasm_copy_test`,
 `debugger_quit_gate_test`, `debugger_variables_panel_test` (the Variables tab, `QVAR-*`, editing `QVARW-*`), and the window-geometry suites. The regression rows
-`qt-host-probe-func` and `qt-host-order-func` exercise `QtApp`'s hosting. The hint's decoder suite, `disasm_hint_test` (`DHINT-*`), is not Qt-gated; the panel's rows are `QDHINT-*` in `debugger_panels_test`, and `operand_reader()`'s are `OPRD-*` in `source_debug_test`. The Memory panel tools' helper suite, `mem_tools_test` (`MEMT-*`), is not Qt-gated either; the panel's rows are `QMPT-*` in `debugger_panels_test` and the window's `QMPW-*` in `debugger_verbs_test`.
+`qt-host-probe-func` and `qt-host-order-func` exercise `QtApp`'s hosting. The hint's decoder suite, `disasm_hint_test` (`DHINT-*`), is not Qt-gated; the panel's rows are `QDHINT-*` in `debugger_panels_test`, and `operand_reader()`'s are `OPRD-*` in `source_debug_test`. The Memory panel tools' helper suite, `mem_tools_test` (`MEMT-*`), is not Qt-gated either; the panel's rows are `QMPT-*` in `debugger_panels_test` and the window's `QMPW-*` in `debugger_verbs_test`. The Graphics decoders' suite, `gfx_decode_test` (`GFXD-*`, VHDL as oracle), is not Qt-gated; the tab's rows are `QGFX-*` in `debugger_panels_test`.
