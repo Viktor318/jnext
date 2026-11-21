@@ -54,6 +54,15 @@ A `CLAUDE.local.md` (a tároló gyökerében, `git add -f`-fel követve, mert a 
     - Az Alt+számjegy ugyanebben a modulban van: CS + számjegy kibocsátása, így a Router `script_chord_held()` nem nyeli el, mert Shift is lenyomva. A Router és a `Keyboard` érintetlen; a szkriptvizsgálathoz a `Debugger` kap egy `has_host_subscribers()` függvényt (`impl_->events.has_kind(EventKind::Host)`).
     - Billentyűzetvesztéskor (`keyboard_lost`) a modul nyilvántartása törlődik.
     - Beállítás: `config_keys.h` sor + `main.cpp` `qt_assignments` + `app_config` load/save/merge + `bug_report.cpp` + Beállítások-mező + man page/user guide + fordítás.
+  - **Pontosítások (2026-11-21 este, a helyi és a felhős Claude átnézése után, Viktor elé téve):**
+    - **Az Alt-ot is a modul tartja nyilván**, a Shifthez és a Ctrl-hoz hasonlóan: karakteres leütés idejére felengedi, utána visszaállítja. Ok: Windowson az AltGr bal Ctrl + jobb Alt, a `Keyboard` a jobb Alt-ot is Altnak veszi (`keyboard.cpp:378`), így AltGr mellett a G GRAPH, az E EDIT, a C CAPS LOCK lenne (pl. a `}` = E mód + SS+G). Mérendő Windowson: hogyan jelenti a Qt az AltGr-t (várhatóan Ctrl+Alt módosítók, `Key_Alt`, a jobb Alt `nativeScanCode()`-ja 0x138).
+    - **Halott billentyűk** (magyar windowsos kiosztás: AltGr+1 `~`, AltGr+3 `^` stb.): a modul kifejezetten elnyeli a `Qt::Key_Dead_*` leütéseket és a felengedésüket. A karaktert hozó következő leütést (pl. szóköz → `~`) annak a fizikai billentyűjéhez köti. Windowson kipróbálandó.
+    - **Spectrumon nem létező jel** (pl. `ß`, `€`): a modul elnyeli, a régi útra (`qt_key_to_sdl`) nem engedi.
+    - **Nincs külön óra:** az E-módos sorozat a `QtApp` `post_frames(frames_rendered)`-jéből lép, ugyanabból, amiből a Router `on_tick_end`-je, tehát emulált képkockákat számol; szüneteltetett gépnél a sorozat is áll. A 3 képkockás lépést a 48K-s, a 128K-s és a NextBASIC-szerkesztőben és Viktor KS3-án össze kell vetni.
+    - **Ctrl+Alt egérelengedés:** bekapcsolt magyar kiosztásnál csak a bal Alt-tal működik (Windowson a `nativeScanCode()` szerint), mert az AltGr a jobb Alt; így a `@` és a `{` nem engedi el az egeret. Teszt a `pointer_capture` mellé.
+    - **Alt+számjegy:** a döntés (szkript vagy Caps Shift + számjegy) a lenyomáskor születik, a felengedés azt követi, a fizikai billentyűhöz kötve; akkor is, ha a szkript a kettő között töltődik be. Külön teszt.
+    - **Hatókör:** csak a Qt-felület; az SDL-es ablak marad. A fizikai azonosító: `nativeScanCode()`, ha 0, akkor `nativeVirtualKey()`, végül `key()`.
+    - **Sorrend:** előbb a Qt nélkül tesztelhető modul és egységtesztjei, utána a bekötés a `MainWindow`-ba; a Windows-mérés (AltGr, halott billentyűk) a végén, Viktor gépén.
   - Még nincs elkezdve; Viktor 2026-11-21 este: „holnap kezdjük”.
 - **GitHub Actions (Viktor engedélyezte, 2026-11-21):**
   - „Windows Build (manual)”: `gh workflow run "Windows Build (manual)" -R Viktor318/jnext --ref hungarian-ui -f qt6=true -f qt5=false -f win32=false` (14 perc, PGO-s).
