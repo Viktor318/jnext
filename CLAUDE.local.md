@@ -1,6 +1,6 @@
 # Viktor saját JNEXT-forkja – helyi szabályok (CLAUDE.local.md)
 
-Ez a fájl a `~/jnext`-ben (WSL) a tároló `CLAUDE.md`-je mellett érvényes, és nem kerül a tárolóba. Ahol a kettő ellentmond, **ez a fájl dönt**: a `CLAUDE.md` az eredeti fejlesztő (jorgegv) szabályait írja le az upstreamnek szánt munkára, ez pedig Viktor saját forkjára vonatkozik.
+Ez a fájl a tároló `CLAUDE.md`-je mellett érvényes, a helyi (WSL, `~/jnext`) és a felhős Claude Code-ra egyaránt. A `.gitignore` kizárja, ezért `git add -f`-fel követjük (`3a1a793`). Ahol a kettő ellentmond, **ez a fájl dönt**: a `CLAUDE.md` az eredeti fejlesztő (jorgegv) szabályait írja le az upstreamnek szánt munkára, ez pedig Viktor saját forkjára vonatkozik.
 
 ## Kivel és hogyan
 
@@ -24,6 +24,7 @@ Ez a fájl a `~/jnext`-ben (WSL) a tároló `CLAUDE.md`-je mellett érvényes, �
 - A VHDL a mérvadó; ahol Viktor KS3-án mért adat van, az is bizonyíték (lent).
 - Változáshoz teszt; a SKIP is hiba; a tesztszámok a `test/unit-tests.conf`-ban rögzítettek (sorszám változásakor a manifesztet is igazítani).
 - Minden Beállítások-mezőnek legyen `--set` kulcsa és man page-bejegyzése (`make cli-check`).
+- Új beállításkulcsnál a `src/platform/bug_report.cpp` `config_value_rule()` kapcsolójába és a `bug_report_test` várt listájába is fel kell venni. `JNEXT_WERROR=OFF` mellett a hiány csak figyelmeztetés, a CI-ban fordítási hiba (`5b20d8e`).
 - Minden külső folyamat `LANG=C` alatt fut.
 - A generált dokumentumok (man page, user guide, developer guide, `TRACEABILITY-MATRIX.md`) commitolva vannak és frissességre ellenőrzöttek: a forrást kell szerkeszteni, újragenerálni, mindkettőt commitolni.
 - A felületen soha ne felirat szerint keress (a fordítás elrontja), hanem objektumnév szerint.
@@ -50,4 +51,4 @@ Teteje: `5b20d8e`. Kész a `hungarian-ui`-n:
 
 Következő feladat: windowsos magyar billentyűzet (előbb felmérés, aztán Viktor jóváhagyása).
 
-A részletek (döntések, tervek, a további kívánságlista, hang, DMA) a claude.ai „ZX Spectrum emulátorok továbbfejlesztése” projekt `jnext-atadas.md` dokumentumában vannak; innen nem éred el, ha kell, kérd el Viktortól.
+A részletek (döntések, tervek, a további kívánságlista, hang, DMA) a tárolóban vannak: **`doc/hu/jnext-atadas.md`** (és mellette `jnext-magyaritas.md`, `jnext-dma-meres.md`, `jnext-hang-terv.md`, `jnext-blitter-becsles.md`). Ezeket munka közben olvasd és frissítsd; ha új döntés vagy terv születik, oda írd be, ugyanabban a commitban. A ZEsarUX-beszélgetésben készült JNEXT-jegyzetek a claude.ai-projektbe kerülhetnek; ha Viktor ilyet hoz, vezesd át ide.

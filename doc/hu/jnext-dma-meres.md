@@ -1,0 +1,42 @@
+# DMA-időzítés: KS3-mérés és ami ebből a JNEXT-re vonatkozik (2026-11-21)
+
+A ZEsarUX-beszélgetésben készült; a JNEXT-munkának szól. A JNEXT-ben még nincs ennek megfelelő javítás. (Eredetileg a claude.ai-projekt `claude/jnext-dma-meres.md` dokumentuma; 2026-11-21 óta a tárolóban él.)
+
+## A mérés
+
+- Tesztprogram: `dmatest.nex` – forrás a ZEsarUX forkban: `src/tests/next/dmatest/` (`dmatest.asm`, `font.asm`, `README.md` a teljes táblázattal; sjasmplus `savenex`). A zxnDMA idejét a képsorszámlálóval (NR 0x1E/0x1F) méri 3,5 és 28 MHz-en, és kiírja a processzor várakozó ciklusának köreit is.
+- Viktor KS3-án mérve: core 3.02.04 (60 Hz), 3.03.03 (60 Hz és 50 Hz). A DMA a két core-on gyakorlatilag azonos; a 3.03-ban 28 MHz-en a processzor löketes módban több kört tesz (nincs memória-várakozás a CPU oldalán).
+
+| (3,5 MHz / 28 MHz, sor; zárójelben körök) | KS3 3.03.03, 50 Hz | JNEXT (`77f57b4` körüli állapot, SDL-build) |
+|---|---|---|
+| A2: folyamatos, előosztó nélkül, 2 ciklus, 4K / 16K | 73 / 45 | 37 / 27 |
+| A3: ugyanez, 3 ciklus | 109 / 54 | 37 / 27 |
+| A4: ugyanez, 4 ciklus | 145 / 72 | 38 / 27 |
+| B8: folyamatos, előosztó 8, 512 B | 80 / 72 | 74 / 72 |
+| C8: löketes, előosztó 8, 512 B | 90 (342) / 74 (2940) | 80 (385) / 73 (2429) |
+| D2: löketes, előosztó 2, 4096 B | 280 (513) / 160 (5632) | 196 (820) / 152 (4915) |
+| E: hang, löketes, előosztó 55, 16K → $DF (képkocka) | 52 | 51 (50 Hz) |
+
+## Mit mutat (a valódi gép viselkedése)
+
+1. **Előosztó nélkül bájtonként az olvasás + írás ciklushossza** a WR1/WR2 időzítési bájtja szerint (00 → 4, 01 → 3, 10 → 2 órajel): 2+2 = 4, 3+3 = 6, 4+4 = 8 T bájtonként (mért 3,96 / 5,92 / 7,88). **28 MHz-en a 2 ciklusos memóriaolvasás 3** (4,89 / 5,87 / 7,82). A JNEXT bájtonként fix 2 T-t számol (`Dma::CHARGED_TSTATES_PER_BYTE = 2`) – ez a mérés szerint hibás; a JNEXT saját `timing_to_cycles` / `read_cycles()` / `write_cycles()` függvényei (dma.vhd:313-316, :365-368) már megvannak, csak nem ezek adják a felszámolt időt. A MAME (z80dma alapú) a ciklushosszt használja.
+2. **Előosztó:** bájtonként legalább előosztó × 32 db 28 MHz-es órajel, a processzor sebességétől függetlenül – ez a JNEXT-ben jó (`tick_burst_wait`). 3,5 MHz-en a várakozás után még kb. 3 órajel (folyamatos mód) ill. kb. 7 órajel (löketes mód: a sín visszaszerzése az M-ciklus végén) jön.
+3. **Löketes módban** a processzor kb. 75–81% (3,5 MHz, C8), ill. 36% (D2) idejét kapja.
+4. **Hang (E):** 875 kHz / 55 ≈ 15,9 kHz → 16384 minta ≈ 1,03–1,06 s; a KS3-on 52 képkocka (50 Hz).
+
+## Javaslat a JNEXT-hez (csak Viktor jóváhagyása után)
+
+- A felszámolt idő bájtonként `read_cycles() + write_cycles()` legyen (a 28 MHz-es SRAM-várakozással: `last_burst_read_wait_tstates`), a fix 2 helyett. Ez a VHDL-lel összhangban van (READ_2/3/4, WRITE_2/3/4 állapotok), tehát a tároló „VHDL a mérvadó” szabályát nem sérti; a KS3-mérést hivatkozásként felírni.
+- Viktor eldönti, hogy ez a saját forkban marad, vagy issue-ként az upstreamnek (jorgegv/jnext) is jelzi a mérésekkel.
+
+## Hatásfelmérés (Claude, 2026-11-21 este, a felhőben)
+
+- **Kód:** `Dma::CHARGED_TSTATES_PER_BYTE` (`src/peripheral/dma.h`) és két felhasználója az `src/core/emulator.cpp`-ben:
+  - a DMA-löket órajel-felszámolása (`master_cycles = (transferred * CHARGED_TSTATES_PER_BYTE + last_burst_read_wait_tstates()) * cpu_divisor()`);
+  - a `port_fe_write_time()`: a DMA-val írt 0xFE port időbélyege a kazettakimenethez (ugyanazt az idővonalat követi).
+- **Tesztek:** `test/dma/dma_test.cpp` 23.1–23.3 a 8 bájtos löket idejét rögzíti: most 24 / 16 / 16 T (28 MHz SRAM-várakozással / 14 MHz / 28 MHz bank 7). Az új modellben, ha az alapértelmezett időzítés 2+2 ciklus, kb. 40 / 32 / 32 T – a reset utáni időzítési bájtot a VHDL-ből ellenőrizni kell. A `doc/testing/DMA-TEST-PLAN-DESIGN.md` megfelelő sorai, és a DMA-t használó regressziós sorok (képernyőképek, hangos sorok) is érintettek lehetnek, mert eltolódhat bennük az időzítés.
+- Kezdés csak Viktor jóváhagyása után.
+
+## A ZEsarUX-ban
+
+Kész: `6809ec69` (hungarian-ui) – a fenti modell; a ZEsarUX a KS3-hoz 1–3%-on belül mér (3,5 MHz-en kb. 2 sor állandó eltéréssel, ami a sorszámláló visszaolvasásából jön, nem a DMA-ból).
