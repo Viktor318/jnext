@@ -91,7 +91,7 @@ A `CLAUDE.local.md` (a tároló gyökerében, `git add -f`-fel követve, mert a 
   - A felhő proxyja az Actions API egy részét tiltja (`actions/permissions` 403); a run list/view és az indítás működik. A naplót a `gh run view --log` / `--log-failed` csak a futás végén adja.
 - **Viktor kívánságlistája (2026-11-21), ebben a sorrendben**, mindegyik előbb felmérés, aztán jóváhagyás:
   1. ~~a 26.11a legyen az alapértelmezett letöltés~~ – kész (magyar build);
-  2. windowsos magyar billentyűzet – döntések megvannak, következik;
+  2. ~~windowsos magyar billentyűzet~~ – kész (`3f109af`, Viktor windowsos próbája 2026-11-22: rendben);
   3. ne akadjon az emuláció a Windows-ablak menüinek használata és az ablak mozgatása közben (a Windows modális ciklusa);
   4. külön hangkeverő – az első konkrét tartalom (a négy DAC-csatorna hangereje, bal–közép–jobb elhelyezés, alapból a valódi gép szerint) és a recsegés: `doc/hu/jnext-hang-terv.md`. A recsegés és a 3. pont (akadás) összefügghet.
   5. **virtuális billentyűzet megjelenítése** (Viktor, 2026-11-22). Felméréshez: a böngészős változatnak már van képernyő-billentyűzete (`--touch-keyboard`, user guide 8.2), a Qt-ablaknak nincs;
@@ -177,7 +177,7 @@ Engedélyezett webhelyek: `download.qt.io`, `master.qt.io`, `specnext.com`, `git
 ## Következő lépések
 
 1. **GitHub-tesztek:** **a teljes CI zöld** (`44960363279`, `572bec3`, 2026-11-22: mind a 15 feladat). Az odáig vezető javítások: Qt5 `rcc` `--no-zstd` (`8a416e3`), `USAGE.md` és a developer guide 36 sorhivatkozása (`852f997`), a `build-matrix` Qt nélküli, hibakeresős összeállítása (`jnext_i18n`, `fee5b14`), a PGO-s release build (`ui_language.cpp` költözése, `572bec3`). Hibánál a `gh run view <id> -R Viktor318/jnext --log-failed` (futás közben a kész feladat naplója: `gh api repos/Viktor318/jnext/actions/jobs/<job-id>/logs`). A `hu-tests.yml` marad (fent).
-2. **Windowsos magyar billentyűzet** (kívánságlista 2.): a modul (`faa7547`) és a bekötés kész, következik a Windows-próba Viktor gépén (a kipróbálandó pontok fent).
+2. ~~**Windowsos magyar billentyűzet**~~ (kívánságlista 2.): **kész** (`3f109af`). Viktor 2026-11-22-én Windowson végigpróbálta: NextBASIC Shift+1..9, AltGr-jelek és menük, ékezetek és holt billentyűk, Caps Lock, E-módos jelek 48K/128K/NextBASIC-ben, Shift+Ctrl egyszeri E-mód, egérelengedés bal Ctrl+Alttal – mind rendben. **Ismert eltérés, Viktor döntése szerint nem javítandó:** elfogott egérnél az AltGr (egymagában vagy AltGr+V-vel) is elengedi az egeret. Ebből látszik, hogy Windowson a jobb Alt nem ismerhető fel a `0x138` scan code-ról (a Qt mást ad); a gépelést ez nem érinti, mert a Ctrl + Alt + nyomtatható karakter is AltGr-nek számít (`c743724`).
 3. **DMA-időzítés** (`doc/hu/jnext-dma-meres.md`): hatásfelmérés kész, javítás csak jóváhagyás után.
 4. Akadás menüzés/ablakmozgatás közben (kívánságlista 3.), majd hangkeverő és recsegés (4., `doc/hu/jnext-hang-terv.md`).
 5. Viktor hibalistája (gyűjti); javítani csak jóváhagyás után.
