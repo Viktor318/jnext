@@ -325,7 +325,7 @@ public:
             if (host_mods_.test(m)) return true;            // host autorepeat
             host_mods_.set(m);
             host_pending_ = false;
-            if (!owned()) apply_mods(base_mods());
+            if (!owned()) apply_host(base_mods());
             return true;
         }
         if (find(e.phys) != held_.end()) return true;       // host autorepeat
@@ -372,7 +372,7 @@ public:
         held_.push_back(h);
         if (host_pending_ && !owned()) {   // the classic key goes with the host's modifiers
             host_pending_ = false;
-            apply_mods(base_mods());
+            apply_host(base_mods());
         }
         send(e.sc, true);
         return true;
@@ -388,7 +388,8 @@ public:
         }
         if (is_modifier(e.sc)) {
             host_mods_.reset(mod_index(e.sc));
-            if (!owned()) apply_mods(resting());
+            if (!e_chord(host_mods_)) chord_spent_ = false;   // Shift or Ctrl let go
+            if (!owned()) apply_host(resting());
             return true;
         }
         const auto it = find(e.phys);
@@ -426,6 +427,13 @@ public:
         const bool count = shown_;
         shown_ = idle();
         if (!count) return;
+        if (chord_left_ > 0 && frames > 0) {
+            chord_left_ -= std::min(frames, chord_left_);
+            if (chord_left_ == 0) {
+                chord_spent_ = true;
+                if (!owned()) apply_mods(base_mods());
+            }
+        }
         while (frames > 0 && !queue_.empty()) {
             const int take = std::min(frames, step_left_);
             step_left_ -= take;
@@ -454,6 +462,8 @@ public:
         step_left_ = 0;
         shown_ = true;
         host_pending_ = false;
+        chord_left_ = 0;
+        chord_spent_ = false;
     }
 
     // Diagnostics and tests.
@@ -518,7 +528,35 @@ private:
             m.reset(mod_index(SC_LCTRL));
             m.reset(mod_index(SC_RCTRL));
         }
+        if (layout_ && chord_spent_) {
+            m.reset(mod_index(SC_LSHIFT));
+            m.reset(mod_index(SC_RSHIFT));
+            m.reset(mod_index(SC_LCTRL));
+            m.reset(mod_index(SC_RCTRL));
+        }
         return m;
+    }
+
+    /// Caps Shift and Symbol Shift together (host Shift + Ctrl): extended mode.
+    static bool e_chord(const Mods& m)
+    {
+        const bool caps = m.test(mod_index(SC_LSHIFT)) || m.test(mod_index(SC_RSHIFT));
+        const bool symbol = m.test(mod_index(SC_LCTRL)) || m.test(mod_index(SC_RCTRL));
+        return caps && symbol;
+    }
+
+    /// The host's modifiers onto the Router. With the layout on, Caps + Symbol
+    /// Shift (Shift + Ctrl, or Shift with Windows' AltGr) is one press of
+    /// STEP_FRAMES frames: held, the ROM's auto-repeat toggled extended mode on
+    /// and off with a click every few frames for as long as the keys were down
+    /// (Viktor, 2026-11-22: "csak egyszer kellene bevennie"). After it, Shift and
+    /// Ctrl stay off the Router (chord_spent_) until one of them is let go on
+    /// the host. With the layout off they are held, as on the real machine.
+    void apply_host(const Mods& want)
+    {
+        apply_mods(want);
+        if (!layout_ || !e_chord(want)) chord_left_ = 0;
+        else if (chord_left_ == 0) chord_left_ = STEP_FRAMES;
     }
 
     bool owned() const
@@ -644,6 +682,8 @@ private:
     std::function<bool()> output_idle_;
     bool shown_ = true;   ///< the Router had applied everything at the last sample
     bool host_pending_ = false;   ///< host modifiers held back after a typed key (restore_shifts)
+    int chord_left_ = 0;          ///< frames left of the host's Caps + Symbol Shift press (apply_host)
+    bool chord_spent_ = false;    ///< that press was given; Shift and Ctrl off until one is let go
     bool layout_ = false;
     bool alt_digit_ = false;
     Mods host_mods_;

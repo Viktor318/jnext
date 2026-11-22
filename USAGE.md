@@ -1605,7 +1605,8 @@ instead of the US key in each key’s place; the extended-mode symbols are
 typed as a short key sequence. auto = on with the Hungarian interface.
 While it is on, AltGr + a key types its character rather than firing an
 Alt shortcut (the Alt+letter shortcuts and menus use the left Alt), and
-only the left Alt releases a captured mouse with Ctrl+Alt. The Qt
+only the left Alt releases a captured mouse with Ctrl+Alt, and
+Shift+Ctrl (extended mode) counts once however long it is held. The Qt
 window.
 
 `input.alt_digit_caps_shift` *true\|false*  

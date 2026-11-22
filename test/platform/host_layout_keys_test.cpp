@@ -875,6 +875,90 @@ void nextbasic_rows()
               && !altgr_types(true, true, true, true, 0));
 }
 
+// Shift + Ctrl is Caps + Symbol Shift, extended mode. Held, the ROM's
+// auto-repeat toggled it on and off with a click every few frames (Viktor,
+// 2026-11-22, on Windows: "csak egyszer kellene bevennie"). With the layout on
+// it is one press of STEP_FRAMES frames; with it off, held as on the machine.
+void chord_rows()
+{
+    {
+        Rig r;
+        r.mod(SC_LSHIFT, true);
+        r.mod(SC_LCTRL, true);
+        const std::string down = r.take();
+        r.t.on_frames(STEP_FRAMES - 1);
+        const std::string early = r.take();
+        r.t.on_frames(1);
+        const std::string end = r.take();
+        r.t.on_frames(100);
+        const std::string held = r.take();
+        r.mod(SC_LCTRL, false);
+        const std::string ctrl_up = r.take();
+        r.mod(SC_LCTRL, true);
+        r.t.on_frames(STEP_FRAMES);
+        const std::string again = r.take();
+        check("HLAY-52", "layout on, Shift + Ctrl held: Caps + Symbol Shift for STEP_FRAMES frames, then let go and not given again while held; Ctrl let go and pressed again is a new press",
+              down == "+LSHIFT +LCTRL" && early.empty() && end == "-LCTRL -LSHIFT" && held.empty()
+                  && ctrl_up == "+LSHIFT" && again == "+LCTRL -LCTRL -LSHIFT",
+              down + " | " + early + " | " + end + " | " + held + " | " + ctrl_up + " | " + again);
+    }
+    {
+        std::string seen;
+        for (const bool alt_digit : {true, false}) {
+            Rig r(false, alt_digit);
+            r.mod(SC_LSHIFT, true);
+            r.mod(SC_LCTRL, true);
+            r.t.on_frames(100);
+            r.mod(SC_LCTRL, false);
+            r.mod(SC_LSHIFT, false);
+            seen += "[" + r.take() + "]";
+        }
+        check("HLAY-53", "layout off (Alt + digit on or off): Shift + Ctrl stay held as long as the host holds them, as on the machine",
+              seen == "[+LSHIFT +LCTRL -LCTRL -LSHIFT][+LSHIFT +LCTRL -LCTRL -LSHIFT]", seen);
+    }
+    {
+        Matrix m;
+        MatrixRouter router;
+        router.attach(m);
+        Translator t([&router](int sc, bool pressed) { router.on_host_key(sc, pressed); });
+        t.set_layout(true);
+        t.set_alt_digit(true);
+        t.set_output_idle([&router] { return router.pending() == 0; });
+        int runs = 0, longest = 0, run = 0;
+        std::string all;
+        auto frames = [&](int n) {
+            for (int i = 0; i < n; ++i) {
+                const bool both = m.down.test(SC_LSHIFT) && m.down.test(SC_LCTRL);
+                all += both ? 'E' : '.';
+                if (both) { if (run == 0) ++runs; longest = std::max(longest, ++run); }
+                else run = 0;
+                router.on_tick_end(1);
+                t.on_frames(1);
+            }
+        };
+        t.on_press(KeyEvent{0x2a, SC_LSHIFT, 0, false});
+        frames(5);
+        t.on_press(KeyEvent{0x1d, SC_LCTRL, 0, false});
+        frames(150);   // 3 s: the 48K ROM repeats after 35 frames, then every 5
+        t.on_release(KeyEvent{0x1d, SC_LCTRL, 0, false});
+        t.on_release(KeyEvent{0x2a, SC_LSHIFT, 0, false});
+        frames(5);
+        check("HLAY-54", "through the real Router, Shift + Ctrl held 3 s: one run of frames with Caps + Symbol Shift, at least STEP_FRAMES and well under the ROM's repeat delay",
+              runs == 1 && longest >= STEP_FRAMES && longest < 20, all);
+    }
+    {
+        Rig r;
+        r.mod(SC_LSHIFT, true);
+        r.mod(SC_LCTRL, true);     // Windows' AltGr: a Ctrl first ...
+        r.mod(SC_RALT, true);      // ... then the right Alt
+        const std::string down = r.take();
+        r.t.on_frames(100);
+        const std::string held = r.take();
+        check("HLAY-55", "Shift + AltGr (Windows: Ctrl, then the right Alt): Symbol Shift only between the two, Caps Shift stays, and no press ends later",
+              down == "+LSHIFT +LCTRL -LCTRL" && held.empty(), down + " | " + held);
+    }
+}
+
 } // namespace
 
 int main()
@@ -893,6 +977,7 @@ int main()
     frontend_rows();
     wiring_rows();
     nextbasic_rows();
+    chord_rows();
     std::printf("Total: %4d  Passed: %4d  Failed: %4d  Skipped: %4d\n",
                 g_pass + g_fail, g_pass, g_fail, 0);
     return g_fail ? 1 : 0;
