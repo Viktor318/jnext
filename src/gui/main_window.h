@@ -138,15 +138,6 @@ public:
     using LayoutModeCallback = std::function<void(bool layout, bool alt_digit)>;
     void set_layout_mode_callback(LayoutModeCallback cb);
 
-    /// hungarian-ui - while a modal dialog is open (and while Preferences is
-    /// being built) the machine is held: QtApp pauses the tick and the sound
-    /// device (gui/window_stalls.h). Called with true on the first hold and
-    /// false on the last release.
-    void set_modal_hold_callback(window_stalls::ModalHold::Callback cb) {
-        modal_hold_.set_callback(std::move(cb));
-    }
-    bool modal_held() const { return modal_hold_.held(); }
-
     /// GH #386 - a Quick Save / Quick Load is a host action that must take its
     /// turn behind the keys typed before it (host_key_latch::Router::
     /// on_host_action). With a callback set, the File menu and the chord hand
@@ -626,8 +617,6 @@ private:
     bool layout_on_ = false;                    // typing by character (resolved)
     bool alt_digit_on_ = false;
     host_layout::AltSides alt_sides_;           // for the Ctrl+Alt mouse release
-    window_stalls::ModalHold modal_hold_;       // hungarian-ui: modal dialogs hold the machine
-    bool window_blocked_ = false;               // between WindowBlocked and WindowUnblocked
     /// The mouse release's view of a key event (left Alt only, with the layout on).
     host_layout::ReleaseView release_view_of(const QKeyEvent* event) const;
     SpeedCallback    speed_callback_;

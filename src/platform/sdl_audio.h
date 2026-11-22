@@ -69,12 +69,6 @@ public:
     /// open or SDL cannot report its buffer.
     int pacing_envelope_ms() const { return pacing_envelope_ms_; }
 
-    /// hungarian-ui - pause / resume the playback device (SDL_PauseAudioStreamDevice):
-    /// the ring keeps what it holds and the callback is not called, so a GUI
-    /// thread held by a modal dialog neither drains it nor clicks
-    /// (gui/window_stalls.h). No-op with no device.
-    void set_device_paused(bool paused);
-
     /// Shut down SDL audio.
     void shutdown();
 

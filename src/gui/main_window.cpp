@@ -3389,9 +3389,6 @@ void MainWindow::push_debug_keymap() {
 }
 
 void MainWindow::on_open_preferences() {
-    // hungarian-ui - held from before the dialog is built (it took about a
-    // second on Windows) until it is gone, live applies included.
-    const window_stalls::ModalHold::Scope hold(modal_hold_);
     // GH #1 review follow-up — hand the dialog the combinations THIS window
     // already answers to, harvested from the real QActions rather than
     // hand-listed, so a menu item added later is picked up with no edit here.
@@ -3743,16 +3740,6 @@ bool MainWindow::event(QEvent* ev) {
     // alone, so there is no meaningful Tab traversal to preserve. Dialogs and
     // the debugger window are separate top-level widgets and are unaffected.
     const QEvent::Type t = ev->type();
-    // hungarian-ui - a modal dialog blocks this window: the machine is held
-    // until it closes (window_stalls.h). Qt sends these for its native file
-    // dialogs too, whose modality it keeps on the hidden QFileDialog.
-    if (t == QEvent::WindowBlocked && !window_blocked_) {
-        window_blocked_ = true;
-        modal_hold_.begin();
-    } else if (t == QEvent::WindowUnblocked && window_blocked_) {
-        window_blocked_ = false;
-        modal_hold_.end();
-    }
     // hungarian-ui - AltGr + a key that types a character is the guest's, not
     // a shortcut's: on Windows AltGr is Ctrl + Alt, and Qt fired the Alt+letter
     // shortcuts and menu mnemonics on it (AltGr+B `{` opened a menu).

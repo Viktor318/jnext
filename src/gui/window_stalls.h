@@ -12,14 +12,12 @@
 //     runs (nudge_caption_click, mouse_lparam; MainWindow::nativeEvent).
 //   * a modal dialog: the native file dialog stalls the GUI thread for
 //     100-900 ms at a time while it is open, and Preferences took about a
-//     second to open. Viktor's decision: while one is open the machine
-//     pauses and the sound device is paused, instead of stuttering (ModalHold;
-//     QtApp pauses the tick and the audio device).
+//     second to open. Pausing the machine meanwhile was tried and dropped
+//     (Viktor, 2026-11-22: the emulation must keep running); still open.
 //
 // Plain numbers here, so the rules are testable without <windows.h>.
 
 #include <cstdint>
-#include <functional>
 
 namespace window_stalls {
 
@@ -41,42 +39,5 @@ constexpr std::intptr_t mouse_lparam(int x, int y)
     const auto hi = static_cast<std::uint32_t>(static_cast<std::uint16_t>(static_cast<std::int16_t>(y)));
     return static_cast<std::intptr_t>(lo | (hi << 16));
 }
-
-/// While a modal dialog is open (or being built) the machine is held. Holds
-/// nest; the callback hears `true` on the first begin and `false` on the
-/// last end, once each. An end with nothing held is ignored.
-class ModalHold {
-public:
-    using Callback = std::function<void(bool held)>;
-
-    void set_callback(Callback cb) { cb_ = std::move(cb); }
-    void begin()
-    {
-        if (depth_++ == 0 && cb_) cb_(true);
-    }
-    void end()
-    {
-        if (depth_ == 0) return;
-        if (--depth_ == 0 && cb_) cb_(false);
-    }
-    int depth() const { return depth_; }
-    bool held() const { return depth_ > 0; }
-
-    /// begin() for the lifetime of a scope.
-    class Scope {
-    public:
-        explicit Scope(ModalHold& h) : h_(h) { h_.begin(); }
-        ~Scope() { h_.end(); }
-        Scope(const Scope&) = delete;
-        Scope& operator=(const Scope&) = delete;
-
-    private:
-        ModalHold& h_;
-    };
-
-private:
-    Callback cb_;
-    int depth_ = 0;
-};
 
 }  // namespace window_stalls

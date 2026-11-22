@@ -47,8 +47,6 @@
 #include <QStatusBar>
 #include <QTemporaryDir>
 #include <QToolBar>
-#include <QDialog>
-#include <QTimer>
 
 #include <cstdarg>
 #include <cstdio>
@@ -535,103 +533,11 @@ void test_pause() {
 }
 
 // ---------------------------------------------------------------------------
-// hungarian-ui - modal dialogs hold the machine; a title-bar click on Windows
-// (gui/window_stalls.h). Oracle: Viktor's tick log on Windows (2026-11-22) and
-// his decision that the machine pauses, silenced, while a dialog is open.
+// hungarian-ui - a title-bar click on Windows (gui/window_stalls.h). Oracle:
+// Viktor's tick log on Windows (2026-11-22).
 // ---------------------------------------------------------------------------
 
-std::string read_file(const std::string& path) {
-    std::ifstream in(path);
-    std::stringstream ss;
-    ss << in.rdbuf();
-    return ss.str();
-}
-
-void test_modal_hold() {
-    // MWP-HU-01 - the hold nests; the callback hears the first begin and the
-    // last end once each; an end with nothing held is ignored.
-    {
-        window_stalls::ModalHold h;
-        std::string seen;
-        h.set_callback([&](bool held) { seen += held ? '+' : '-'; });
-        h.end();
-        h.begin();
-        h.begin();
-        const bool nested = h.held() && h.depth() == 2;
-        h.end();
-        const bool still = h.held();
-        h.end();
-        h.end();
-        { window_stalls::ModalHold::Scope sc(h); }
-        check("MWP-HU-01", "ModalHold: nested holds call back once on the first begin and once on the last end; a stray end is ignored; Scope holds for its lifetime",
-              seen == "+-+-" && nested && still && !h.held(), seen);
-    }
-    // MWP-HU-02 - a modal dialog over the window holds the machine until it
-    // closes (QEvent::WindowBlocked / WindowUnblocked), a nested one does not
-    // hold twice.
-    {
-        Fixture fx;
-        std::string seen;
-        fx.w->set_modal_hold_callback([&](bool held) { seen += held ? '+' : '-'; });
-        QDialog d(fx.w.get());
-        d.setWindowModality(Qt::ApplicationModal);
-        d.show();
-        QApplication::processEvents();
-        const bool held = fx.w->modal_held();
-        QDialog inner(&d);
-        inner.setWindowModality(Qt::ApplicationModal);
-        inner.show();
-        QApplication::processEvents();
-        inner.hide();
-        QApplication::processEvents();
-        const bool still = fx.w->modal_held();
-        d.hide();
-        QApplication::processEvents();
-        check("MWP-HU-02", "a modal dialog holds the machine until it closes; a dialog opened from it does not hold twice",
-              held && still && !fx.w->modal_held() && seen == "+-", seen);
-    }
-    // MWP-HU-03 - Settings > Preferences holds from BEFORE the dialog exists
-    // (building it took about a second on Windows) until it is gone.
-    {
-        Fixture fx;
-        std::string seen;
-        bool held_before_dialog = false;
-        fx.w->set_modal_hold_callback([&](bool held) {
-            seen += held ? '+' : '-';
-            if (held) held_before_dialog = QApplication::activeModalWidget() == nullptr;
-        });
-        QAction* prefs = fx.w->findChild<QAction*>(QStringLiteral("preferencesAction"));
-        bool held_inside = false, dialog_seen = false;
-        QTimer::singleShot(0, [&]() {
-            held_inside = fx.w->modal_held();
-            if (QWidget* m = QApplication::activeModalWidget()) {
-                dialog_seen = true;
-                if (auto* dlg = qobject_cast<QDialog*>(m)) dlg->reject(); else m->close();
-            }
-        });
-        if (prefs) prefs->trigger();
-        QApplication::processEvents();
-        check("MWP-HU-03", "Preferences holds the machine from before the dialog is built until it is closed, once",
-              prefs && dialog_seen && held_before_dialog && held_inside && !fx.w->modal_held() && seen == "+-",
-              seen + (held_before_dialog ? " before" : "") + (held_inside ? " inside" : ""));
-    }
-    // MWP-HU-04 - QtApp: a held machine is a paused tick, the sound device is
-    // paused with it, and the release restarts the frame schedule at now. No
-    // suite can construct a QtApp, so the wiring is read from its sources, as
-    // MWP-12 does.
-    {
-        std::string cpp = read_file(JNEXT_QT_APP_CPP);
-        std::string hdr = JNEXT_QT_APP_CPP;
-        hdr = read_file(hdr.substr(0, hdr.size() - 4) + ".h");
-        const size_t b = cpp.find("main_window_->set_modal_hold_callback(");
-        const std::string cb = b == std::string::npos ? std::string() : cpp.substr(b, 400);
-        const bool tick = hdr.find("bool    paused() const { return app.emulator_.debug_state().paused() || app.modal_held_; }") != std::string::npos;
-        const bool wiring = cb.find("modal_held_ = held;") != std::string::npos
-                         && cb.find("audio_->set_device_paused(held);") != std::string::npos
-                         && cb.find("if (!held) rebase_frame_timer();") != std::string::npos;
-        check("MWP-HU-04", "QtApp: a held machine is a paused tick, the sound device pauses with it, and the release re-anchors the frame schedule",
-              tick && wiring, std::string("tick=") + (tick ? "1" : "0") + " wiring=" + (wiring ? "1" : "0"));
-    }
+void test_title_bar() {
     // MWP-HU-05 - the title-bar click (Windows): only WM_NCLBUTTONDOWN on the
     // caption is nudged, and the posted WM_MOUSEMOVE carries signed client
     // coordinates (a title-bar point has a negative y).
@@ -664,7 +570,7 @@ int main(int argc, char** argv) {
     std::printf("GH #306 - Pause from the emulator window\n");
     std::printf("========================================\n\n");
     test_pause();
-    test_modal_hold();
+    test_title_bar();
     std::printf("  Group: MWP            - done\n");
     std::printf("\n========================================\n");
     std::printf("Total: %4d  Passed: %4d  Failed: %4d  Skipped:    0\n",

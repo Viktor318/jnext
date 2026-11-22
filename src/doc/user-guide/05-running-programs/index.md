@@ -154,11 +154,6 @@ debugger window does not open. The Pause key and Alt+U (⌘U) also work in fulls
 and toolbar are hidden. If you open the debugger while paused it shows the same
 pause, and closing it resumes the machine, as it always does.
 
-The machine also waits, silenced, while a dialog is open over the window (a file
-chooser, **Preferences**, a message), and carries on when it closes: on Windows these
-dialogs hold the window for up to a second at a time, which would otherwise stutter the
-picture and click the sound.
-
 Everything else in this chapter is about shaping that session.
 
 ## Programs that need NextZXOS
