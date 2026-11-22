@@ -158,7 +158,7 @@ Engedélyezett webhelyek: `download.qt.io`, `master.qt.io`, `specnext.com`, `git
 
 ## Következő lépések
 
-1. **GitHub-tesztek:** az első teljes CI (`44942749295`, `5b20d8e`) három, a fork miatti hibán bukott, mindhárom javítva (Viktor jóváhagyásával, 2026-11-21 éjjel): a Qt5 `rcc` nem ismeri a `--no-zstd`-t (`8a416e3`, csak Qt6-nál adjuk), a `USAGE.md` elavult sortörése és a developer guide 36 elcsúszott sorhivatkozása (`852f997`). Ellenőrző futás: teljes CI `44947457067` (`8a416e3`); az eredményét meg kell nézni. Hibánál a `gh run view <id> -R Viktor318/jnext --log-failed` (a futás közben a kész feladat naplója: `gh api repos/Viktor318/jnext/actions/jobs/<job-id>/logs`). Döntés: kell-e még a `hu-tests.yml`.
+1. **GitHub-tesztek:** **a teljes CI zöld** (`44960363279`, `572bec3`, 2026-11-22: mind a 15 feladat). Az odáig vezető javítások: Qt5 `rcc` `--no-zstd` (`8a416e3`), `USAGE.md` és a developer guide 36 sorhivatkozása (`852f997`), a `build-matrix` Qt nélküli, hibakeresős összeállítása (`jnext_i18n`, `fee5b14`), a PGO-s release build (`ui_language.cpp` költözése, `572bec3`). Hibánál a `gh run view <id> -R Viktor318/jnext --log-failed` (futás közben a kész feladat naplója: `gh api repos/Viktor318/jnext/actions/jobs/<job-id>/logs`). Döntés: kell-e még a `hu-tests.yml`.
 2. **Windowsos magyar billentyűzet** (kívánságlista 2.): a modul és a tesztjei kész (`faa7547`), következik a bekötés; részletek fent.
 3. **DMA-időzítés** (`doc/hu/jnext-dma-meres.md`): hatásfelmérés kész, javítás csak jóváhagyás után.
 4. Akadás menüzés/ablakmozgatás közben (kívánságlista 3.), majd hangkeverő és recsegés (4., `doc/hu/jnext-hang-terv.md`).
