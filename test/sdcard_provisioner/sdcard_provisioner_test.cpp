@@ -2437,6 +2437,17 @@ void test_upgrade_rows() {
     }
     jtp::unset_env("JNEXT_SDCARD_DISTRO_URL");
 
+    // -- distribution_title: SpecNext's names (latest-distro page "sn-emulator-26.11a.zip", README "System/Next 26.11a")
+    check("PROV-DIST-12", "the title of sn-emulator-26.11a.zip is NextZXOS 26.11a",
+          sdcard::distribution_title("sn-emulator-26.11a.zip") == "NextZXOS 26.11a");
+    check("PROV-DIST-12b", "26.11 and 24.11 keep their titles; a name that is not a version plus at most one lower-case letter stays as it is",
+          sdcard::distribution_title("sn-emulator-26.11.zip") == "NextZXOS 26.11" &&
+          sdcard::distribution_title("sn-emulator-24.11.zip") == "NextZXOS 24.11" &&
+          sdcard::distribution_title("sn-emulator-26.11ab.zip") == "sn-emulator-26.11ab.zip" &&
+          sdcard::distribution_title("sn-emulator-26.11A.zip") == "sn-emulator-26.11A.zip" &&
+          sdcard::distribution_title("sn-emulator-a.zip") == "sn-emulator-a.zip" &&
+          sdcard::distribution_title("sn-emulator-.zip") == "sn-emulator-.zip");
+
     // -- SER-01..03: each distribution's card has its own serial -----------------
     {
         clean();
@@ -3012,16 +3023,6 @@ int main() {
         check("PROV-URL-03", "empty env => canonical kDistroUrl",
               seen_url == sdcard::kDistroUrl, seen_url);
         jtp::unset_env("JNEXT_SDCARD_DISTRO_URL");
-
-        // hungarian-ui: a build without the JNEXT_DEFAULT_DISTRO_URL cache value
-        // (every test build) downloads kDistroUrl; one with it, that address.
-#ifdef JNEXT_DEFAULT_DISTRO_URL
-        const std::string want_default = JNEXT_DEFAULT_DISTRO_URL;
-#else
-        const std::string want_default = sdcard::kDistroUrl;
-#endif
-        check("PROV-URL-04", "default_distro_url() is the build's JNEXT_DEFAULT_DISTRO_URL, else kDistroUrl",
-              std::string(sdcard::default_distro_url()) == want_default, sdcard::default_distro_url());
     }
 
     jtp::make_dir((g_tmpdir + "/.jnext").c_str());

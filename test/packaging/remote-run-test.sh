@@ -9,13 +9,15 @@
 # locally), the owner's rule that all remote work data lives under one directory, and
 # .github/workflows/ci.yml as the consumer of test/ci-deps.sh. No VHDL: this is tooling.
 #
-# Rows RRUN-01 .. RRUN-30. A missing tool FAILS every row (no SKIP path).
+# Rows RRUN-01 .. RRUN-46. A missing tool FAILS every row (no SKIP path).
 set -uo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+# shellcheck source=/dev/null
+source "$ROOT/test/packaging/skill-env-scrub.sh"
 SKILL=$ROOT/.claude/skills/remote-run
 DRIVER=$SKILL/remote-run.sh
-EXPECTED_ROWS=30
+EXPECTED_ROWS=46
 
 total=0; passed=0; failed=0
 ids_seen=" "
@@ -56,6 +58,8 @@ TMP=$(mktemp -d "${TMPDIR:-/tmp}/remote-run-test.XXXXXX")
 trap 'rm -rf "$TMP"' EXIT
 export HOME=$TMP/home
 mkdir -p "$HOME" "$TMP/bin" "$TMP/state"
+# RRUN-38's run: the whole test again, started now so it overlaps the rest, under a polluted environment
+[[ -n "${SKILLTEST_INNER:-}" ]] || polluted_selfrun "${BASH_SOURCE[0]}" "$TMP/polluted"
 
 # ---- fakes ------------------------------------------------------------------
 # Fake podman: records every call; any call without --root/--runroot other than --version FAILS (and
@@ -63,34 +67,53 @@ mkdir -p "$HOME" "$TMP/bin" "$TMP/state"
 # `image exists` is true after a `build`. `run` executes the real container-side script when
 # FAKE_INNER=1 (the -v mounts mapped to RR_CTL / RR_SRC), else prints a canned result, writes a stamp
 # when FAKE_STAMP=1, sleeps when FAKE_SLEEP=1 (until killed), kills its remote shell when
-# FAKE_KILL_PARENT=1, and exits with FAKE_RC.
+# FAKE_KILL_PARENT=1, and exits with FAKE_RC. While a FAKE_SLEEP run sleeps it is listed in $FAKE_STATE/live
+# as "<name> <rr-lane label>"; `ps` prints the live names matching --filter label=rr-lane=N or name=<regex>.
 cat > "$TMP/bin/podman" <<'EOF'
 #!/usr/bin/env bash
 echo "$*" >> "$FAKE_STATE/calls"
 if [[ "${1:-}" == --version ]]; then echo "podman version 0.0-fake"; exit 0; fi
 if [[ "${1:-}" != --root ]]; then : > "$FAKE_STATE/noroot"; exit 99; fi
-echo "$2 $4" >> "$FAKE_STATE/roots"; shift 4
+echo "$2 $4" >> "$FAKE_STATE/roots"; wdir=${2%/containers/storage}; shift 4
 if [[ "${1:-}" == --storage-driver ]]; then echo "$2" >> "$FAKE_STATE/drivers"; shift 2; fi
 case "${1:-}" in
     info)
         case "$*" in
-            *GraphDriverName*) [[ "${FAKE_INFO_FAIL:-0}" != 1 ]] || { echo "boom: store broken" >&2; exit 1; }; echo overlay ;;
+            *GraphDriverName*) flock -n "$wdir/lane-L2.lock" true && echo free >> "$FAKE_STATE/probe-lane2" || echo held >> "$FAKE_STATE/probe-lane2"
+                [[ "${FAKE_INFO_FAIL:-0}" != 1 ]] || { echo "boom: store broken" >&2; exit 1; }; echo overlay ;;
             *) echo "${FAKE_ROOTLESS:-true}" ;;
         esac ;;
     image)
         case "${2:-}" in
-            exists) [[ -e "$FAKE_STATE/image-${3//\//_}" ]] ;;
+            exists) flock -n "$wdir/setup.lock" true && echo free >> "$FAKE_STATE/setup-at-image" || echo held >> "$FAKE_STATE/setup-at-image"
+                [[ -e "$FAKE_STATE/image-${3//\//_}" ]] ;;
             *) exit 0 ;;
         esac ;;
     build) while [[ $# -gt 0 ]]; do [[ "$1" == -t ]] && : > "$FAKE_STATE/image-${2//\//_}"; shift; done ;;
     kill) echo "$2" >> "$FAKE_STATE/killed" ;;
+    ps)
+        filt=""
+        for a in "$@"; do case "$a" in label=rr-lane=*|name=*) filt=$a ;; esac; done
+        [[ -e "$FAKE_STATE/live" ]] || exit 0
+        while read -r n l; do
+            case "$filt" in
+                label=rr-lane=*) [[ "$l" != "${filt#label=rr-lane=}" ]] || echo "$n" ;;
+                name=*) ! grep -qE "${filt#name=}" <<<"$n" || echo "$n" ;;
+            esac
+        done < "$FAKE_STATE/live"
+        exit 0 ;;
     run)
-        ctl=""; src=""
+        ctl=""; src=""; cname=""; clane=""
+        prev=""
         for a in "$@"; do
+            [[ "$prev" == --name ]] && cname=$a
+            [[ "$prev" == --label && "$a" == rr-lane=* ]] && clane=${a#rr-lane=}
+            prev=$a
             [[ "$a" == *:/rr-stamps ]] && [[ "${FAKE_STAMP:-0}" == 1 ]] && echo stamp > "${a%%:*}/fakekey"
             [[ "$a" == *:/src ]] && { echo "${a%%:*}" > "$FAKE_STATE/srcdir"; src=${a%%:*}; }
             [[ "$a" == *:/rr:ro ]] && { cp "${a%%:*}/env.sh" "$FAKE_STATE/env.sh"; ctl=${a%%:*}; }
         done
+        [[ "${FAKE_REFS:-0}" != 1 ]] || git -C "$src" merge-base HEAD origin/main > "$FAKE_STATE/mergebase" 2>/dev/null
         if [[ "${FAKE_INNER:-0}" == 1 ]]; then
             RR_CTL=$ctl RR_SRC=$src bash "$ctl/inner.sh"
             exit $?
@@ -115,6 +138,8 @@ case "${1:-}" in
         fi
         if [[ "${FAKE_SLEEP:-0}" == 1 ]]; then
             trap 'exit 143' TERM
+            echo "$cname $clane" >> "$FAKE_STATE/live"
+            trap 'grep -vx "$cname $clane" "$FAKE_STATE/live" > "$FAKE_STATE/live.new"; mv -f "$FAKE_STATE/live.new" "$FAKE_STATE/live"' EXIT
             : > "$FAKE_STATE/running"; sleep 60 >/dev/null 2>&1 & wait
         fi
         exit "${FAKE_EXIT:-${FAKE_RC:-0}}" ;;
@@ -188,14 +213,18 @@ drive() {
 # drv_fn <function> <args>: call a function of the driver (sourced in a subshell).
 # shellcheck disable=SC1090
 drv_fn() { ( source "$DRIVER"; "$@" ); }
-# hold_lane <seconds>: a separate process takes the remote lane lock for that long (waits until it has it).
-hold_lane() {
+# hold_lock <seconds> <lock file>...: one separate process takes those locks for that long (waits until
+# it has them); `kill $!` releases them. hold_lane holds EVERY lane, so "the remote is busy" keeps its
+# meaning now that a free second lane would otherwise take the run.
+hold_lock() {
+    local secs=$1 f; shift
     mkdir -p "$WORK"
-    flock "$WORK/lane.lock" sleep "$1" &
-    until ! flock -n "$WORK/lane.lock" true; do sleep 0.1; done
+    ( n=7; for f in "$@"; do eval "exec $n>\"\$f\""; flock "$n"; n=$((n - 1)); done; exec sleep "$secs" ) &
+    for f in "$@"; do until ! flock -n "$f" true; do sleep 0.1; done; done
 }
+hold_lane() { hold_lock "$1" "$WORK/lane.lock" "$WORK/lane-L2.lock"; }
 calls() { cat "$FAKE_STATE/calls" 2>/dev/null; }
-reset_state() { rm -f "$FAKE_STATE"/calls "$FAKE_STATE"/killed "$FAKE_STATE"/roots "$FAKE_STATE"/running; }
+reset_state() { rm -f "$FAKE_STATE"/calls "$FAKE_STATE"/killed "$FAKE_STATE"/roots "$FAKE_STATE"/running "$FAKE_STATE"/live "$FAKE_STATE"/probe-lane2 "$FAKE_STATE"/setup-at-image; }
 
 # RRUN-01: usage refusals exit 2, --help exits 0
 out=""
@@ -568,5 +597,246 @@ n2=$RC
 row RRUN-30 "$([[ $n2 -eq 75 && "$(grep -a 'fallback:' "$TMP/logs/n2.log")" == *"not rootless"* ]] \
     && ! grep -qE '(^| )(run|build) ' <<<"$(calls)" && echo 1 || echo 0)" \
     "a podman that is not rootless: exit 75 'not rootless', nothing built or run (rc=$n2)"
+
+# ---- two lanes (GH #547) ------------------------------------------------------
+# The lane locks are released by their holders' exit; rows below start from "no lock held".
+LOCK1=$WORK/lane.lock
+ids_lane() { grep -aE "lane [0-9] of" "$TMP/logs/$1.log" | head -n 1; }
+
+# RRUN-31: two runs at once: while A lives in lane 1 (and its checkout looks like an orphan of two hours),
+# B takes lane 2 at once, succeeds, and neither kills A's container nor sweeps A's checkout
+reset_state; rm -rf "$WORK/runs-L2" "$WORK/ctl-L2"
+# orphans seeded before A starts: a lane-1 container (A must kill it) and a lane-2 one (A must not)
+printf 'rr-jnext-orph 1\nrr-L2-jnext-other 2\n' > "$FAKE_STATE/live"
+FAKE_SLEEP=1 setsid bash "$DRIVER" --local-shell --log-dir "$TMP/logs" --id twoA feature "$SHA" unit-test >/dev/null 2>&1 &
+apid=$!
+for _ in $(seq 1 900); do [[ -e "$FAKE_STATE/running" ]] && break; sleep 0.2; done
+a_orph=0; grep -qx 'rr-jnext-orph' "$FAKE_STATE/killed" 2>/dev/null && ! grep -qx 'rr-L2-jnext-other' "$FAKE_STATE/killed" && a_orph=1
+touch -d '2 hours ago' "$WORK/runs/twoA" "$WORK/ctl/twoA"
+start=$SECONDS
+REMOTE_RUN_LANE_WAIT=20 drive --id twoB feature "$SHA" unit-test
+b_rc=$RC; b_took=$((SECONDS - start))
+a_alive=0; kill -0 "$apid" 2>/dev/null && a_alive=1
+a_dir=0; [[ -d "$WORK/runs/twoA" ]] && a_dir=1
+a_killed=0; grep -q 'twoA' "$FAKE_STATE/killed" 2>/dev/null && a_killed=1
+kill -TERM "$apid" 2>/dev/null
+for _ in $(seq 1 450); do kill -0 "$apid" 2>/dev/null || break; sleep 0.2; done
+kill -KILL "$apid" 2>/dev/null; wait "$apid" 2>/dev/null
+row RRUN-31 "$([[ $b_rc -eq 0 && $b_took -lt 15 && "$(ids_lane twoB)" == *"lane 2 of 2"* && "$(ids_lane twoA)" == *"lane 1 of 2"* \
+    && $a_alive -eq 1 && $a_dir -eq 1 && $a_killed -eq 0 && $a_orph -eq 1 && "$OUT" == *"verdict: CLEAN"* \
+    && "$(grep -a 'RR_JOBS_DEFAULT' "$FAKE_STATE/env.sh")" == *"RR_JOBS_DEFAULT=6 RR_JOBS_HEAVY=3"* && "$(calls | grep -E '(^| )run ' | grep -c 'JNEXT_TEST_JOBS=6')" -eq 1 ]] && echo 1 || echo 0)" \
+    "run B takes lane 2 beside live run A at halved CPU caps, and neither kills A's container nor sweeps A's checkout, while A kills its own lane's orphan only (rc=$b_rc ${b_took}s alive=$a_alive dir=$a_dir killed=$a_killed orph=$a_orph)"
+
+# RRUN-32: a lane-2 run's names, mounts and label; the per-lane sweep; cleanup mode finds lane 2's dirs
+reset_state
+mkdir -p "$WORK/cache/jnext-home-L2/runs/x" "$WORK/cache/jnext-home/runs/y"
+touch -d '3 days ago' "$WORK/cache/jnext-home-L2/runs/x" "$WORK/cache/jnext-home/runs/y"
+hold_one() { hold_lock "$1" "$LOCK1"; }
+hold_one 40; holder=$!
+printf 'rr-L2-jnext-orph2 2\nrr-jnext-keep 1\n' > "$FAKE_STATE/live"
+FAKE_KILL_PARENT=1 drive --id lane2 feature "$SHA" unit-test
+l2_rc=$RC
+kill "$holder" 2>/dev/null; wait "$holder" 2>/dev/null
+runline=$(calls | grep -E '(^| )run ' | head -n 1)
+orph_ok=0; grep -qx 'rr-L2-jnext-orph2' "$FAKE_STATE/killed" 2>/dev/null && ! grep -qx 'rr-jnext-keep' "$FAKE_STATE/killed" && orph_ok=1
+setup_ok=0; [[ "$(tail -n 1 "$FAKE_STATE/setup-at-image" 2>/dev/null)" == held ]] && setup_ok=1
+row RRUN-32 "$([[ $l2_rc -eq 1 && $orph_ok -eq 1 && $setup_ok -eq 1 && "$runline" == *"-v $WORK/runs-L2/lane2/src:/src"* && "$runline" == *"-v $WORK/ctl-L2/lane2:/rr:ro"* \
+    && "$runline" == *"-v $WORK/cache/jnext-home-L2:/root/.jnext"* && "$runline" == *"-v $WORK/cache/extra-repo-L2:/fpga-core:ro"* \
+    && "$runline" == *"-v $WORK/cache/ccache:/root/.cache/ccache"* && "$runline" == *"-v $WORK/cache/tools:/root/.cache/jnext"* \
+    && "$runline" == *"--label rr-lane=2"* && "$runline" == *"--name rr-L2-jnext-lane2 "* \
+    && ! -e "$WORK/cache/jnext-home-L2/runs/x" && -e "$WORK/cache/jnext-home/runs/y" \
+    && ! -e "$WORK/runs-L2/lane2" && ! -e "$WORK/ctl-L2/lane2" && "$(grep -a RR_BOOTSTRAP "$FAKE_STATE/env.sh")" == *"sdcard-image"* ]] && echo 1 || echo 0)" \
+    "lane 2: runs-L2/ctl-L2, jnext-home-L2 and extra-repo-L2 mounts, shared ccache and tools, label and name; its own sweep; cleanup mode removes its dirs; the bootstrap provisions an empty SD home; the lane kills its own orphan only; the setup lock is held at the image check (rc=$l2_rc orph=$orph_ok setup=$setup_ok)"
+
+# RRUN-33: LANES=1 is the one-lane contract: a busy lane.lock gives 75 / local run, no second lock appears
+reset_state; rm -f "$WORK/lane-L2.lock"; rm -f "$FAKE_STATE/make-calls"; mkdir -p "$TMP/local"
+hold_one 20; holder=$!
+REMOTE_RUN_LANES=1 REMOTE_RUN_LANE_WAIT=2 drive --id one1 --fallback-local "$TMP/local" feature "$SHA" unit-test
+o_rc=$RC
+kill "$holder" 2>/dev/null; wait "$holder" 2>/dev/null
+row RRUN-33 "$([[ $o_rc -eq 0 && "$OUT" == *"RAN LOCALLY"* && "$(grep -a 'fallback:' "$TMP/logs/one1.log")" == *"every lane stayed busy for 2s"* \
+    && ! -e "$WORK/lane-L2.lock" ]] && echo 1 || echo 0)" \
+    "LANES=1: a busy lane.lock exits 75 (runs locally with --fallback-local) and no lane-L2.lock is created (rc=$o_rc)"
+
+# RRUN-34: the setup lock: a run waits for it, and past LANE_WAIT gives up with 75
+reset_state
+hold_lock 4 "$WORK/setup.lock"; holder=$!
+start=$SECONDS
+REMOTE_RUN_LANE_WAIT=30 drive --id set1 feature "$SHA" unit-test
+s1=$RC; s1_took=$((SECONDS - start))
+kill "$holder" 2>/dev/null; wait "$holder" 2>/dev/null
+hold_lock 10 "$WORK/setup.lock"; holder=$!
+REMOTE_RUN_LANE_WAIT=1 drive --id set2 feature "$SHA" unit-test
+s2=$RC
+kill "$holder" 2>/dev/null; wait "$holder" 2>/dev/null
+row RRUN-34 "$([[ $s1 -eq 0 && $s1_took -ge 3 && "$(cat "$TMP/logs/set1.log")" == *"waiting for the setup lock"* \
+    && $s2 -eq 75 && "$(grep -a 'fallback:' "$TMP/logs/set2.log")" == *"setup lock stayed busy for 1s"* ]] && echo 1 || echo 0)" \
+    "the setup lock: a run waits for it (${s1_took}s, rc=$s1), and gives up with 75 after LANE_WAIT (rc=$s2)"
+
+# RRUN-35: no recorded storage driver and another lane live: the probe is refused (75) and the live
+# store stays; with no lane held the probe runs and the driver is recorded
+reset_state
+hold_one 40; holder=$!
+rm -f "$WORK/containers/driver"; mkdir -p "$WORK/containers/storage"; : > "$WORK/containers/storage/live"
+FAKE_INFO_FAIL=1 drive --id pr1 feature "$SHA" unit-test
+p1=$RC
+live_ok=0; [[ -e "$WORK/containers/storage/live" ]] && live_ok=1
+kill "$holder" 2>/dev/null; wait "$holder" 2>/dev/null
+drive --id pr2 feature "$SHA" unit-test
+p2=$RC
+drec=$(cat "$WORK/containers/driver" 2>/dev/null)
+probe_ok=0; [[ "$(tail -n 1 "$FAKE_STATE/probe-lane2" 2>/dev/null)" == held ]] && probe_ok=1
+# a run that waits for a lane while another run records the driver must use it (vfs here) once it has its lane
+rm -f "$WORK/containers/driver" "$FAKE_STATE/drivers"
+hold_lane 4; holder=$!
+( sleep 1.5; echo vfs > "$WORK/containers/driver" ) &
+REMOTE_RUN_LANE_WAIT=30 drive --id pr3 feature "$SHA" unit-test
+p3=$RC
+kill "$holder" 2>/dev/null; wait "$holder" 2>/dev/null
+drv_ok=0; [[ "$(tail -n 1 "$FAKE_STATE/drivers" 2>/dev/null)" == vfs ]] && drv_ok=1
+echo overlay > "$WORK/containers/driver"
+row RRUN-35 "$([[ $p1 -eq 75 && "$(grep -a 'fallback:' "$TMP/logs/pr1.log")" == *"another lane is live"* && $live_ok -eq 1 \
+    && $p2 -eq 0 && "$drec" == overlay && $probe_ok -eq 1 && $p3 -eq 0 && $drv_ok -eq 1 ]] && echo 1 || echo 0)" \
+    "the storage probe needs every lane: refused while another lane is live, store kept (rc=$p1, live=$live_ok); runs when idle with the other lane held during the probe (rc=$p2 probe=$probe_ok); a run that waited for its lane uses the driver recorded meanwhile (rc=$p3 drv=$drv_ok)"
+
+# RRUN-36: the memory cap is the host's 80% divided by LANES; LANES must be one digit 1-9
+reset_state
+printf 'MemTotal:       16777216 kB\nMemAvailable:   16000000 kB\n' > "$TMP/meminfo"
+RR_MEMINFO=$TMP/meminfo REMOTE_RUN_CONTAINER_MEMORY=20g REMOTE_RUN_LANES=2 drive --id mem1 feature "$SHA" unit-test
+m_a=$RC; line2=$(calls | grep -E '(^| )run ' | head -n 1); reset_state
+RR_MEMINFO=$TMP/meminfo REMOTE_RUN_CONTAINER_MEMORY=20g REMOTE_RUN_LANES=1 drive --id mem2 feature "$SHA" unit-test
+m_b=$RC; line1=$(calls | grep -E '(^| )run ' | head -n 1); reset_state
+bad=""
+for v in 0 x 10; do
+    REMOTE_RUN_LANES=$v bash "$DRIVER" --local-shell --log-dir "$TMP/logs" --id mem3 feature "$SHA" unit-test >"$TMP/lanes-$v.out" 2>&1; r=$?
+    grep -q 'LANES' "$TMP/lanes-$v.out" && [[ $r -eq 2 ]] || bad+=" $v=$r"
+done
+row RRUN-36 "$([[ $m_a -eq 0 && $m_b -eq 0 && "$line2" == *"--memory 6553m --memory-swap 6553m"* && "$line2" == *"JNEXT_TEST_JOBS=12"* && "$line1" == *"--memory 13107m --memory-swap 13107m"* \
+    && -z "$bad" ]] && echo 1 || echo 0)" \
+    "per-lane memory: 16 GiB host gives 6553m for 2 lanes, 13107m for 1; LANES 0, x and 10 exit 2 naming LANES (a=$m_a b=$m_b bad:$bad)"
+
+# RRUN-37: the local fallback marks its wrapper's environment REMOTE_RUN_FALLBACK=1, so a wrapper that itself
+# sends heavy runs to the remote (the autonomous run's slot.sh, GH #547 stage 4) never sends one back
+rm -f "$FAKE_STATE/make-calls"
+cat > "$TMP/wrap2" <<'EOF'
+#!/usr/bin/env bash
+echo "fallback=${REMOTE_RUN_FALLBACK:-unset}" >> "$FAKE_STATE/make-calls"
+exec "$@"
+EOF
+chmod +x "$TMP/wrap2"
+env -u REMOTE_RUN_FALLBACK REMOTE_RUN_LOCAL_WRAP="$TMP/wrap2" timeout --kill-after=5s 60s bash "$DRIVER" --log-dir "$TMP/logs" --id u37 \
+    --fallback-local "$TMP/local" feature "$SHA" unit-test 'sh:true' >/dev/null 2>&1
+fb=$(grep fallback= "$FAKE_STATE/make-calls" | sort -u)
+row RRUN-37 "$([[ "$fb" == "fallback=1" && $(grep -c fallback= "$FAKE_STATE/make-calls") -eq 2 ]] && echo 1 || echo 0)" \
+    "both fallback forms (make target, sh:) put REMOTE_RUN_FALLBACK=1 in the wrapper's environment"
+
+# RRUN-39: the run tree carries origin/main (the mirror holds only refs/rr/*, a local clone copies only
+# refs/heads/*), so a tool in the run can take a merge base with main (test-affected --explain-miss, GH #547).
+# The branch under test is one commit AHEAD of main, so main, the run's head and a wrongly set base differ.
+MAIN_SHA=$(git -C "$REPO" rev-parse main)
+AHEAD_SHA=$(git -C "$REPO" -c user.name=t -c user.email=t@t commit-tree -p "$MAIN_SHA" -m ahead "$(git -C "$REPO" rev-parse "$MAIN_SHA^{tree}")")
+git -C "$REPO" branch ahead39 "$AHEAD_SHA"
+reset_state; rm -f "$FAKE_STATE/mergebase"
+FAKE_REFS=1 FAKE_RC=0 drive --id m39 ahead39 "$AHEAD_SHA" unit-test
+mb39=$(cat "$FAKE_STATE/mergebase" 2>/dev/null)
+row RRUN-39 "$([[ $RC -eq 0 && -n "$mb39" && "$mb39" == "$MAIN_SHA" && "$mb39" != "$AHEAD_SHA" ]] && echo 1 || echo 0)" \
+    "the run tree's merge-base HEAD origin/main is main ($mb39), not the run's own head ($AHEAD_SHA) (rc $RC)"
+
+# RRUN-40: the main fetch is best effort: against a remote with no main the run is green, not a fallback, not 75,
+# and the run tree has no origin/main
+NOMAIN=$TMP/origin-nomain.git
+git clone -q --bare "$REPO" "$NOMAIN"; git -C "$NOMAIN" symbolic-ref HEAD refs/heads/feature; git -C "$NOMAIN" branch -q -D main
+reset_state; rm -f "$FAKE_STATE/mergebase"
+REMOTE_RUN_REPO_URL="file://$NOMAIN" FAKE_REFS=1 FAKE_RC=0 drive --id nm40 feature "$SHA" unit-test
+row RRUN-40 "$([[ $RC -eq 0 && "$OUT" != *"fallback"* && -e "$FAKE_STATE/mergebase" && ! -s "$FAKE_STATE/mergebase" ]] && echo 1 || echo 0)" \
+    "a remote with no main: the run is green (rc $RC), no fallback, and the run tree has no origin/main"
+
+# RRUN-41 / RRUN-42: both fetches under the setup lock are time-bounded (RR_FETCH_TIMEOUT, default 120 s). A hanging
+# main fetch is best effort (green run, no origin/main); a hanging branch fetch is the existing failure path (75).
+mkdir -p "$TMP/hang"
+REALGIT=$(command -v git)
+cat > "$TMP/hang/git" <<EOF
+#!/usr/bin/env bash
+case "\$*" in *"refs/heads/\${HANG_REF:-none}:"*) exec sleep 300 ;; esac
+exec $REALGIT "\$@"
+EOF
+chmod +x "$TMP/hang/git"
+reset_state; rm -f "$FAKE_STATE/mergebase"
+t0=$SECONDS
+PATH="$TMP/hang:$PATH" HANG_REF=main RR_FETCH_TIMEOUT=2 FAKE_REFS=1 FAKE_RC=0 drive --id hm41 feature "$SHA" unit-test
+took41=$((SECONDS - t0))
+row RRUN-41 "$([[ $RC -eq 0 && $took41 -lt 60 && -e "$FAKE_STATE/mergebase" && ! -s "$FAKE_STATE/mergebase" ]] && echo 1 || echo 0)" \
+    "a hanging main fetch is cut at RR_FETCH_TIMEOUT: green run (rc $RC) in ${took41}s with no origin/main"
+reset_state
+t0=$SECONDS
+PATH="$TMP/hang:$PATH" HANG_REF=ahead39 RR_FETCH_TIMEOUT=2 FAKE_RC=0 drive --id hb42 ahead39 "$AHEAD_SHA" unit-test
+took42=$((SECONDS - t0))
+row RRUN-42 "$([[ $RC -eq 75 && $took42 -lt 60 && "$OUT" == *"timed out after 2s"* ]] && echo 1 || echo 0)" \
+    "a hanging branch fetch is cut at RR_FETCH_TIMEOUT and takes the fallback path (rc $RC, ${took42}s)"
+
+# RRUN-43: the --deps-ref fetch, also under the setup lock, is bounded too: a hang takes the existing 75 fallback
+reset_state
+t0=$SECONDS
+PATH="$TMP/hang:$PATH" HANG_REF=feature RR_FETCH_TIMEOUT=2 FAKE_RC=0 drive --id hd43 ahead39 "$AHEAD_SHA" unit-test --deps-ref feature
+took43=$((SECONDS - t0))
+row RRUN-43 "$([[ $RC -eq 75 && $took43 -lt 60 && "$OUT" == *"cannot fetch --deps-ref feature"* ]] && echo 1 || echo 0)" \
+    "a hanging --deps-ref fetch is cut at RR_FETCH_TIMEOUT and takes the fallback path (rc $RC, ${took43}s)"
+
+# RRUN-44: --probe answers "a lane is free right now" in one round trip and starts nothing: 0 with a free lane
+# (the second lane too), 75 with every lane held or no host, 2 with a branch or a mode beside it
+reset_state
+drive --probe; p_free=$RC; o_free=$OUT
+hold_lock 20 "$WORK/lane.lock"; holder=$!
+drive --probe; p_one=$RC; o_one=$OUT
+kill "$holder" 2>/dev/null; wait "$holder" 2>/dev/null
+hold_lane 20; holder=$!
+reset_state
+drive --probe; p_busy=$RC; o_busy=$OUT
+started=0; [[ "$(calls)" == *"run "* || "$(calls)" == *"build "* ]] && started=1
+kill "$holder" 2>/dev/null; wait "$holder" 2>/dev/null
+bash "$DRIVER" --probe >/dev/null 2>&1; p_nohost=$?
+bash "$DRIVER" --probe feature "$SHA" unit-test >/dev/null 2>&1; p_use=$?
+bash "$DRIVER" --probe --warm >/dev/null 2>&1; p_mode=$?
+row RRUN-44 "$([[ $p_free -eq 0 && "$o_free" == *"lane 1 of 2 is free"* && $p_one -eq 0 && "$o_one" == *"lane 2 of 2 is free"* \
+    && $p_busy -eq 75 && "$o_busy" == *"probe ${HOST:-local}: rc=75"* && $started -eq 0 && $p_nohost -eq 75 && $p_use -eq 2 && $p_mode -eq 2 ]] && echo 1 || echo 0)" \
+    "--probe: free=$p_free, lane 1 held=$p_one (takes lane 2), every lane held=$p_busy (nothing started=$((1 - started))), no host=$p_nohost, with a target=$p_use, with --warm=$p_mode"
+
+# RRUN-45: pick-host.sh prints the first host whose probe is free; 75 when none; --or-first prints the first
+# host anyway (a gate waits there); one host in JNEXT_REMOTE_RUN_HOST is a one-host list; no host is 2
+cat > "$TMP/pick-driver" <<'EOF'
+#!/usr/bin/env bash
+echo "$JNEXT_REMOTE_RUN_HOST" >> "$FAKE_STATE/picks"
+[[ " ${PICK_BUSY:-} " != *" $JNEXT_REMOTE_RUN_HOST "* ]]
+EOF
+chmod +x "$TMP/pick-driver"
+PICK=$SKILL/pick-host.sh
+rm -f "$FAKE_STATE/picks"
+export JNEXT_PICK_HOST_DRIVER=$TMP/pick-driver
+k1=$(JNEXT_REMOTE_RUN_HOSTS="hA hB hC" bash "$PICK" 2>/dev/null); r1=$?
+k2=$(PICK_BUSY="hA" JNEXT_REMOTE_RUN_HOSTS="hA hB hC" bash "$PICK" 2>/dev/null); r2=$?
+k3=$(PICK_BUSY="hA hB hC" JNEXT_REMOTE_RUN_HOSTS="hA hB hC" bash "$PICK" 2>/dev/null); r3=$?
+k4=$(PICK_BUSY="hA hB hC" JNEXT_REMOTE_RUN_HOSTS="hA hB hC" bash "$PICK" --or-first 2>/dev/null); r4=$?
+k5=$(JNEXT_REMOTE_RUN_HOST="hOnly" bash "$PICK" 2>/dev/null); r5=$?
+k6=$(bash "$PICK" 2>/dev/null); r6=$?
+unset JNEXT_PICK_HOST_DRIVER
+row RRUN-45 "$([[ "$k1" == hA && $r1 -eq 0 && "$k2" == hB && $r2 -eq 0 && -z "$k3" && $r3 -eq 75 && "$k4" == hA && $r4 -eq 0 \
+    && "$k5" == hOnly && $r5 -eq 0 && -z "$k6" && $r6 -eq 2 ]] && echo 1 || echo 0)" \
+    "pick-host.sh: first free host ($k1, $k2), none free 75 (rc=$r3), --or-first $k4, one-host list $k5, no host rc=$r6"
+
+# RRUN-46: test-affected is a heavy target (the driver prints no "not a heavy target" notice for it); a target
+# outside the list still gets the notice
+reset_state
+drive --id hv1 feature "$SHA" test-affected; hv_a=$OUT
+reset_state
+drive --id hv2 feature "$SHA" unit-test-build; hv_b=$OUT
+row RRUN-46 "$([[ "$hv_a" != *"is not a heavy target"* && "$hv_b" == *"'unit-test-build' is not a heavy target"* ]] && echo 1 || echo 0)" \
+    "test-affected raises no heavy-target notice, unit-test-build does"
+
+# RRUN-38: the contract does not depend on the caller's environment: this whole test, run again with
+# the driver-fallback variables, the remote's variables and a failing ssh and wrapper on PATH, is green
+# and never reaches either (GH #547 stage 4: it timed out at RRUN-21 and RRUN-33 through the real wrapper)
+if [[ -n "${SKILLTEST_INNER:-}" ]]; then pol=1; else polluted_check "$TMP/polluted"; pol=$POL; fi
+row RRUN-38 "$([[ $pol -eq 1 ]] && echo 1 || echo 0)" \
+    "a run under REMOTE_RUN_FALLBACK, REMOTE_RUN_LOCAL_WRAP, JNEXT_REMOTE_RUN_* in the environment is green and touches no real wrapper or ssh"
 
 finish

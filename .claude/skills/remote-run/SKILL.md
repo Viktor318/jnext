@@ -6,7 +6,7 @@ description: Run heavy builds and tests (the batch gate, full unit-test targets,
 # remote-run
 
 Runs `make` targets on a remote host in a `fedora:45` container whose packages come from
-`test/ci-deps.sh` (the same script `ci.yml` calls). Design and decisions D1-D21:
+`test/ci-deps.sh` (the same script `ci.yml` calls). Design and decisions D1-D22:
 `doc/design/REMOTE-RUN-SKILL-DESIGN.md`. The driver, `remote-run.sh`, names no project; the jnext
 specifics are in `project.conf`.
 
@@ -15,7 +15,8 @@ specifics are in `project.conf`.
 | variable | meaning | default |
 |----------|---------|---------|
 | `JNEXT_REMOTE_RUN_HOST` | SSH alias (`~/.ssh/config` has host, port, user). Unset: remote runs are off, the driver exits 75 | none |
-| `JNEXT_REMOTE_RUN_DIR` | the ONE directory on the remote that holds everything remote-run writes: mirror clone, per-run checkouts, temp files, ccache, tool caches, the SD-image cache, podman's image storage and the lane lock. A leading `~/` is expanded on the remote | `~/remote-jnext-work` |
+| `JNEXT_REMOTE_RUN_HOSTS` | Several hosts: SSH aliases separated by spaces, in preference order. `slot.sh` and `pick-host.sh` read it (see "Several hosts"); the driver itself is one host per call and reads only `JNEXT_REMOTE_RUN_HOST`. Unset: the single `JNEXT_REMOTE_RUN_HOST` is a one-host list | none |
+| `JNEXT_REMOTE_RUN_DIR` | the ONE directory on the remote that holds everything remote-run writes: mirror clone, per-run checkouts, temp files, ccache, tool caches, the SD-image cache, podman's image storage and the lane locks. A leading `~/` is expanded on the remote | `~/remote-jnext-work` |
 
 Nothing is written on the remote outside that directory, except podman's own rootless runtime
 state under `$XDG_RUNTIME_DIR` (a tmpfs, rebuilt at login). Removing the directory removes the
@@ -25,10 +26,12 @@ installation: `podman unshare rm -rf <dir>` (the storage holds files of sub-uids
 
 Heavy runs only: the batch gate steps, full `make unit-test` / `unit-test-sdl` / `unit-test-win` /
 `unit-test-wasm`, `wasm-browser-test`, regression rows. Single-suite rebuilds and mutation cycles
-stay local (the network round trip costs more than they do). The remote lane is in addition to the
-two local slots.
+stay local (the network round trip costs more than they do). The two remote lanes are in addition to the
+local slots.
 
 ## How
+
+In an autonomous run `slot.sh` (`.claude/skills/autonomous-run/slot.sh`) makes this choice itself and agents just call it (see that skill); what follows is the manual form.
 
 Choose the host by load before each heavy run (owner, 2026-11-21): this host free (slots free, load
 below `nproc`) → run here, it is faster; busy → the remote, with `--fallback-local`. An agent may push
@@ -37,15 +40,19 @@ push) and then run the driver itself. The remote clones from GitHub, so the
 branch must be on `origin`; the batch gate pushes a temporary `gate-v<version>` branch (D8).
 
 The remote is ADDITIONAL capacity, never a queue and never a bottleneck: a heavy run goes to whichever
-is free. The normal call therefore always carries `--fallback-local <worktree>` with
-`REMOTE_RUN_LOCAL_WRAP` set to the local slot wrapper (`slot.sh`): lane free, the run goes to the remote;
-lane busy past `LANE_WAIT` (30 s), alias unset, unreachable or preflight failing, it runs locally at
-once through the slot wrapper and the log says `RAN LOCALLY`. Only `--gate` waits long for the lane
+is free. **Call the driver from the main checkout**
+(`/home/jorgegv/src/spectrum/jnext/.claude/skills/remote-run/remote-run.sh`), never from an older worktree:
+the remote side comes from the driver's own copy, and an old one kills every `rr-jnext-*` container
+in its orphan sweep, a lane 1 run's included (lane 2's name does not match). **`--id` must be unique among live runs** (the log
+file and the run's directories are named by it). The normal call therefore always carries `--fallback-local <worktree>` with
+`REMOTE_RUN_LOCAL_WRAP` set to the local slot wrapper (`slot.sh`): a lane free, the run goes to the remote;
+every lane busy past `LANE_WAIT` (30 s), alias unset, unreachable or preflight failing, it runs locally at
+once through the slot wrapper and the log says `RAN LOCALLY`. Only `--gate` waits long for a lane
 (`GATE_LANE_WAIT`, 3 h), because its steps must run in one place.
 
 ```bash
 export REMOTE_RUN_LOCAL_WRAP=<run dir>/slot.sh
-S=.claude/skills/remote-run
+S=/home/jorgegv/src/spectrum/jnext/.claude/skills/remote-run   # the MAIN checkout's copy, never a worktree's
 $S/remote-run.sh --warm                              # once, and after test/ci-deps.sh changes
 $S/remote-run.sh <branch> $(git rev-parse <branch>) unit-test unit-test-sdl
 $S/remote-run.sh --fallback-local <worktree> <branch> <sha> unit-test    # THE NORMAL CALL: remote if free, else here
@@ -54,6 +61,8 @@ $S/remote-run.sh <branch> <sha> 'sh:make regression-rows ROWS="a b"'     # words
 
 ### The batch gate
 
+The batch gate is a CI run (CLAUDE.md merge protocol step 2); `--gate` here is its fallback.
+
 Push main's tip to origin as the temporary branch `gate-v<version>` (D8, never force), then:
 
 ```bash
@@ -61,7 +70,7 @@ $S/remote-run.sh --gate gate-v<version> <sha> [--deps-ref <branch>]
 ```
 
 and delete `gate-v<version>` on origin right after, green or red. `--gate` runs the project's
-`GATE_STEPS` (CLAUDE.md's merge protocol step 2 list, in order, fail-fast) and waits for the lane up to
+`GATE_STEPS` (CLAUDE.md's merge protocol step 2 list, in order, fail-fast) and waits for a lane up to
 `GATE_LANE_WAIT`. **Green means the exit status is 0 AND the summary ends with `--- verdict: CLEAN`**:
 each step's own `totals` line (`Total: ... Failed: 0 Skipped: 0`, or regression's `Pass: .. Fail: 0
 Skip: 0`) is shown, and exactly one result line per step must exist. A step that exits 0 but reports a
@@ -88,7 +97,33 @@ shell command as written), and the run stops at the first failure unless `--keep
 `--timeout SECS`, `--stream` (also print the log live), `--id`, `--log-dir`, `--conf`.
 
 Local builds still go through the local slot wrapper: `--fallback-local` runs the targets in the given
-directory, in front of `REMOTE_RUN_LOCAL_WRAP` (for example the run's `slot.sh`) when that is set.
+directory, in front of `REMOTE_RUN_LOCAL_WRAP` (for example the run's `slot.sh`) when that is set. The wrapper's environment carries `REMOTE_RUN_FALLBACK=1`, which `slot.sh` reads as "never overflow again".
+
+## Several hosts (GH #547, owner 2026-11-22)
+
+The driver is ONE host per call. A caller with several hosts picks one and passes its alias in
+`JNEXT_REMOTE_RUN_HOST` for that call. Two helpers do the choosing, both over `remote-run.sh --probe`
+(one ssh round trip: exit 0 = usable and a lane is free right now, 75 = every lane busy, host unreachable or
+preflight refused; nothing is started; a busy host therefore costs a moment, never `LANE_WAIT`):
+
+- `slot.sh` (autonomous runs): tries the aliases of `JNEXT_REMOTE_RUN_HOSTS` in order, probe first; the run goes to
+  the first host with a free lane. A driver status 75 after a free probe (a lane lost in between, no image: nothing
+  ran) moves to the next host; a run that STARTED and failed is never retried elsewhere. Every host busy: the run
+  waits for a local slot and, while it waits, the hosts are probed again quietly every `JNEXT_SLOT_REPROBE`-th poll
+  (default 3, about a minute), so a lane that frees up takes it. The last host of the list carries `--fallback-local`,
+  as with one host.
+- `pick-host.sh [--or-first]` (the batch gate and manual runs): prints the first host with a free lane; 75 when none;
+  `--or-first` prints the first host of the list instead, for a caller that will wait for a lane there:
+  `H=$(pick-host.sh --or-first) && JNEXT_REMOTE_RUN_HOST=$H remote-run.sh --gate <branch> <sha>`.
+
+Each host is a complete installation of its own: its own work directory, mirror, image, caches, SD master, lanes,
+locks and podman store. One `JNEXT_REMOTE_RUN_DIR` value serves every host (a leading `~/` is expanded by each host in
+its own home); a host that needs another path needs another call with its own value. The orphan sweep and the
+`rr-lane` label work on the host's own podman store, so a run never touches another host's containers. The
+per-lane memory cap is computed from each host's own `MemTotal` (80% divided by `LANES`, at most `CONTAINER_MEMORY`):
+a 24 GB host gets about 9.3 GB per lane against 10 GB on the 32 GB one, so `--warm` and the first real runs there
+must be read for `anon=` and `oom` lines. The SD image never leaves the host's own work directory. `--warm` is run
+once per host.
 
 ## What it guarantees
 
@@ -97,7 +132,7 @@ directory, in front of `REMOTE_RUN_LOCAL_WRAP` (for example the run's `slot.sh`)
   `3` refused: the branch is not on `origin`, or `origin` has another commit than the `<sha>` given
   (the push did not land, or the branch moved); `75` the remote cannot be used: alias unset,
   unreachable, preflight failed (podman missing or not rootless, not enough memory or disk, memory
-  cgroup controller not delegated), no image for the current deps (run `--warm`), lane busy past
+  cgroup controller not delegated), no image for the current deps (run `--warm`), every lane busy past
   `LANE_WAIT` (a plain run) or `GATE_LANE_WAIT` (`--gate`). On `75` run locally; with `--fallback-local` the driver does it and the log says
   `RAN LOCALLY`. A non-green run is never retried silently.
 - **The caller gets a summary, the full log stays in a file** (`~/tmp/remote-run/<id>.log`, kept 7
@@ -110,28 +145,37 @@ directory, in front of `REMOTE_RUN_LOCAL_WRAP` (for example the run's `slot.sh`)
   driver copies it to `~/.cache/jnext/regression-stamps`, so `make regression-stamp-check` here sees
   it for that content key. A loaded-host timing FAIL is re-run solo on the remote
   (`make regression-confirm`), the same rule as locally; that is a separate target in a second call.
-- **One lane**: an `flock`; a plain run waits for it only `LANE_WAIT` (30 s) and then falls back, `--gate`
-  waits `GATE_LANE_WAIT`. Caps: `JOBS` 11 (6 for LTO/PGO link targets), `JNEXT_TEST_JOBS` 12, a hard
-  container memory limit (the configured 11g, or 80% of the host's memory when smaller; swap off) and 1 GB
+- **Two lanes** (`LANES=2`, D22): one `flock` each (`lane.lock`, `lane-L2.lock`); a run takes the first free
+  one and logs `lane n of 2`. A plain run waits for a lane only `LANE_WAIT` (30 s) and then falls back,
+  `--gate` waits `GATE_LANE_WAIT` and runs beside the other lane. Lane 1 keeps the one-lane names; lane 2
+  has its own `runs-L2/`, `ctl-L2/`, container name `rr-L2-jnext-<id>` (not matching the `rr-jnext-` prefix an older remote side sweeps), label `rr-lane=2`, SD home
+  `cache/jnext-home-L2` (provisioned by its first run through jnext's own download: the SD image never
+  leaves the work directory) and FPGA clone `cache/extra-repo-L2`. The ccache, the tool caches (which
+  hold the regression host lock, so two full regressions serialize), the mirror, the image and the
+  podman store are shared; a setup lock serializes the mirror fetch, image build and checkout clone. Caps, per lane:
+  `JOBS` 11 (6 for LTO/PGO link targets), `JNEXT_TEST_JOBS` 12 (halved, rounded up, for a lane that starts while the other is busy), a hard container memory
+  limit (the configured 10g, or 80% of the host's memory divided by `LANES` when smaller; swap off) and 1 GB
   `/dev/shm`. The preflight reports MemAvailable and the ZFS ARC size and counts reclaimable ARC as
   available. Every result line logs `peak=` (the cgroup's cumulative high-water mark, page cache included)
   and `anon=` (the step's own peak of anonymous memory): tune the caps on `anon=`, not `peak=`. A process
   killed by the limit is logged as `oom` and makes the run NOT CLEAN.
 - **Orphans are killed**: while a run is live the remote sends a heartbeat down the ssh session; if the
   session drops (or the driver gets TERM/INT) the remote kills the container, frees the lane and removes
-  the run's checkout. Leftovers older than an hour are swept at the next run's start.
+  the run's checkout. Leftovers older than an hour in the same lane are swept at the next run's start;
+  another lane's live run is never touched.
 - **ssh never opens forwards**: the driver passes `-o BatchMode=yes -o ClearAllForwardings=yes`, so an
   alias that carries `LocalForward` lines neither binds ports nor prints their errors into the log.
 - **Podman storage is under the work directory** (`--root`, `--runroot`). The driver tries the default
   (overlay), then fuse-overlayfs, then vfs, and records the first that starts, the default too, in
-  `containers/driver`. It probes only while holding the lane, because a failed probe wipes the store.
+  `containers/driver`. It probes only while holding every lane, because a failed probe wipes the store (a run that finds no
+  recorded driver while another lane is live exits 75).
   Every podman call carries `--root`/`--runroot`: a bare call would create a default store in the
   remote HOME.
 
 ## The SD-image rule
 
 The NextZXOS image is copyrighted: it NEVER leaves the remote work directory and is never committed,
-posted or copied anywhere else. It lives in `<dir>/cache/jnext-home/sdcard` (the container's `~/.jnext` is that one mount, so the master and every run's clone and scratch share a filesystem and the clone can be a reflink), provisioned there by jnext's own
+posted or copied anywhere else. It lives in `<dir>/cache/jnext-home/sdcard` (lane 2: `jnext-home-L2`; the container's `~/.jnext` is that one mount, so the master and every run's clone and scratch share a filesystem and the clone can be a reflink), provisioned there by jnext's own
 download (`make sdcard-image`, part of `--warm`). Logs may name it, never contain it. The driver copies
 back only logs and stamp files.
 

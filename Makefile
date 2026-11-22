@@ -50,6 +50,31 @@ endif
 endif
 CMAKE             := cmake
 JOBS              := $(shell nproc 2>/dev/null || sysctl -n hw.logicalcpu 2>/dev/null || echo 4)
+# What `make unit-test` runs before the suites, in three steps (GH #547): the LINTS one after another and first
+# (seconds, fail fast, no build needed); the CHECKS concurrently WITH the build (none reads or writes build/);
+# the POST checks concurrently after it (schema-check, snapshot-zip-check and minimal-image-test read the built tree;
+# package-contract-test reads none, and is here only because its RRUN-16/21 timing rows (60 s bounds) must not run
+# beside the full-CPU build: do not move it into UNIT_TEST_CHECKS). UNIT_TEST_CHECK_JOBS caps both groups.
+# docs-check and sdcard-image stay prerequisites of unit-test itself, sdcard-image last: sdcard-ensure-func greps for
+# that, and HS-102 needs the cite check in `make -n unit-test`, which a prerequisite that fails under the self-test's
+# scratch HOME (sdcard-image) would cut off before the recipe if docs-check were in it.
+UNIT_TEST_LINTS      := lint-assertions lint-makefile-help lint-thread-detach lint-ascii-text traceability-accounting-check wasm-function-size-selftest traceability-dup-check
+UNIT_TEST_CHECKS     := lint-user-docs-card-selftest docs-tree-same-selftest traceability-selftest cmake-guard-selftest test-affected-selftest
+UNIT_TEST_POST       := schema-check snapshot-zip-check minimal-image-test package-contract-test test-affected-check
+UNIT_TEST_CHECK_JOBS ?= 6
+# GH #547: the suites `make test-affected` always runs: the CPU, MMU/memory, ULA and NextREG
+# units and integrations, the boot test and both opcode suites. Each must be declared in
+# test/unit-tests.conf (test/test-affected.pl refuses a name that is not). SMOKE_ROW is the one
+# boot screenshot, run against build/jnext.
+SMOKE_SUITES         := fuse_z80_test z80n_test cpu_int_pulse_test cpu_z80n_im2_regressions_test mmu_test mmu_integration_test nextreg_test nextreg_integration_test ula_test ula_integration_test emulator_boot_test
+SMOKE_EMPTY          :=
+SMOKE_SPACE          := $(SMOKE_EMPTY) $(SMOKE_EMPTY)
+SMOKE_COMMA          := ,
+SMOKE_SUITES_CSV     := $(subst $(SMOKE_SPACE),$(SMOKE_COMMA),$(SMOKE_SUITES))
+SMOKE_ROW            := boot-48k
+# Empty in the sub-makes of the POST group and of traceability-check-run: the tree is already built there, and a
+# concurrent `cmake --build` of one tree from three sub-makes is exactly what the group must not start.
+UNIT_TEST_BUILD_DEP  ?= unit-test-build
 CC                := /usr/bin/gcc
 CXX               := /usr/bin/g++
 # The configure keys/args the three Release GUI trees share (gui-release,
@@ -205,11 +230,11 @@ BADGE_FAIL := $(FG_WHITE)$(BG_FAIL)
 .PHONY: default sdl-debug sdl-release clean sdl-debug-clean sdl-release-clean sdl-debug-run sdl-release-run \
        gui-debug gui-release gui-release-non-pgo gui-release-pgo-gen gui-debug-clean gui-release-clean gui-debug-run gui-release-run gui-clean \
        unit-test-clean unit-test-build unit-test-sdl unit-test-sdl-build unit-test-win unit-test-win-build unit-test-win-run sdcard-image \
-       kloc-count kloc-count-detailed regression regression-win regression-package wine-stack-x64 wine-stack-x86 regression-macos regression-rows regression-confirm regression-stamp-check regression-ci-check fuse-pgo unit-test lint-assertions lint-makefile-help lint-thread-detach lint-ascii-text lint-user-docs-card lint-user-docs-card-selftest docs-tree-same-selftest harness-selftest traceability-selftest cmake-guard-selftest traceability-accounting-check regression-doc-check worktree-bootstrap bench bench-hotlatch bench-web \
+       kloc-count kloc-count-detailed regression regression-win regression-package wine-stack-x64 wine-stack-x86 regression-macos regression-rows regression-confirm regression-stamp-check regression-ci-check ci-gate-check ccache-stats fuse-pgo unit-test test-affected test-affected-check test-affected-selftest lint-assertions lint-makefile-help lint-thread-detach lint-ascii-text lint-user-docs-card lint-user-docs-card-selftest docs-tree-same-selftest harness-selftest traceability-selftest cmake-guard-selftest traceability-accounting-check regression-doc-check worktree-bootstrap bench bench-hotlatch bench-web \
        docs-man docs-check docs-man-check docs-userguide-check docs-userguide read-userguide cli-check \
        docs-screenshots \
        docs-devguide docs-devguide-check docs-devguide-cites-check docs-devguide-diagrams read-devguide \
-       docs-schema schema-check snapshot-zip-check \
+       docs-schema schema-check snapshot-zip-check traceability-check-run \
        bump bump-patch bump-minor bump-major version publish-release \
        package-src package-rpm package-deb sdl3-vendor package-flatpak package-win package-macos win-release win-release-non-pgo package-test \
        win-sdl-release package-win-sdl win32-sdl-release package-win32-sdl \
@@ -732,7 +757,7 @@ pages-site-test:
 
 # Run the browser smoke rows in headless Chromium (more specs are added in test/browser/browser-smoke.sh)
 wasm-browser-test: wasm-web package-web pages-site playwright sdl-release sdcard-image
-	@# BRW-01..34, WBI-PW-01..09, WEBAPI-01..34, WEBPKG-BR-01..07, WIDGET-01..17, WEBNMI-01..04 (the NMI button), PAGES-01..02 (the Pages demo site served alone), BCARD-01..47 (the card flow, the poster, the stored form of the card, card.dirs, the wording of the pick path's refusals and card source none), TKB-01..17 (the on-screen keyboard), WBW-01..17, BSN-01..11, BRZ-01..12 (RZX in a page), BCRT-01..13 (the CRT effect on WebGL) and WBENCH-01..12 (the bench arithmetic) on the pinned Playwright + Chromium headless shell. sdl-release is the
+	@# BRW-01..34, WBI-PW-01..09, WEBAPI-01..34, WEBPKG-BR-01..07, WIDGET-01..17, WEBNMI-01..04 (the NMI button), PAGES-01..02 (the Pages demo site served alone), BDBG-01..30 (the debugger protocols served by a page, over the JS channel and over a WebSocket to the bridge), BCARD-01..47 (the card flow, the poster, the stored form of the card, card.dirs, the wording of the pick path's refusals and card source none), TKB-01..17 (the on-screen keyboard), WBW-01..17, BSN-01..11, BRZ-01..12 (RZX in a page), BCRT-01..13 (the CRT effect on WebGL) and WBENCH-01..12 (the bench arithmetic) on the pinned Playwright + Chromium headless shell. sdl-release is the
 	@# native oracle; sdcard-image provides the distribution image the run turns into the
 	@# minimal card, in a scratch directory under ~/tmp that is deleted afterwards.
 	bash test/browser/browser-smoke.sh build/wasm-core
@@ -817,6 +842,15 @@ regression-confirm: unit-test-build gui-release sdl-release z88dk-gdb skoolkit g
 regression-stamp-check:
 	@bash test/regression-stamp.sh check
 
+# Print the ccache statistics (CI ends every leg with it; a host without ccache says so)
+ccache-stats:
+	@ccache -s 2>/dev/null || echo "ccache not installed"
+
+# Verdict of a CI gate run: make ci-gate-check RUN=<run-id> SHA=<sha>, the commit to be pushed (CLEAN only if every job succeeded; GH #547)
+ci-gate-check:
+	@test -n "$(RUN)" -a -n "$(SHA)" || { echo "usage: make ci-gate-check RUN=<run-id> SHA=<sha>  (SHA: the commit to be pushed; the run must be on it)"; exit 2; }
+	@bash test/ci-gate.sh verdict --sha $(SHA) $(RUN)
+
 # Find a green CI run on a commit with this tree's content key (read-only gh query; release step)
 regression-ci-check:
 	@bash test/regression-stamp.sh ci
@@ -875,7 +909,7 @@ traceability-accounting-check:
 	@perl test/refresh-traceability-matrix.pl --check-accounting
 
 # Fail when the committed traceability matrix is stale vs a fresh generation
-traceability-check: unit-test-build
+traceability-check: $(UNIT_TEST_BUILD_DEP) sdcard-image
 	@# GH #196 phase 3.1 — the same shape as docs-check, and for the same
 	@# reason: doc/testing/TRACEABILITY-MATRIX.md is GENERATED and COMMITTED,
 	@# so a stale committed copy is a silent lie no other gate can see. The
@@ -886,7 +920,7 @@ traceability-check: unit-test-build
 	@tmp=$$(mktemp -d); \
 	 cp doc/testing/TRACEABILITY-MATRIX.md $$tmp/before; \
 	 rc=0; \
-	 perl test/refresh-traceability-matrix.pl >$$tmp/report 2>&1 \
+	 perl test/refresh-traceability-matrix.pl $(TRACE_GEN_ARGS) >$$tmp/report 2>&1 \
 	   || { printf "$(BADGE_FAIL) FAIL $(RESET) the traceability generator failed\n"; \
 	        cat $$tmp/report; rc=1; }; \
 	 if [ $$rc -eq 0 ] && ! cmp -s $$tmp/before doc/testing/TRACEABILITY-MATRIX.md; then \
@@ -898,8 +932,16 @@ traceability-check: unit-test-build
 	 [ $$rc -eq 0 ] && printf "$(BADGE_PASS) OK $(RESET) traceability matrix is up to date\n"; \
 	 rm -rf $$tmp; exit $$rc
 
+# Fail when the committed traceability matrix is stale vs one generated from the last unit run's own suite logs
+traceability-check-run:
+	@# GH #547. `make unit-test` calls this after run-unit-tests.sh: the suites ran once, in parallel, and
+	@# their logs (build/test-logs/<suite>.log) hold the FAIL sets the generator needs. A missing or
+	@# truncated log is a refusal (exit 3), never an empty FAIL set. Same check, same recipe, as
+	@# traceability-check, which still runs the suites itself (standalone use, no prior run needed).
+	@$(MAKE) --no-print-directory traceability-check UNIT_TEST_BUILD_DEP= TRACE_GEN_ARGS=--fails-from-logs=build/test-logs
+
 # Fail when an independent ZIP reader rejects a .jns the writer produced
-snapshot-zip-check: unit-test-build
+snapshot-zip-check: $(UNIT_TEST_BUILD_DEP)
 	@# The second half of the GH #27 stage-S1 exit gate. `snapshot_test` is our
 	@# writer checked by our reader, and that pairing cannot find a framing error
 	@# both sides agree on — which is exactly how the `.szx` defect survived a
@@ -928,7 +970,7 @@ docs-schema: unit-test-build
 	@printf "$(BADGE_PASS) OK $(RESET) regenerated $(SCHEMA_OUT)\n"
 
 # Fail when the committed .jns JSON Schema is stale vs a fresh generation
-schema-check: unit-test-build
+schema-check: $(UNIT_TEST_BUILD_DEP)
 	@# GH #27 S2 — the same shape as docs-check and traceability-check, and
 	@# for the same reason: doc/formats/jns-snapshot.schema.json is GENERATED
 	@# and COMMITTED, so a stale committed copy is a silent lie no other gate
@@ -974,7 +1016,7 @@ traceability-dup-check:
 	@perl test/traceability-dup-ids.pl
 
 # Run all subsystem unit tests in parallel (exactly those in test/unit-tests.conf)
-unit-test: lint-assertions lint-makefile-help lint-thread-detach lint-ascii-text lint-user-docs-card-selftest wasm-function-size-selftest docs-tree-same-selftest traceability-accounting-check traceability-selftest cmake-guard-selftest traceability-dup-check unit-test-build traceability-check docs-check schema-check snapshot-zip-check package-contract-test minimal-image-test sdcard-image
+unit-test: $(UNIT_TEST_LINTS) docs-check sdcard-image
 	@# lint-makefile-help sits beside lint-assertions for the same reason and at the
 	@# same cost (~8 ms of awk over one file, no compiler, no build directory): it is
 	@# a structural gate that must fail before anything expensive starts. GH #140 —
@@ -1016,7 +1058,28 @@ unit-test: lint-assertions lint-makefile-help lint-thread-detach lint-ascii-text
 	@# minimal-image-test is a prerequisite for the same reason: no CMake suite behind it,
 	@# and hermetic apart from the cached distribution image. Linux-only (sfdisk), so it is
 	@# not a prerequisite of unit-test-sdl or unit-test-win.
+	@# GH #547: the order is LINTS (the prerequisites above: serial, seconds, before anything
+	@# expensive), then the CHECKS concurrently with the build, then the POST checks concurrently,
+	@# then the suites, then the matrix. They used to be ONE serial prerequisite list (~400 s on a
+	@# warm tree). The CHECKS read no built file and write nothing outside their own mktemp
+	@# directories (strace of every one, recorded in the GH #547 report); the POST checks
+	@# schema-check, snapshot-zip-check and minimal-image-test read the built tree and write none of it;
+	@# package-contract-test reads none and is POST only for its timing rows (RRUN-16/21, 60 s bounds),
+	@# which must not run beside the full-CPU build. The suites run alone: they already fill every CPU
+	@# and carry timing rows (XPT-NET-05), so nothing new runs beside them. The checks' output is
+	@# synced per target (each check's block stays whole, between the build's lines), and not
+	@# redirected, so the dry run `make -n unit-test` still shows their commands (HS-102);
+	@# a failure of either side fails the target.
+	@$(MAKE) --no-print-directory -j$(UNIT_TEST_CHECK_JOBS) --output-sync=target --keep-going $(UNIT_TEST_CHECKS) & cpid=$$!; \
+	 brc=0; $(MAKE) --no-print-directory unit-test-build || brc=1; \
+	 crc=0; wait $$cpid || crc=1; \
+	 if [ $$crc -ne 0 ]; then printf "$(BADGE_FAIL) FAIL $(RESET) a unit-test check failed (see above)\n"; fi; \
+	 [ $$brc -eq 0 ] && [ $$crc -eq 0 ]
+	@$(MAKE) --no-print-directory -j$(UNIT_TEST_CHECK_JOBS) --output-sync=target --keep-going UNIT_TEST_BUILD_DEP= $(UNIT_TEST_POST)
 	@bash test/run-unit-tests.sh build
+	@# The matrix is checked AFTER the suites, from their own logs (build/test-logs, written by the
+	@# run above): the generator used to run every traced suite a second time, one at a time.
+	@$(MAKE) --no-print-directory traceability-check-run
 	@# Loud, non-fatal drift guard: the dashboard only refreshes on the explicit
 	@# 'unit-test-dashboard' target, so it silently rots. This warns (never fails —
 	@# a stale doc must not break the parallel-worktree test flow) when regenerating
@@ -1258,6 +1321,27 @@ traceability-selftest:
 	@# test/traceability-dup-ids.pl the same way (GH #243): it had no self-test
 	@# of its own, and shipped skipping every `?`-prefixed suite.
 	@perl test/traceability-citations-selftest.pl
+
+# Branch-round tests: only what the change reaches, plus the smoke set (GH #547; NOT a gate)
+test-affected: $(UNIT_TEST_LINTS) unit-test-build sdcard-image
+	@# The branch round (CLAUDE.md merge protocol, step 2): test/test-affected.pl reads the files
+	@# this branch changed against `main` and prints the plan, from the build tree's own depfiles
+	@# and linker maps. A change it cannot place (UNMAPPED) is FULL: `make unit-test`. Otherwise:
+	@# the selected suites and the smoke set through run-unit-tests.sh --only (every manifest check
+	@# still applies to the whole manifest), docs-check, cli-check, the smoke boot row, the rows
+	@# the change names. It PRINTS which of unit-test-sdl, -win and -wasm the change needs; it does
+	@# not run them. The full `make unit-test` runs once before landing. BASE=<ref> overrides main.
+	@plan=build/test-affected.plan; \
+	 perl test/test-affected.pl --smoke "$(SMOKE_SUITES_CSV)" --plan $$plan $(if $(BASE),--base $(BASE)) || exit $$?; \
+	 TA_MAKE="$(MAKE)" TA_JNEXT=$(CURDIR)/build/jnext SMOKE_ROW=$(SMOKE_ROW) bash test/test-affected-run.sh $$plan
+
+# Every tracked file is in a depfile of the build tree or classified in test/test-affected.conf (GH #547)
+test-affected-check: $(UNIT_TEST_BUILD_DEP)
+	@perl test/test-affected.pl --check
+
+# Self-test of test/test-affected.pl on fixture build trees (TAF rows, GH #547)
+test-affected-selftest:
+	@bash test/test-affected-selftest.sh
 
 # Self-test the build's configure-freshness guards: reconfigure skip + source globs
 cmake-guard-selftest:
@@ -2236,8 +2320,8 @@ packaging-selftest:
 package-test: packaging-selftest
 	bash test/packaging/packaging-test.sh
 
-# Test tools/make-minimal-card (15 rows) against the cached distribution image and a synthetic zip - Linux only; needs mtools + sfdisk + python3
-minimal-image-test: unit-test-build
+# Test tools/make-minimal-card (25 rows) against the cached distribution image and a synthetic zip - Linux only; needs mtools + sfdisk + python3
+minimal-image-test: $(UNIT_TEST_BUILD_DEP) sdcard-image
 	@bash test/minimal-card-test.sh
 
 # Contract-test the packaging scripts + package-* recipes (no builds) — hermetic, ~4s

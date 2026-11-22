@@ -297,7 +297,7 @@ uncreated; a usage error exits 2. An existing destination is never overwritten.
 On your own download of the official zip, for local development and tests:
 
 ```bash
-make-minimal-card ~/Downloads/sn-emulator-26.11.zip ~/tmp/nextzxos-minimal.img
+make-minimal-card ~/Downloads/sn-emulator-26.11a.zip ~/tmp/nextzxos-minimal.img
 curl -s <the zip's URL> | make-minimal-card - ~/tmp/nextzxos-minimal.img
 ```
 
@@ -328,24 +328,24 @@ call it: a malformed entry, `/`, a boot-set name, a duplicate and a path inside 
 one are refused, naming the entry. A path the distribution does not hold is refused at build,
 naming every missing one. A card with extra paths has no pinned card digest (no per-list pin
 can exist): the tool and `jnext_card_begin` clear `Expect::card_sha256` for a non-empty list, and
-the zip and image pins still apply in full. `/GAMES,/APPS` of 26.11 is accepted; adding `/DEMOS`
+the zip and image pins still apply in full. `/GAMES,/APPS` of 26.11a is accepted; adding `/DEMOS`
 is refused with its size.
 
 **One pass.** The builder reads the zip once, from byte 0, in the order it is stored: the
 image is its first entry, the inflated image is read by offset, and a directory is parsed
 when its whole chain has gone by. A distribution whose layout would need a second pass (a
 directory's contents stored before the directory) is refused with a message naming the
-cluster; it is not worked around. Its memory is bounded: about 3 MB of heap for the 26.11
-distribution, with `/GAMES,/APPS` the wasm heap grew by 21 MB (BCARD-41), under 50 MiB before any refusal (the FAT copy
+cluster; it is not worked around. Its memory is bounded: about 4.0 MB of heap for the 26.11a
+distribution (3.7 MB of it kept data), with `/GAMES,/APPS` the wasm heap grew by 21 MB (BCARD-41), under 50 MiB before any refusal (the FAT copy
 is capped at 16 MiB and the kept data at 32 MiB), and the card itself is a file (MEMFS in the
 browser, not the wasm heap). The 32 MiB bound counts what the builder keeps: each file's SIZE
 and each directory's clusters, not the source's clusters (the distribution's are 32 KiB, which
-would count `/GAMES` and `/APPS` as 40.66 MiB when they are 30.26 MiB of files and
-directories). Past the bound it goes on counting but stops buffering, so the refusal gives the
+would count `/GAMES` and `/APPS` as 35.09 MiB when they are 27.77 MiB of files and
+directories; with the boot set the card counts 31.30 MiB of the 32). Past the bound it goes on counting but stops buffering, so the refusal gives the
 exact total and the limit, and a truncated image is reported as "at least N bytes".
 
-The boot set (`TBBLUE.FW`, `MACHINES`, `NEXTZXOS`, `SYS`, `LICENSE.md`, `README.md`)
-is copied with the source's own spelling and metadata, and JNEXT's two patches (the
+The boot set (`TBBLUE.FW`, `MACHINES`, `NEXTZXOS`, `SYS`, `DOT`, `LICENSE.md`, `README.md`)
+is copied with the source's own spelling and metadata (`DOT` is there because NextZXOS runs its dot commands from it, and its file browser opens text files, NEX programs and most other types through one; a distribution without it is refused, and `/DOT` in `card.dirs` is refused as part of the boot set), and JNEXT's two patches (the
 `config.ini` and the doubled `zx81.rom`) are the functions the SD provisioner uses, not
 copies. The output is reproducible and the same bytes on every platform: no clock, the source's directory order, spelling, write times and R/H/S/A attributes, volume serial `4A4E5854`, hidden sectors 63.
 
@@ -355,16 +355,16 @@ from your own download, the card digest from `make-minimal-card` on it, and the 
 number only if the builder changed what it writes. The tests (MINIMG-01 and the
 `minimal-sdcard-image-func` regression row) fail on a partial update.
 
-Tests: `minimal_card_test` (`MCARD-01..16` and `18..35`, on a synthetic distribution built in the test; `MCARD-17`, recipe 3 unchanged, is in `fat32_image_test`; every tree, the wasm one included), the
-`make minimal-image-test` shell suite (21 rows, `MINIMG-21..26` for `--dirs`: the tool on the cached image and on a synthetic zip, read back with mtools, sfdisk and python's zipfile) and the `minimal-sdcard-image-func` regression row,
+Tests: `minimal_card_test` (`MCARD-01..16` and `18..41`, on a synthetic distribution built in the test; `MCARD-17`, recipe 3 unchanged, is in `fat32_image_test`; every tree, the wasm one included), the
+`make minimal-image-test` shell suite (25 rows, `MINIMG-21..26` for `--dirs`, `MINIMG-28..30` for `/dot` and the Pages list: the tool on the cached image and on a synthetic zip, read back with mtools, sfdisk and python's zipfile) and the `minimal-sdcard-image-func` regression row,
 which boots the card to the NextZXOS menu and warm-starts a NEX, both compared with the
-full card's references.
+full card's references, and the `minimal-sdcard-dot-func` row, which runs `.more readme.md` on the card and compares it with the full card (and with the same card without `/dot`, which must differ).
 
 ## The browser package
 
 `make package-web` zips the output of `make wasm-web` as
 `build/wasm-core/jnext-<ver>-web.zip`, through `packaging/web/package-web.sh`. The
-zip has one top directory, `jnext-<ver>-web/`, and 24 files:
+zip has one top directory, `jnext-<ver>-web/`, and 25 files:
 
 - `jnext-<ver>.js` and `jnext-<ver>.wasm`: two files, not one, because a page
   author hosts them and GitHub serves a release asset as `octet-stream`, so the
@@ -373,6 +373,9 @@ zip has one top directory, `jnext-<ver>-web/`, and 24 files:
   `widget.html`; the first three load nothing but `jnext-<ver>.js`, `widget.html`
   loads `jnext-widget.js`, the ready-made widget (`web/jnext-widget.js.in`, configured
   with the version like the pages, so that it can load `jnext-<ver>.js` from beside itself);
+- `jnext-debug-bridge.mjs`, the reference bridge of the page option `debug`
+  (`tools/web-debug-bridge/`, a plain node script for a developer's computer; the Pages demo
+  site, which is this zip minus the example pages, carries it too);
 - `README.txt` (from `packaging/web/README.txt.in`, with the link to the source
   of exactly that version), `LICENSE` and `CREDITS.md`;
 - `licenses/`: the licence texts of the libraries linked into `jnext_web`

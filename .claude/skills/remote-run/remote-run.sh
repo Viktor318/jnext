@@ -20,6 +20,7 @@ usage() {
 usage: remote-run.sh [options] <branch> <sha> <target>...
        remote-run.sh [options] --gate <branch> <sha>
        remote-run.sh [options] --warm
+       remote-run.sh [options] --probe
 
   <branch>   a branch already pushed to the project's repository
   <sha>      its full 40-hex tip; the run is refused if the remote sees another commit
@@ -27,6 +28,9 @@ usage: remote-run.sh [options] <branch> <sha> <target>...
              targets run one by one, in order, stopping at the first failure
 
 options:
+  --probe                exit 0 if the host is usable and a lane is free right now, 75 if it is busy,
+                         unreachable or refuses (preflight); starts nothing, one ssh round trip. A
+                         caller choosing among several hosts uses it instead of paying LANE_WAIT per busy host
   --warm                 build the image, provision the tool caches and the SD image, and
                          build once to fill ccache (the project's WARM_TARGETS, on its default
                          branch); a normal run refuses until this has run for the current deps
@@ -41,7 +45,9 @@ options:
   --stream               also print the log live (default: only the summary)
   --fallback-local DIR   on exit 75, run the targets in DIR on this host (the log says so);
                          REMOTE_RUN_LOCAL_WRAP, if set, is the wrapper command put in front
-  --id ID                run id (default: a timestamp)
+                         (REMOTE_RUN_FALLBACK=1 is set in the wrapper's environment, so a wrapper that
+                         itself sends heavy runs here, like slot.sh, never sends one back)
+  --id ID                run id (default: a timestamp); unique among live runs
   --log-dir DIR          where logs go (default ~/tmp/remote-run); logs older than 7 days are deleted
   --local-shell          TEST SEAM: run the remote side as a local shell instead of over ssh
   --conf FILE            project configuration (default project.conf beside this script)
@@ -63,14 +69,15 @@ load_conf() {
     local k v
     for k in PROJECT HOST_ENV_VAR DIR_ENV_VAR DIR_DEFAULT REPO_URL DEFAULT_BRANCH BASE_IMAGE DEPS_SCRIPT \
              DEPS_ARGS BOOTSTRAP_CMD CACHE_MOUNTS CONTAINER_ENV JOBS_DEFAULT JOBS_HEAVY HEAVY_TARGET_RE \
-             TEST_JOBS CACHE_MIGRATE CACHE_SWEEP CONTAINER_MEMORY CONTAINER_SHM TIMEOUT_DEFAULT LANE_WAIT GATE_LANE_WAIT MIN_MEM_MB MIN_DISK_GB \
+             TEST_JOBS CACHE_MIGRATE CACHE_SWEEP LANES LANE_CACHES CONTAINER_MEMORY CONTAINER_SHM TIMEOUT_DEFAULT LANE_WAIT GATE_LANE_WAIT MIN_MEM_MB MIN_DISK_GB \
              HEAVY_TARGETS WARM_TARGETS GATE_STEPS TIMEOUT_GATE STAMP_ENV STAMP_LOCAL_DIR \
              EXTRA_REPO_URL EXTRA_REF_FILE EXTRA_REF_SED EXTRA_SPARSE EXTRA_MOUNT EXTRA_ENV; do
         v="REMOTE_RUN_$k"
         if [[ -n "${!v:-}" ]]; then printf -v "$k" '%s' "${!v}"; fi
-        [[ -n "${!k:-}" || "$k" == CACHE_MIGRATE || "$k" == CACHE_SWEEP || "$k" == BOOTSTRAP_CMD || "$k" == STAMP_ENV || "$k" == CONTAINER_ENV || "$k" == EXTRA_* ]] \
+        [[ -n "${!k:-}" || "$k" == CACHE_MIGRATE || "$k" == CACHE_SWEEP || "$k" == LANE_CACHES || "$k" == BOOTSTRAP_CMD || "$k" == STAMP_ENV || "$k" == CONTAINER_ENV || "$k" == EXTRA_* ]] \
             || die "project.conf does not set $k"
     done
+    [[ "$LANES" =~ ^[1-9]$ ]] || die "LANES must be one digit, 1 to 9: '$LANES'"
 }
 
 # ---- summary ----------------------------------------------------------------
@@ -122,8 +129,8 @@ build_payload() {
         printf 'RR_MODE=%q\nRR_ID=%q\nRR_PROJECT=%q\nRR_BRANCH=%q\nRR_SHA=%q\n' "$mode" "$ID" "$PROJECT" "$BRANCH" "$SHA"
         printf 'RR_REPO_URL=%q\nRR_DIR=%q\nRR_BASE_IMAGE=%q\nRR_DEPS_SCRIPT=%q\nRR_DEPS_ARGS=%q\n' \
             "$REPO_URL" "$DIR" "$BASE_IMAGE" "$DEPS_SCRIPT" "$DEPS_ARGS"
-        printf 'RR_BOOTSTRAP=%q\nRR_TARGETS=%q\nRR_KEEP_GOING=%q\nRR_TIMEOUT=%q\nRR_LANE_WAIT=%q\n' \
-            "$BOOTSTRAP_CMD" "$targets" "$KEEP_GOING" "$TIMEOUT" "$LANE_WAIT"
+        printf 'RR_BOOTSTRAP=%q\nRR_TARGETS=%q\nRR_KEEP_GOING=%q\nRR_TIMEOUT=%q\nRR_LANE_WAIT=%q\nRR_LANES=%q\nRR_LANE_CACHES=%q\n' \
+            "$BOOTSTRAP_CMD" "$targets" "$KEEP_GOING" "$TIMEOUT" "$LANE_WAIT" "$LANES" "${LANE_CACHES:-}"
         printf 'RR_MIN_MEM_MB=%q\nRR_MIN_DISK_GB=%q\nRR_MEMORY=%q\nRR_SHM=%q\nRR_TEST_JOBS=%q\n' \
             "$MIN_MEM_MB" "$MIN_DISK_GB" "$CONTAINER_MEMORY" "$CONTAINER_SHM" "$TEST_JOBS"
         printf 'RR_JOBS_DEFAULT=%q\nRR_JOBS_HEAVY=%q\nRR_HEAVY_RE=%q\nRR_CACHE_MOUNTS=%q\nRR_CACHE_MIGRATE=%q\nRR_CACHE_SWEEP=%q\nRR_CONTAINER_ENV=%q\nRR_STAMP_ENV=%q\n' \
@@ -157,10 +164,10 @@ run_local() {
         echo "=== remote-run target: $t" >> "$LOG"
         rc=0
         if [[ "$t" == sh:* ]]; then
-            "${wrap[@]}" env LANG=C bash -c "cd '$dir' && ${t#sh:}" </dev/null >> "$LOG" 2>&1 || rc=$?
+            REMOTE_RUN_FALLBACK=1 "${wrap[@]}" env LANG=C bash -c "cd '$dir' && ${t#sh:}" </dev/null >> "$LOG" 2>&1 || rc=$?
         else
             IFS=' ' read -ra words <<<"$t"
-            "${wrap[@]}" env LANG=C make -C "$dir" "${words[@]}" </dev/null >> "$LOG" 2>&1 || rc=$?
+            REMOTE_RUN_FALLBACK=1 "${wrap[@]}" env LANG=C make -C "$dir" "${words[@]}" </dev/null >> "$LOG" 2>&1 || rc=$?
         fi
         echo "=== remote-run result: $t rc=$rc time=?s peak=?MiB" >> "$LOG"
         if [[ $rc -ne 0 ]]; then
@@ -194,7 +201,7 @@ remote_cleanup() {
 
 # ---- main -------------------------------------------------------------------
 main() {
-    local warm=0 gate=0 stream=0 warm_ref="" fallback_dir="" targets="" logdir="$HOME/tmp/remote-run"
+    local warm=0 gate=0 probe=0 stream=0 warm_ref="" fallback_dir="" targets="" logdir="$HOME/tmp/remote-run"
     TIMEOUT="" DEPS_REF="" KEEP_GOING=0 LOCAL_SHELL=0 ID="" BRANCH="" SHA=""
     local -a pos=()
     while [[ $# -gt 0 ]]; do
@@ -202,6 +209,7 @@ main() {
             -h|--help) usage; exit 0 ;;
             --warm) warm=1 ;;
             --gate) gate=1 ;;
+            --probe) probe=1 ;;
             --keep-going) KEEP_GOING=1 ;;
             --stream) stream=1 ;;
             --local-shell) LOCAL_SHELL=1 ;;
@@ -220,9 +228,25 @@ main() {
     done
     load_conf
     [[ $warm -eq 0 || $gate -eq 0 ]] || die "--warm and --gate exclude each other"
+    [[ $probe -eq 0 || ( $warm -eq 0 && $gate -eq 0 && ${#pos[@]} -eq 0 ) ]] || die "--probe takes no other mode, branch, sha or target"
     [[ -z "$warm_ref" || $warm -eq 1 ]] || die "--ref is for --warm only"
     [[ -z "$DEPS_REF" || "$DEPS_REF" =~ ^[A-Za-z0-9._][A-Za-z0-9._/-]*$ ]] || die "bad --deps-ref '$DEPS_REF'"
 
+    if [[ $probe -eq 1 ]]; then
+        # One ssh round trip, nothing started: 0 = usable with a free lane now, 75 = busy, unreachable or refused.
+        local hostv=$HOST_ENV_VAR dirv=$DIR_ENV_VAR out rc=0
+        HOST=${!hostv:-}; DIR=${!dirv:-$DIR_DEFAULT}
+        ID=${ID:-probe-$$}; BRANCH=$DEFAULT_BRANCH; SHA=""; TIMEOUT=60; LANE_WAIT=0
+        if [[ $LOCAL_SHELL -eq 0 && -z "$HOST" ]]; then log_info "probe: $hostv is not set"; exit 75; fi
+        transport_cmd
+        PAYDIR=$(mktemp -d)
+        build_payload probe "" "$PAYDIR/payload"
+        out=$(timeout --kill-after=5s 60s "${TCMD[@]}" < "$PAYDIR/payload" 2>&1) || rc=$?
+        rm -rf "$PAYDIR"
+        log_info "probe ${HOST:-local}: rc=$rc $(sed -e 's/\x1b\[[0-9;]*m//g' <<<"$out" | grep -aE 'lane|fallback' | tail -n 1)"
+        [[ $rc -eq 0 ]] && exit 0
+        exit 75
+    fi
     if [[ $warm -eq 1 ]]; then
         [[ ${#pos[@]} -eq 0 ]] || die "--warm takes no branch, sha or target"
         BRANCH=${warm_ref:-$DEFAULT_BRANCH}

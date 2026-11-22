@@ -32,7 +32,7 @@ the guest's own driver talks to. Both are called out below.
 | `.pok` | yes | — | `platform/pok_trainers.*`, `gui/pok_dialog.*` | Not a loader: a list of trainers applied to the machine that is already running, through the debugger backend; Qt window only (see POK trainers) |
 
 Format selection is by **file extension**: for `--load` in `src/main.cpp`
-(the `ext` chain, `src/main.cpp:3105-3161`), and again in the GUI's file dialogs and in the headless
+(the `ext` chain, `src/main.cpp:3129-3185`), and again in the GUI's file dialogs and in the headless
 snapshot writer. There is no content sniffing of programs, and an extension jnext does not
 recognise is a hard error naming the supported set rather than a guess at what
 the file might be. The one exception is an archive (below), which is recognised
@@ -447,8 +447,8 @@ bounded by frame 800 (frame 400 plus one budget; in emulated time, so 960 at 60
 Hz): a firmware that has not committed by then is given up, the checkpoint is the
 deadline and the refusal message says that the recorder waited. On the 24.11 card
 the commit is at frame 295, so the checkpoint is frame 400 and the recording is the
-same bytes as before the wait existed; on the 26.11 card it is at frame 472 and the
-recording takes about 777 frames. A boot-ROM overlay still active at frame 400 (the
+same bytes as before the wait existed; on the 26.11 card it is at frame 472 (476 on 26.11a) and the
+recording takes about 777 frames (780 on 26.11a). A boot-ROM overlay still active at frame 400 (the
 IPL never handed over) is not loading: the checkpoint is frame 400 and the
 residency check refuses there.
 
@@ -461,7 +461,7 @@ both cards is a HALT at one instruction (with a different SP on each screen), an
 every busy phase moves the PC at each frame boundary. A wait loop that polls the
 keyboard without HALT would not be sampled at one instruction and would never read
 as idle, so the recipe would give up and the capture check refuse. The
-recording takes about 600 frames on the two 24.11 cards measured (about 780 on the 26.11 card), and is the same file
+recording takes about 600 frames on the two 24.11 cards measured (about 780 on the 26.11a card), and is the same file
 on every run of one card (the clock is pinned, below).
 
 Two things keep the recording a pure function of the card, the machine and the

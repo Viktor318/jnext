@@ -1,6 +1,22 @@
 # ChangeLog
 
-## Unreleased (2026-11-18)
+## Unreleased (2026-11-22)
+
+### Bug Fixes
+- Browser: dot commands work, so the NextZXOS browser opens text files and NEX programs again
+
+### Internal JNEXT Development
+- Remote runs: two lanes on the remote host, so two heavy runs share it at once
+- Faster test cycle: unit-test prerequisites and browser specs run in parallel
+- Build slots: heavy runs overflow to any free remote host (several hosts, re-checked while queued) when the local slots are busy
+- CI is the batch gate: a clean CI run on the commit is what gets pushed; caches are saved only from main
+- Worktrees share the compiler cache, so a second checkout of the same commit rebuilds in a fraction of the time
+- `make test-affected`: a branch round runs only the suites and rows its change reaches, plus a smoke set
+
+### Contributors in this release
+- @janko-jj
+
+## v1.3.47 (2026-11-21)
 
 ### User Features
 - Fast boot: the Next starts at full speed, optionally with the screen hidden until it ends
@@ -13,6 +29,7 @@
 - Browser widget: NMI button; a page can run a NEX straight from the SD card with its data files
 - A zipped NEX loads with its data files, served through the esxDOS stand-in (command line, File > Load, web page)
 - Save Bug Report (File menu, `--bug-report`): machine and jnext state, screenshots, log and debugger state in one zip
+- Browser build: debug it from DeZog, z88dk-gdb or a ZRCP client, through a page channel or WebSocket bridge
 
 ### Developer Features
 - Disassembly: the PC line shows whether a conditional jump, call or return is taken, and the value at its memory operand
@@ -30,7 +47,11 @@
 - Debugger breakpoints gain ranges, conditions, IO masks, Interrupt/NMI types, hit counts and count-only; Run to Next Interrupt
 
 ### Bug Fixes
+- Web page and first-run download use SpecNext's current emulator image, sn-emulator-26.11a (NextZXOS 2.10a)
 - Web example pages fit a phone screen instead of being laid out at desktop width and shrunk
+
+### Internal JNEXT Development
+- Builds, test suites and the batch gate can run on a remote podman host over SSH, in the CI container (remote-run)
 
 ### Contributors in this release
 - @janko-jj, @derekfountain, @vmorilla
@@ -43,7 +64,6 @@
 
 ### Internal JNEXT Development
 - CI and release builds move to Fedora 45; packages track the two supported Fedora and two latest Ubuntu LTS releases
-- Builds, test suites and the batch gate can run on a remote podman host over SSH, in the CI container (remote-run)
 
 ## v1.3.0 (2026-11-15)
 

@@ -80,16 +80,6 @@ target_link_libraries(jnext_core PUBLIC
     jnext_cpu jnext_memory jnext_video jnext_audio jnext_port
     jnext_save
     spdlog::spdlog zot_tzx ZLIB::ZLIB PNG::PNG)
-# hungarian-ui: the NextZXOS distribution this build downloads by default
-# (sdcard::default_distro_url()). Empty = kDistroUrl, the one the tests and the
-# browser card are pinned to; tools/hu/build-windows-cross.sh sets 26.11a.
-set(JNEXT_DEFAULT_DISTRO_URL "" CACHE STRING
-    "NextZXOS distribution zip a build downloads by default (empty = kDistroUrl)")
-if(JNEXT_DEFAULT_DISTRO_URL)
-    # PUBLIC: PROV-URL-04 checks the value the library was built with.
-    target_compile_definitions(jnext_core PUBLIC
-        "JNEXT_DEFAULT_DISTRO_URL=\"${JNEXT_DEFAULT_DISTRO_URL}\"")
-endif()
 # SD-card provisioner network/hash backend (GH #108 Phase B): OS-native
 # WinHTTP + BCrypt on Windows (system import libs, present in every MinGW
 # sysroot — OS components, not dependencies), libcurl + OpenSSL elsewhere.

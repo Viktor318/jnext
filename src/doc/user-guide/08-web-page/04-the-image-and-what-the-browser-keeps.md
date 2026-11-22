@@ -9,12 +9,13 @@ browser the page needs that card too, and this is how it gets it.
   and neither does a page that embeds JNEXT: the only place that offers it is
   specnext.com.
 - The player makes its SD card in the visitor's browser, from the official NextZXOS
-  file from specnext.com (`sn-emulator-26.11.zip`, 67 MB, for this release), unchanged.
+  file from specnext.com (`sn-emulator-26.11a.zip`, 69 MB (65.8 MiB), for this release), unchanged.
   Another file, or a changed copy, is refused.
 - The card the browser makes stays in the visitor's browser (Cache Storage, for that
   site only). Nothing is sent anywhere, and the page's author never receives it.
 
-The card is a small boot card (40 MiB) with only what NextZXOS needs to reach its menu
+The card is a small boot card (40 MiB) with only what NextZXOS needs to reach its menu,
+to run its dot commands (its file browser uses them to open files and programs)
 and to warm-start a program, not the 1 GB distribution image. The browser build is made
 and tested for that card.
 
@@ -68,7 +69,7 @@ A later visit to the same site needs no download and no file.
 
 | what | where |
 |---|---|
-| the SD card | Cache Storage: one entry of about 1.1 MB (the 40 MiB card, compressed), named by the card's SHA-256 (so a JNEXT release with a newer NextZXOS replaces it). A card with more of NextZXOS on it (`card.dirs`) is a further entry, much larger (about 15 MB for `/GAMES` and `/APPS`) |
+| the SD card | Cache Storage: one entry of about 1.5 MB (the 40 MiB card, compressed), named by the card's SHA-256 (so a JNEXT release with a newer NextZXOS replaces it). A card with more of NextZXOS on it (`card.dirs`) is a further entry, much larger (about 15.7 MB for `/GAMES` and `/APPS`) |
 | the warm-start recording | IndexedDB |
 | the saves, with `keepWrites` | IndexedDB, in a database of its own |
 
@@ -108,7 +109,7 @@ it is refused on the player's panel only (no `onError`), because the visitor can
 | `option 'card': dirs must be an array of strings` or `option 'card': dirs: '<path>' ...` | `card.dirs` is not a list of absolute paths, or the named path is refused (no leading `/`, `/` alone, an empty, `.` or `..` part, a backslash, a part of the boot card, a path given twice, or one inside another). Nothing has been downloaded yet. |
 | `the requested path <path> is not in the distribution` | `card.dirs` names a path NextZXOS does not have (the message gives it in lower case). Correct the list: it is the page's, not the visitor's file. |
 | `the boot set and the requested paths are larger than the card: <N> bytes, the limit is 33554432 (32 MiB)` | `card.dirs` asks for more than the 40 MiB card takes. The message gives what was asked for and the limit. Ask for less. |
-| `this file is not sn-emulator-26.11.zip from specnext.com ...` | The visitor chose a different file: the message gives its size, or says its SHA-256 differs. The visitor has to download the official file from specnext.com (the link is on the panel) and choose that one. |
+| `this file is not sn-emulator-26.11a.zip from specnext.com ...` | The visitor chose a different file: the message gives its size, or says its SHA-256 differs. The visitor has to download the official file from specnext.com (the link is on the panel) and choose that one. |
 | `the chosen file could not be read: ...` or `the card could not be made in this browser: ...` | On the panel. The browser could not read the file the visitor chose (it changed or moved after it was chosen), or could not make or store the card (memory or storage). The file is not at fault: choose it again, or free some space. |
 | `cannot read the NextZXOS distribution from specnext.com: ...` | `card.source` is `'fetch'` and the file could not be read: specnext.com does not allow the page to read it, the visitor is offline, or the download failed. Use `'auto'` or `'pick'`. |
 | `the card built from the distribution is not the expected one ...` | The card the browser made does not have the SHA-256 this JNEXT release expects. The message gives both digests. It is a fault of the build or of the browser: report it. With `card.source: 'fetch'` it reaches `onError` after `cannot read the NextZXOS distribution from specnext.com: <address>: `; with `'auto'` the player falls back to the panel and shows it there; with `'pick'` it is shown on the panel. |
@@ -152,7 +153,7 @@ how the first visit goes with the `card` option (`data-card-source` on the widge
 
 ### `card.dirs`: more of NextZXOS on the card
 
-The boot card has only what NextZXOS needs to start. A page whose visitors want more of
+The boot card has only what NextZXOS needs to start and to run its commands. A page whose visitors want more of
 what the distribution holds, its games or its programs, can ask for those directories
 (`data-card-dirs` on the widget, [8.5](05-two-ways-to-embed.md)):
 
@@ -171,9 +172,9 @@ jnext.mount(el, { card: { dirs: ['/GAMES', '/APPS'] } });
 - The card is 40 MiB whatever the list. What the list asks for has to fit in 32 MiB together
   with the boot card. In this release `/GAMES` is 23.2 MB, `/APPS` 3.7 MB and `/DEMOS` 2.1 MB
   as files, so `/GAMES` and `/APPS` fit together and adding `/DEMOS` does not. The count is
-  of the files plus the distribution's directories.
+  of the files plus the distribution's directories, and the boot card itself counts about 3.7 MB.
 - Every list makes its own card. It is made the first time, kept as a further entry in the
-  browser (about 15 MB for `/GAMES` and `/APPS`), and used by later visits without
+  browser (about 15.7 MB for `/GAMES` and `/APPS`), and used by later visits without
   a download. It has its own warm-start recording and its own saves.
 - While it builds the card for `/GAMES` and `/APPS` the page's memory grows by about 21 MB.
 - A page that changes its list leaves the card of the old list in the visitor's browser

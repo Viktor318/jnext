@@ -16,8 +16,19 @@ The triplet is the core of the **batch gate**, which adds `make unit-test-sdl`,
 `make wasm-core`, `make wasm-browser-test`, `make unit-test-wasm` and
 `make regression-wasm` ([5.6](../05-building/06-the-browser-build.md)).
 
-- **When it runs:** on `main`'s tip, once, after all of a work session's landings
-  and before any push.
+- **When it runs:** once, after all of a work session's landings and before any
+  push, at a sync point: the end of a session, a public release or an urgent
+  user-facing fix. The landing count never triggers it.
+- **Where it runs:** on GitHub, as a CI run on the commit to be pushed. The
+  maintainer puts that commit on `origin` as a temporary `gate-v<version>`
+  branch and runs `bash test/ci-gate.sh dispatch gate-v<version> <sha>`, then
+  `wait <run-id>`, then `make ci-gate-check RUN=<run-id> SHA=<sha>`; the sha is mandatory, so a run on any other commit is refused. The verdict is
+  `CLEAN` only if the run and every job succeeded (a skipped or cancelled job is
+  not clean) and no job of the last green `main` run is missing. The commit
+  that was gated, not the local tip, is what is pushed to `main`. CI saves its
+  caches only from a push to `main`, so a gate run reads main's warm ccache and
+  evicts nothing. When GitHub cannot run it, the list above is run locally or on
+  the remote-run host as a fallback.
 - **On a branch, nobody runs it.** The author runs the suites and regression
   rows the change touches, plus `make unit-test` before each review. The
   reviewer runs the targeted rows again.
@@ -125,9 +136,64 @@ merely spawn short-lived processes have failed under outside load too, which is
 why the suite itself flags a FAIL that happened on a loaded host.
 
 A green `make regression` on a committed tree leaves a stamp keyed on the
-tree's non-doc content, and `make regression-stamp-check` finds it. A batch gate
-whose tree changed only in documentation since the last green run need not
-repeat it. Reviewers run targeted rows, never a full run.
+tree's non-doc content, and `make regression-stamp-check` finds it (the CI gate
+needs no stamp: `make regression-ci-check` finds its run). A fallback gate whose
+tree changed only in documentation since the last green run need not repeat it. Reviewers run targeted rows, never a full run.
+
+## The branch round: `make test-affected`
+
+On a branch the author does not run the whole of `make unit-test` every round. `make test-affected`
+asks `test/test-affected.pl` which suites the branch's changed files reach, and runs those, a fixed
+smoke set, `docs-check`, `cli-check` and one boot screenshot row (`boot-48k`). It is not a gate and
+says so; the full `make unit-test` runs once, just before landing, and the batch gate on `main` is
+unchanged.
+
+The map is read from the build tree, not written by hand. Each object has a compiler depfile (the
+source and every header it read); each test executable is linked with a GNU ld map
+(`-Wl,-Map`, set in `test/CMakeLists.txt`), whose "Archive member included" section names the exact
+archive members the link pulled; an archive's own `link.txt` says which object is which member. A
+suite's files are the union of the depfiles of its own objects and of the members it pulled, so a
+change to a header or a source selects exactly the suites that read it. A suite with no map is taken
+with its archives' whole membership: more suites, never fewer.
+
+A depfile cannot see what a suite reads as data at run time, so a second kind of edge is read from
+the same tree: the paths CMake bakes into a suite's compile definitions (`-DJNEXT_MAIN_SRC="..."`,
+fixture directories) in its `flags.make`. A changed file equal to such a path, or under it when it
+is a directory, selects the suite, whatever the file's class (a source, a document, a fixture, a
+regression reference); a document a suite reads therefore leaves docs-only mode. A suite given the
+whole source root (`JNEXT_SRC_DIR`) is selected for any changed file whose root-relative path its
+own sources name literally, and every suite is selected for a changed file that no object compiles
+and whose path its sources name. Comments do not count as a mention.
+
+What neither can see (documents, regression row scripts and references, the harness, packaging, CMake
+files, submodule pointers) is classified in `test/test-affected.conf`, one glob and one or more actions
+per line, first match wins. A changed file that is in no depfile, that no suite reads and that matches
+no glob is UNMAPPED, and an unmapped file makes the plan FULL (`make unit-test`), named: a new kind of
+file is never skipped silently. A changed submodule pointer is FULL too. `make test-affected-check`,
+part of `make unit-test`, fails while a tracked file is neither in a depfile nor classified, so the
+conf grows in the change that adds the file.
+
+The plan also prints which of `unit-test-sdl`, `unit-test-win` and `unit-test-wasm` the change
+needs, from the changed files' paths and content, lines the change removed included (`ENABLE_QT_UI`,
+`_WIN32`, `std::filesystem`, sockets, `__EMSCRIPTEN__`, CMake and harness files, the sources only the
+browser build compiles), with the reason. It prints and does not run them; they are heavy and the
+author runs the ones it names.
+
+`test/run-unit-tests.sh --only a,b,c` is the subset runner. Every manifest check still applies to the
+whole manifest, a name the manifest does not declare is a refusal, each selected suite's own count is
+still pinned, and the summary says `subset run: K of N suites -- not a gate`. A suite that fails in
+the full run and that the planner would not have selected for the branch's diff against the merge base
+with `main` (`origin/main` when there is no local `main`; the remote-run host's run tree is given one) prints
+`TEST-AFFECTED MISS`, so the map or the conf is fixed on the same branch; with no such base, or in a
+platform tree (SDL-only, Windows, WebAssembly), the check is silent. A docs-only plan ran no suite, so
+every suite that fails is a miss. The planner's rows are
+`TAF-01..10` and `TAF-12..31` in `test/test-affected-selftest.sh` (`make test-affected-selftest`,
+part of `make unit-test`), on a hand-written fixture build tree, and `HS-194a..j` in the harness
+self-test.
+
+What `make test-affected` does not do: it does not run the traceability check, so a new `check()`
+row leaves the committed matrix stale until the full `make unit-test`, and it does not run the
+platform suites or the regression rows other than the boot smoke row and the rows the diff names.
 
 ## What the triplet does not prove
 

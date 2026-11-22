@@ -34,8 +34,8 @@
 # A fordítás a Linux oldali klónból megy (~/jnext), mert a /mnt/c alatt sokkal
 # lassabb; a klónba csak a git pull ír.
 #
-# The exe downloads NextZXOS 26.11a by default (HU_DISTRO_URL below), not
-# upstream's 26.11: CMake's JNEXT_DEFAULT_DISTRO_URL. The tests keep 26.11.
+# The exe downloads NextZXOS 26.11a by default: upstream's kDistroUrl since
+# v1.3.48 (GH #510); $JNEXT_SDCARD_DISTRO_URL overrides it at run time.
 #
 # JNEXT_WERROR is off: a newer MinGW than upstream's CI may warn where theirs
 # does not, and a warning must not stop a user's build. The test gates of the
@@ -51,11 +51,6 @@ ZLIB_TAG=v1.3.1
 LIBPNG_TAG=v1.6.50
 SDL_REF=release-3.2.x
 MIN_MINGW_GCC=13   # Qt 6.8's MinGW binaries are built with GCC 13.1
-# The NextZXOS distribution the exe downloads by default (Viktor, 2026-11-21:
-# 26.11a, the one his ZX Spectrum Next KS3 runs). JNEXT_HU_DISTRO_URL= (empty)
-# keeps upstream's kDistroUrl; $JNEXT_SDCARD_DISTRO_URL still overrides both at
-# run time.
-HU_DISTRO_URL=${JNEXT_HU_DISTRO_URL-https://www.specnext.com/distro/26.11a/sn-emulator-26.11a.zip}
 
 ENV_DIR=${JNEXT_WIN_ENV:-$HOME/jnext-win-env}
 REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
@@ -170,12 +165,11 @@ if [ -f "$BUILD/CMakeCache.txt" ] && ! grep -q "CMAKE_HOME_DIRECTORY:INTERNAL=$R
 fi
 # Configured on every run (a few seconds once cached), so an option added
 # here later reaches an existing build tree too.
-say "cmake configure (default card: ${HU_DISTRO_URL:-kDistroUrl})"
+say "cmake configure"
 cmake -S "$REPO" -B "$BUILD" -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release \
     -DQT_HOST_PATH="$QT_HOST" -DCMAKE_PREFIX_PATH="$QT_WIN;$SYSROOT" \
-    -DENABLE_QT_UI=ON -DENABLE_TESTS=OFF -DJNEXT_WERROR=OFF \
-    -DJNEXT_DEFAULT_DISTRO_URL="$HU_DISTRO_URL" >/dev/null
+    -DENABLE_QT_UI=ON -DENABLE_TESTS=OFF -DJNEXT_WERROR=OFF >/dev/null
 say "build ($JOBS jobs) - $NAME"
 cmake --build "$BUILD" --target jnext -j"$JOBS"
 
