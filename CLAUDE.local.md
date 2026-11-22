@@ -26,6 +26,7 @@ Ez a fájl a tároló `CLAUDE.md`-je mellett érvényes, a helyi (WSL, `~/jnext`
 - Minden Beállítások-mezőnek legyen `--set` kulcsa és man page-bejegyzése (`make cli-check`).
 - Új beállításkulcsnál a `src/platform/bug_report.cpp` `config_value_rule()` kapcsolójába és a `bug_report_test` várt listájába is fel kell venni. `JNEXT_WERROR=OFF` mellett a hiány csak figyelmeztetés, a CI-ban fordítási hiba (`5b20d8e`).
 - Minden külső folyamat `LANG=C` alatt fut.
+- Az 1.3.57 óta a `make unit-test` része a `test-affected-check` (GH #547): minden követett fájlnak vagy fordítási függőségnek, vagy egy `test/test-affected.conf`-szabálynak kell lennie. Új fájltípusnál a szabályt ugyanabban a commitban kell felvenni (a magyar `.ts`/`.qm` fájlok: `full`). Helyben a `run-unit-tests.sh` ezt nem futtatja: `perl test/test-affected.pl --check --build <fordítási fa>` külön kell.
 - A generált dokumentumok (man page, user guide, developer guide, `TRACEABILITY-MATRIX.md`) commitolva vannak és frissességre ellenőrzöttek: a forrást kell szerkeszteni, újragenerálni, mindkettőt commitolni.
 - A felületen soha ne felirat szerint keress (a fordítás elrontja), hanem objektumnév szerint.
 - Független átnézés: Viktor még nem döntött, hogy külön átnéző ágens kell-e; addig a saját, tesztekkel alátámasztott ellenőrzés elég, de a változtatás után a teljes `test/run-unit-tests.sh` fusson (menü- vagy gyorsbillentyű-változásnál mindenképp).
