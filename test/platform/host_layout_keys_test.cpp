@@ -149,8 +149,8 @@ void letter_digit_rows()
         r.release(K_A, letter('a'), U'a');
         const std::string held = r.take();
         r.mod(SC_LSHIFT, false);
-        check("HLAY-03", "an upper-case letter is Caps Shift + the letter; the host Shift already is it",
-              held == "+LSHIFT +A -A" && r.take() == "-LSHIFT", held);
+        check("HLAY-03", "an upper-case letter is Caps Shift + the letter; the host Shift already is it, and is let go with the letter",
+              held == "+LSHIFT +A -A -LSHIFT" && r.take().empty(), held);
     }
     {
         Rig r;
@@ -174,8 +174,8 @@ void symbol_rows()
         r.release(K_4, digit(1), U'!');
         const std::string up = r.take();
         r.mod(SC_LSHIFT, false);
-        check("HLAY-05", "Hungarian Shift+4 '!': host Shift is let go, Symbol Shift + 1, then Shift back",
-              down == "-LSHIFT +LCTRL +1" && up == "-1 -LCTRL +LSHIFT" && r.take() == "-LSHIFT",
+        check("HLAY-05", "Hungarian Shift+4 '!': host Shift is let go, Symbol Shift + 1, and Shift is NOT put back",
+              down == "-LSHIFT +LCTRL +1" && up == "-1 -LCTRL" && r.take().empty(),
               down + " | " + up);
     }
     {
@@ -337,8 +337,9 @@ void sequence_rows()
         r.mod(SC_LSHIFT, true);
         const std::string during = r.take();
         r.t.on_frames(4 * STEP_FRAMES);
-        check("HLAY-17", "a host modifier pressed during a sequence is applied when it ends",
-              during.empty() && r.take() == "-LCTRL -LSHIFT +LCTRL +Y -Y -LCTRL +LSHIFT");
+        r.press(K_SPACE, SC_SPACE);
+        check("HLAY-17", "a host modifier pressed during a sequence is not applied when it ends, but with the next classic key",
+              during.empty() && r.take() == "-LCTRL -LSHIFT +LCTRL +Y -Y -LCTRL +LSHIFT +SPACE");
     }
 }
 
@@ -438,8 +439,11 @@ void alt_digit_rows()
         const std::string down = r.take();
         r.release(K_5, digit(5), U'5');
         const std::string up = r.take();
-        check("HLAY-25", "left Alt + 5: Caps Shift + 5 (cursor left), the Alt withdrawn for it and put back",
-              down == "-LALT +LSHIFT +5" && up == "-5 -LSHIFT +LALT", down + " | " + up);
+        r.press(K_E, letter('e'), U'e');
+        const std::string classic = r.take();
+        check("HLAY-25", "left Alt + 5: Caps Shift + 5 (cursor left), the Alt withdrawn for it; back with the next classic key (Alt+E = EDIT)",
+              down == "-LALT +LSHIFT +5" && up == "-5 -LSHIFT" && classic == "+LALT +E",
+              down + " | " + up + " | " + classic);
     }
     {
         Rig r;
@@ -469,7 +473,7 @@ void alt_digit_rows()
         owns = false;                        // ... and unloaded
         r.release(K_2, digit(2), U'2');
         check("HLAY-27", "the Alt+digit decision is taken on the press; the release follows it",
-              a == "-LALT +LSHIFT +2 -2 -LSHIFT +LALT" && r.take() == "+2 -2", a);
+              a == "-LALT +LSHIFT +2 -2 -LSHIFT" && r.take() == "+LALT +2 -2", a);
     }
     {
         Rig r(true, false);
@@ -527,7 +531,7 @@ void bookkeeping_rows()
         const std::string back = r.take();
         r.release(K_A, letter('a'), U'a');
         check("HLAY-33", "rollover: the shifts follow the newest typed key, and the one still held on release",
-              back == "-1 -LCTRL" && r.take() == "-A +LSHIFT", back);
+              back == "-1 -LCTRL" && r.take() == "-A", back);
     }
     {
         Rig r;
@@ -800,6 +804,77 @@ void wiring_rows()
           joined(seen) + joined(mid) + joined(after) + joined(end));
 }
 
+
+// NextBASIC (NextZXOS 2.10a, measured on 2026-11-22 with Viktor's card): with
+// Shift held, Caps Shift shown between two typed symbols and then Symbol Shift
+// read as extended mode: Shift+1..9 typed `'©1cip2Zd` instead of `'"+!%/=()`
+// (the 48K and 128K editors did not mind). So no host modifier between typed
+// keys: back only with a modifier press or a classic key.
+void nextbasic_rows()
+{
+    {
+        Rig r;
+        r.mod(SC_LSHIFT, true);
+        r.press(0x02, digit(1), U'\'');
+        r.release(0x02, digit(1), U'\'');
+        r.press(0x03, digit(2), U'"');
+        r.release(0x03, digit(2), U'"');
+        const std::string typed = r.take();
+        r.press(K_SPACE, SC_SPACE);
+        const std::string brk = r.take();
+        check("HLAY-49", "Shift held, Shift+1 and Shift+2 ('\\'' and '\"'): Symbol Shift + 7, Symbol Shift + P, no Caps Shift between; a classic key (Space) then gets it (BREAK)",
+              typed == "+LSHIFT -LSHIFT +LCTRL +7 -7 -LCTRL +LCTRL +P -P -LCTRL" && brk == "+LSHIFT +SPACE",
+              typed + " | " + brk);
+    }
+    {
+        Matrix m;
+        MatrixRouter router;
+        router.attach(m);
+        Translator t([&router](int sc, bool pressed) { router.on_host_key(sc, pressed); });
+        t.set_layout(true);
+        t.set_alt_digit(true);
+        t.set_output_idle([&router] { return router.pending() == 0; });
+        std::vector<std::string> seen;
+        auto frames = [&](int n) {
+            for (int i = 0; i < n; ++i) {
+                std::string f;
+                for (std::size_t k = 0; k < m.down.size(); ++k)
+                    if (m.down.test(k)) { if (!f.empty()) f += '+'; f += name(static_cast<int>(k)); }
+                seen.push_back(f);
+                router.on_tick_end(1);
+                t.on_frames(1);
+            }
+        };
+        const char32_t hu[] = {U'\'', U'"', U'+', U'!', U'%', U'/', U'=', U'(', U')'};
+        t.on_press(KeyEvent{0x2a, SC_LSHIFT, 0, false});
+        frames(5);
+        for (int d = 1; d <= 9; ++d) {
+            const uint32_t ph = static_cast<uint32_t>(1 + d);
+            t.on_press(KeyEvent{ph, digit(d), hu[d - 1], false});
+            frames(5);
+            t.on_release(KeyEvent{ph, digit(d), hu[d - 1], false});
+            frames(5);
+        }
+        t.on_release(KeyEvent{0x2a, SC_LSHIFT, 0, false});
+        frames(5);
+        // After the first symbol, no frame may show Caps Shift.
+        bool first = false, caps_after = false;
+        std::string all;
+        for (const auto& f : seen) {
+            all += "[" + f + "]";
+            if (f.find("LCTRL") != std::string::npos) first = true;
+            else if (first && f.find("LSHIFT") != std::string::npos) caps_after = true;
+        }
+        check("HLAY-50", "through the real Router, Shift held over Shift+1..9: after the first symbol no frame shows Caps Shift (NextBASIC reads it as extended mode)",
+              first && !caps_after && seen.back().empty(), all);
+    }
+    check("HLAY-51", "AltGr types (the window takes the key from Qt's shortcuts): layout on, a printable character, and the right Alt held or Ctrl + Alt; never with the layout off, a control character or Ctrl or Alt alone",
+          altgr_types(true, true, false, false, U'{') && altgr_types(true, false, true, true, U'@')
+              && !altgr_types(false, true, true, true, U'{') && !altgr_types(true, true, true, true, U'\x02')
+              && !altgr_types(true, false, true, false, U'b') && !altgr_types(true, false, false, true, U'b')
+              && !altgr_types(true, true, true, true, 0));
+}
+
 } // namespace
 
 int main()
@@ -817,6 +892,7 @@ int main()
     router_rows();
     frontend_rows();
     wiring_rows();
+    nextbasic_rows();
     std::printf("Total: %4d  Passed: %4d  Failed: %4d  Skipped: %4d\n",
                 g_pass + g_fail, g_pass, g_fail, 0);
     return g_fail ? 1 : 0;

@@ -253,6 +253,16 @@ private:
     bool right_ = false;
 };
 
+/// Does AltGr type a character with this key? Then the window takes the key
+/// from Qt's shortcuts (QEvent::ShortcutOverride): on Windows AltGr is Ctrl +
+/// Alt, and Qt fires the Alt+letter shortcuts on it, so AltGr+B (`{`) opened
+/// the menu whose mnemonic is B and AltGr+Q (`\`) would quit. Right Alt held,
+/// or Ctrl + Alt (AltGr not told apart), and a printable character.
+inline bool altgr_types(bool layout, bool right_alt_held, bool ctrl, bool alt, char32_t ch)
+{
+    return layout && printable(ch) && (right_alt_held || (ctrl && alt));
+}
+
 /// What the mouse release (pointer_capture::ReleaseFilter::on_key) is given
 /// for one key event: the key and "is Alt held". With the layout off, exactly
 /// what the window gave it before (any Alt, the toolkit's modifier state).
@@ -314,6 +324,7 @@ public:
             const std::size_t m = mod_index(e.sc);
             if (host_mods_.test(m)) return true;            // host autorepeat
             host_mods_.set(m);
+            host_pending_ = false;
             if (!owned()) apply_mods(base_mods());
             return true;
         }
@@ -359,6 +370,10 @@ public:
         h.kind = Kind::Forwarded;
         h.sc = e.sc;
         held_.push_back(h);
+        if (host_pending_ && !owned()) {   // the classic key goes with the host's modifiers
+            host_pending_ = false;
+            apply_mods(base_mods());
+        }
         send(e.sc, true);
         return true;
     }
@@ -373,7 +388,7 @@ public:
         }
         if (is_modifier(e.sc)) {
             host_mods_.reset(mod_index(e.sc));
-            if (!owned()) apply_mods(base_mods());
+            if (!owned()) apply_mods(resting());
             return true;
         }
         const auto it = find(e.phys);
@@ -438,6 +453,7 @@ public:
         step_ = 0;
         step_left_ = 0;
         shown_ = true;
+        host_pending_ = false;
     }
 
     // Diagnostics and tests.
@@ -476,7 +492,12 @@ private:
     bool character_path_open() const
     {
         if (host(SC_RALT)) return true;
-        return !host(SC_LCTRL) && !host(SC_RCTRL) && !host(SC_LALT);
+        const bool ctrl = host(SC_LCTRL) || host(SC_RCTRL);
+        // Ctrl + Alt with a printable character (the caller checked it) is
+        // AltGr whose right Alt was not told apart (Windows' AltGr is Ctrl +
+        // Alt; a real Ctrl+Alt chord produces no character there).
+        if (ctrl && host(SC_LALT)) return true;
+        return !ctrl && !host(SC_LALT);
     }
 
     bool only_left_alt() const
@@ -583,7 +604,13 @@ private:
         }
     }
 
-    /// The shifts of the last typed key still held, else the host's.
+    /// The shifts of the last typed key still held. With none left the Router
+    /// holds NO modifier, and the host's are put back only when a modifier key
+    /// is pressed or a classic key goes down (host_pending_): typing symbols
+    /// with Shift held must not show Caps Shift between them. NextBASIC's
+    /// editor reads Caps Shift (between the keys) and then Symbol Shift as
+    /// extended mode, so Shift+2 typed `©` instead of `"` and the line went on
+    /// garbled (measured in NextZXOS 2.10a; the 48K and 128K editors did not).
     void restore_shifts()
     {
         if (!queue_.empty()) return;   // the running sequence owns them
@@ -592,8 +619,16 @@ private:
             if (h.kind != Kind::Typed || h.sc == 0) continue;
             if (!last || h.order > last->order) last = &h;
         }
-        apply_mods(last ? mods_for(last->caps, last->symbol) : base_mods());
+        if (last) {
+            apply_mods(mods_for(last->caps, last->symbol));
+        } else {
+            host_pending_ = true;
+            apply_mods(Mods{});
+        }
     }
+
+    /// What the Router holds when the module owns nothing.
+    Mods resting() const { return host_pending_ ? Mods{} : base_mods(); }
 
     void release_everything()
     {
@@ -608,6 +643,7 @@ private:
     ScriptOwns script_owns_;
     std::function<bool()> output_idle_;
     bool shown_ = true;   ///< the Router had applied everything at the last sample
+    bool host_pending_ = false;   ///< host modifiers held back after a typed key (restore_shifts)
     bool layout_ = false;
     bool alt_digit_ = false;
     Mods host_mods_;

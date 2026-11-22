@@ -33,8 +33,9 @@ The chosen click or key is not passed to the program while the mouse is captured
 type the character it types in the host's keyboard layout, for example Hungarian,
 instead of the US key in its place: Shift+2 types `"`, AltGr+V types `@`, and the
 extended-mode symbols `[ ] { } \ | ~ ©` are typed as a short key sequence. Automatic
-turns it on with the Hungarian interface. While it is on, only the left Alt releases
-a captured mouse with Ctrl+Alt, as the right Alt is AltGr.
+turns it on with the Hungarian interface. While it is on, AltGr + a key types its
+character rather than firing an Alt shortcut (the Alt+letter shortcuts and menus use the
+left Alt), and only the left Alt releases a captured mouse with Ctrl+Alt.
 **Left Alt + digit types Caps Shift + digit** (`input.alt_digit_caps_shift`, on by
 default) gives EDIT, CAPS LOCK, TRUE/INV VIDEO, the cursor keys, GRAPH and DELETE on a
 keyboard whose Shift + digit types other characters; while a debugger script is loaded,

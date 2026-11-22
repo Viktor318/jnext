@@ -107,7 +107,7 @@ VHDL-derived compliance test suite for the JNEXT ZX Spectrum Next emulator. All 
 | Tick-delivery stats   |       32 |       32 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Achieved-speed report |       36 |       36 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Host key minimum-hold latch |      182 |      182 |      0 |       0 |    100% | 🟢 All tests pass. |
-| Host layout keys (hungarian-ui) |       46 |       46 |      0 |       0 |    100% | 🟢 All tests pass. |
+| Host layout keys (hungarian-ui) |       49 |       49 |      0 |       0 |    100% | 🟢 All tests pass. |
 | SdlApp tick (frame loop) |       17 |       17 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Browser frame gate and refusals |       30 |       30 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Browser JavaScript API |       35 |       35 |      0 |       0 |    100% | 🟢 All tests pass. |
@@ -196,7 +196,7 @@ VHDL-derived compliance test suite for the JNEXT ZX Spectrum Next emulator. All 
 | GUI Preferences (AppConfig) |      179 |      179 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Audio gain configuration |       22 |       22 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Audio gain Preferences |       10 |       10 |      0 |       0 |    100% | 🟢 All tests pass. |
-| Mouse Release Gesture (GH #365) |       21 |       21 |      0 |       0 |    100% | 🟢 All tests pass. |
+| Mouse Release Gesture (GH #365) |       22 |       22 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Present count (widget) |       27 |       27 |      0 |       0 |    100% | 🟢 All tests pass. |
 | GUI frame timer (single-shot, GH #155) |        6 |        6 |      0 |       0 |    100% | 🟢 All tests pass. |
 | ESP-01 status cell (GUI) |       15 |       15 |      0 |       0 |    100% | 🟢 All tests pass. |
@@ -243,6 +243,6 @@ VHDL-derived compliance test suite for the JNEXT ZX Spectrum Next emulator. All 
 | Debugger Verbs (GH #278) |      186 |      186 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Source panel |      299 |      299 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Variables panel |       55 |       55 |      0 |       0 |    100% | 🟢 All tests pass. |
-| **Total**             | **17354**| **17354**|  **0** |   **0** | **100%**| 🟢 All tests pass. |
+| **Total**             | **17358**| **17358**|  **0** |   **0** | **100%**| 🟢 All tests pass. |
 
 **SKIP:** A row its suite could not exercise on the host that ran it. A SKIP fails the run (owner, 2026-10-06). A planned row whose feature does not exist yet is PLANNED in its `*-TEST-PLAN-DESIGN.md`, not a SKIP.

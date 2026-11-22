@@ -3739,6 +3739,18 @@ bool MainWindow::event(QEvent* ev) {
     // alone, so there is no meaningful Tab traversal to preserve. Dialogs and
     // the debugger window are separate top-level widgets and are unaffected.
     const QEvent::Type t = ev->type();
+    // hungarian-ui - AltGr + a key that types a character is the guest's, not
+    // a shortcut's: on Windows AltGr is Ctrl + Alt, and Qt fired the Alt+letter
+    // shortcuts and menu mnemonics on it (AltGr+B `{` opened a menu).
+    if (t == QEvent::ShortcutOverride) {
+        auto* ke = static_cast<QKeyEvent*>(ev);
+        const Qt::KeyboardModifiers m = ke->modifiers();
+        if (host_layout::altgr_types(layout_on_, alt_sides_.right(), m & Qt::ControlModifier,
+                                     m & Qt::AltModifier, first_char(ke->text()))) {
+            ev->accept();
+            return true;
+        }
+    }
     if (t == QEvent::KeyPress || t == QEvent::KeyRelease) {
         auto* ke = static_cast<QKeyEvent*>(ev);
         if (ke->key() == Qt::Key_Tab || ke->key() == Qt::Key_Backtab) {

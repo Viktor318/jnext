@@ -372,6 +372,35 @@ int main(int argc, char** argv)
               modes == want, seen);
     }
 
+    {   // MRQ-HU-05
+        // A ShortcutOverride the window accepts is a key Qt's shortcuts (menu
+        // mnemonics, Alt+Q ...) do not get. Sent as Qt's shortcut map sends it,
+        // not accepted to begin with.
+        auto takes = [](Fixture& f, Qt::KeyboardModifiers m, const QString& text) {
+            QKeyEvent ev(QEvent::ShortcutOverride, Qt::Key_B, m, 48, 0, 0, text);
+            ev.ignore();
+            QApplication::sendEvent(&f.win, &ev);
+            return ev.isAccepted();
+        };
+        Fixture on;
+        AppConfigData c;
+        c.windows_layout = host_layout::Mode::On;
+        on.win.apply_startup_config(c);
+        on.native_key(Qt::Key_Alt, true, Qt::AltModifier, kRightAlt);              // AltGr down
+        const bool altgr = takes(on, Qt::AltModifier, QStringLiteral("{"));
+        on.native_key(Qt::Key_Alt, false, Qt::NoModifier, kRightAlt);
+        const bool win_altgr = takes(on, kCtrlAlt, QStringLiteral("{"));           // Windows: Ctrl + Alt
+        const bool plain_alt = takes(on, Qt::AltModifier, QStringLiteral("b"));     // left Alt + B: the menu's
+        const bool chord = takes(on, kCtrlAlt, QString());                         // Ctrl+Alt+B: no character
+        Fixture off;
+        c.windows_layout = host_layout::Mode::Off;
+        off.win.apply_startup_config(c);
+        const bool off_altgr = takes(off, kCtrlAlt, QStringLiteral("{"));
+        check("MRQ-HU-05", "layout on: AltGr + B typing '{' is taken from Qt's shortcuts (right Alt held, or Ctrl + Alt "
+                           "with the character); left Alt + B and a characterless Ctrl+Alt+B stay shortcuts; layout off: unchanged",
+              altgr && win_altgr && !plain_alt && !chord && !off_altgr);
+    }
+
     std::printf("\n==============================================\n");
     std::printf("Total: %4d  Passed: %4d  Failed: %4d  Skipped: %4d\n", g_total, g_pass, g_fail, 0);
     return g_fail == 0 ? 0 : 1;
