@@ -29,6 +29,16 @@ you. Details in [5.2](../05-running-programs/02-input.md).
 It also holds **Release captured mouse with**: Ctrl+Alt (the default), a middle click or Esc.
 The chosen click or key is not passed to the program while the mouse is captured;
 `--mouse-release` overrides it for one run.
+**Host keyboard layout** (Automatic, On, Off; `input.windows_layout`) makes each key
+type the character it types in the host's keyboard layout, for example Hungarian,
+instead of the US key in its place: Shift+2 types `"`, AltGr+V types `@`, and the
+extended-mode symbols `[ ] { } \ | ~ ©` are typed as a short key sequence. Automatic
+turns it on with the Hungarian interface. While it is on, only the left Alt releases
+a captured mouse with Ctrl+Alt, as the right Alt is AltGr.
+**Left Alt + digit types Caps Shift + digit** (`input.alt_digit_caps_shift`, on by
+default) gives EDIT, CAPS LOCK, TRUE/INV VIDEO, the cursor keys, GRAPH and DELETE on a
+keyboard whose Shift + digit types other characters; while a debugger script is loaded,
+Alt+1..8 stay its keys. Both take effect at once.
 
 **Audio** has -24 dB to +24 dB sliders for the final master output and for the
 beeper, each of the three TurboSound AY chips, and the DAC family. Every slider

@@ -3073,6 +3073,30 @@ Csak a módosított hozzárendelések kerülnek a beállításfájlba.</translat
         <source>Keep the window black while fast boot runs, so the first picture is the screen it ends on (normally the NextZXOS menu). Any key shows the screen at once. Takes effect at the next start.</source>
         <translation>A gyors indítás alatt az ablak fekete marad, így az első kép az lesz, amelyiken az indítás véget ér (általában a NextZXOS menüje). Bármelyik billentyű azonnal megjeleníti a képet. A következő indításkor lép életbe.</translation>
     </message>
+    <message>
+        <source>Automatic (on with the Hungarian interface)</source>
+        <translation>Automatikus (magyar felülettel bekapcsol)</translation>
+    </message>
+    <message>
+        <source>On</source>
+        <translation>Be</translation>
+    </message>
+    <message>
+        <source>Each key types the character it types in the host keyboard layout (for example Hungarian), not the key in its place on a US keyboard. The extended-mode symbols [ ] { } \ | ~ and the copyright sign are typed as a short key sequence.</source>
+        <translation>Minden billentyű azt a karaktert üti le, amelyet a számítógép billentyűzetkiosztásában (például a magyarban) ad, nem az amerikai billentyűzet ugyanazon a helyen lévő billentyűjét. A kiterjesztett módú jeleket ([ ] { } \ | ~ és a szerzői jog jele) rövid billentyűsorozatként üti le.</translation>
+    </message>
+    <message>
+        <source>Host keyboard layout:</source>
+        <translation>Windowsos billentyűzetkiosztás:</translation>
+    </message>
+    <message>
+        <source>Left Alt + digit types Caps Shift + digit</source>
+        <translation>Bal Alt + számjegy = Caps Shift + számjegy</translation>
+    </message>
+    <message>
+        <source>EDIT, CAPS LOCK, TRUE/INV VIDEO, the cursor keys, GRAPH and DELETE, on a keyboard whose Shift + digit types other characters. While a debugger script is loaded, Alt+1..8 stay its keys.</source>
+        <translation>EDIT, CAPS LOCK, TRUE/INV VIDEO, a kurzorbillentyűk, GRAPH és DELETE olyan billentyűzeten, amelyen a Shift + számjegy más karaktert ad. Amíg hibakereső-szkript van betöltve, az Alt+1..8 a szkripté marad.</translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>

@@ -98,3 +98,34 @@ void wire_script_keys(Router& router, Backend& backend)
         backend.raise_host_event(0 /* CLIENT_NONE */, "script" + std::to_string(n));
     });
 }
+
+/// hungarian-ui - typing by the host layout's character (host_layout_keys.h,
+/// "Windowsos magyar billentyűzet"). Replaces wire_host_keys() for a window
+/// whose keys go through a `host_layout::Translator`:
+///
+///   - every key goes to the Translator (`set_layout_key_callback`, returning
+///     whether it took the key), and the Translator's output to the Router;
+///   - a sequence step counts only on frames after which the Router had
+///     applied everything (`router.pending() == 0`);
+///   - Alt+1..8 stay the debugger script's while one listens for host events
+///     (`backend.has_host_subscribers()`), otherwise they are Caps Shift + the
+///     digit when that switch is on;
+///   - on keyboard loss the Translator forgets its state FIRST, then the Router
+///     lets go of everything it holds (the Translator's output included).
+///
+/// The frontend still calls `t.on_frames(frames)` after `router.on_tick_end`.
+template <typename Source, typename Translator, typename Router, typename Backend>
+void wire_layout_keys(Source& source, Translator& t, Router& router, Backend& backend)
+{
+    using Sc = typename Router::scancode_type;
+    t.set_emit([&router](int sc, bool pressed) { router.on_host_key(static_cast<Sc>(sc), pressed); });
+    t.set_output_idle([&router]() { return router.pending() == 0; });
+    t.set_script_owns([&backend](int) { return backend.has_host_subscribers(); });
+    source.set_layout_key_callback([&t](const auto& e, bool pressed) {
+        return pressed ? t.on_press(e) : t.on_release(e);
+    });
+    source.set_keyboard_lost_callback([&t, &router]() {
+        t.reset();
+        router.release_all();
+    });
+}

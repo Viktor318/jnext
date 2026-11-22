@@ -63,6 +63,7 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
+#include <QLocale>   // hungarian-ui: input.windows_layout = auto
 #include <QInputDialog>
 #include <QTimer>
 #include <QFileInfo>
@@ -242,6 +243,36 @@ SDL_Scancode qt_key_to_sdl(int key) {
 
         default: return SDL_SCANCODE_UNKNOWN;
     }
+}
+
+// hungarian-ui - the Qt values the host layout module resolves events with
+// (platform/host_layout_keys.h keeps them as plain numbers, for its suite).
+static_assert(Qt::Key_Alt == host_layout::QT_KEY_ALT, "host_layout: Qt::Key_Alt");
+static_assert(Qt::Key_AltGr == host_layout::QT_KEY_ALTGR, "host_layout: Qt::Key_AltGr");
+static_assert(Qt::Key_Dead_Grave == host_layout::QT_KEY_DEAD_FIRST, "host_layout: Qt::Key_Dead_Grave");
+static_assert(Qt::Key_Dead_Horn <= host_layout::QT_KEY_DEAD_LAST, "host_layout: Qt::Key_Dead_* block");
+// The scancodes it emits are SDL's.
+static_assert(SDL_SCANCODE_A == host_layout::SC_A && SDL_SCANCODE_Z == host_layout::SC_Z
+              && SDL_SCANCODE_1 == host_layout::SC_1 && SDL_SCANCODE_9 == host_layout::SC_9
+              && SDL_SCANCODE_0 == host_layout::SC_0, "host_layout: SDL letter and digit scancodes");
+static_assert(SDL_SCANCODE_LCTRL == host_layout::SC_LCTRL && SDL_SCANCODE_LSHIFT == host_layout::SC_LSHIFT
+              && SDL_SCANCODE_LALT == host_layout::SC_LALT && SDL_SCANCODE_RALT == host_layout::SC_RALT,
+              "host_layout: SDL modifier scancodes");
+
+// The right Alt's native scan code on this platform (0 = cannot tell; then only
+// Qt::Key_AltGr is AltGr).
+#if defined(Q_OS_WIN)
+constexpr uint32_t kRightAltScan = host_layout::RIGHT_ALT_SCAN_WINDOWS;
+#elif defined(Q_OS_LINUX)
+constexpr uint32_t kRightAltScan = host_layout::RIGHT_ALT_SCAN_XKB;
+#else
+constexpr uint32_t kRightAltScan = 0;
+#endif
+
+// The first character of QKeyEvent::text(), 0 if none.
+char32_t first_char(const QString& text) {
+    const auto u = text.toUcs4();
+    return u.isEmpty() ? 0 : static_cast<char32_t>(u.front());
 }
 
 const char* speed_name(int idx) {
@@ -3128,6 +3159,14 @@ void MainWindow::apply_startup_config(const AppConfigData& cfg, bool program_cpu
     if (tape_auto_action_) tape_auto_action_->setChecked(cfg.tape_auto_play);
 
     set_mouse_release_method(cfg.mouse_release);   // GH #365
+    // hungarian-ui - the host layout's switches. Auto follows the language this
+    // run's interface is in (startup.language, resolved as ui_language does).
+    layout_on_ = host_layout::layout_on(
+        cfg.windows_layout,
+        ui_language::resolve(ui_language::session_choice(), QLocale::system().uiLanguages())
+            == QLatin1String("hu"));
+    alt_digit_on_ = cfg.alt_digit_caps_shift;
+    if (layout_mode_callback_) layout_mode_callback_(layout_on_, alt_digit_on_);
     set_scale_x2(cfg.window_scale_x2);
     // One effect: resolve the exclusivity before touching the widget. The shader
     // (any style, Lite = Soft Scanlines) wins over the software Scanlines. In a build
@@ -3387,9 +3426,12 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
         // false, so the Alt-compounds (EDIT = Alt+E, GRAPH = Alt+G, CAPS LOCK
         // = Alt+C) would silently resolve to their unmodified meaning until
         // Alt was released and pressed again. Esc IS consumed (press, release).
+        // hungarian-ui: with the host layout on, only the LEFT Alt counts — the
+        // right one is AltGr, and AltGr + V (`@`) is Ctrl + Alt on Windows.
+        alt_sides_.on_key(key, event->nativeScanCode(), kRightAltScan, true);
+        const host_layout::ReleaseView view = release_view_of(event);
         const pointer_capture::Verdict rv = release_filter_.on_key(
-            qt_host_key(key), true, modifiers & Qt::ControlModifier, modifiers & Qt::AltModifier,
-            mouse_captured_);
+            view.key, true, modifiers & Qt::ControlModifier, view.alt_held, mouse_captured_);
         if (rv.release) set_mouse_captured(false);
         if (rv.consume) {
             event->accept();
@@ -3635,8 +3677,10 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event) {
         int key = event->key();
         // GH #365 — the release of an Esc that released the mouse.
         const Qt::KeyboardModifiers mods = event->modifiers();
-        if (release_filter_.on_key(qt_host_key(key), false, mods & Qt::ControlModifier,
-                                   mods & Qt::AltModifier, mouse_captured_).consume) {
+        alt_sides_.on_key(key, event->nativeScanCode(), kRightAltScan, false);   // hungarian-ui
+        const host_layout::ReleaseView view = release_view_of(event);
+        if (release_filter_.on_key(view.key, false, mods & Qt::ControlModifier,
+                                   view.alt_held, mouse_captured_).consume) {
             event->accept();
             return;
         }
@@ -3721,6 +3765,7 @@ void MainWindow::focusOutEvent(QFocusEvent* event) {
     // three letters silently stop appearing while every other letter still
     // types. "press A I got A, press G nothing is shown", exactly.
     release_filter_.reset();   // GH #365 — a swallowed Esc's release goes elsewhere
+    alt_sides_.reset();        // hungarian-ui - and so do the Alt key-ups
     command_gate_.reset();     // GH #403 - and so does a swallowed Command chord's
     if (keyboard_lost_callback_) keyboard_lost_callback_();
     QMainWindow::focusOutEvent(event);
@@ -3758,6 +3803,19 @@ void MainWindow::handle_key(QKeyEvent* event, bool pressed) {
     }
 
     SDL_Scancode sc = qt_key_to_sdl(event->key());
+
+    // hungarian-ui - typing by the host layout's character: every key goes to
+    // the host_layout::Translator, which forwards what it does not type (with
+    // both switches off it is a plain forward of `sc`, exactly as below).
+    if (layout_key_callback_) {
+        const host_layout::KeyEvent e = host_layout::make_event(
+            event->key(), event->nativeScanCode(), event->nativeVirtualKey(), first_char(event->text()),
+            static_cast<int>(sc), layout_on_, kRightAltScan);
+        if (layout_key_callback_(e, pressed)) event->accept();
+        else QMainWindow::keyPressEvent(static_cast<QKeyEvent*>(event));
+        return;
+    }
+
     if (sc != SDL_SCANCODE_UNKNOWN && key_callback_) {
         key_callback_(sc, pressed);
         event->accept();
@@ -3839,6 +3897,18 @@ void MainWindow::update_capture_status_tip() {
         tr("Confine the host pointer so the Kempston mouse can move freely "
            "(click the screen to capture, %1 to release)")
             .arg(release_hint_text()));
+}
+
+void MainWindow::set_layout_mode_callback(LayoutModeCallback cb) {
+    layout_mode_callback_ = std::move(cb);
+    if (layout_mode_callback_) layout_mode_callback_(layout_on_, alt_digit_on_);
+}
+
+host_layout::ReleaseView MainWindow::release_view_of(const QKeyEvent* event) const {
+    return host_layout::release_view(
+        layout_on_, qt_host_key(event->key()),
+        host_layout::is_right_alt(event->key(), event->nativeScanCode(), kRightAltScan),
+        event->modifiers() & Qt::AltModifier, alt_sides_);
 }
 
 void MainWindow::set_mouse_release_method(pointer_capture::ReleaseMethod m) {

@@ -889,6 +889,11 @@ public:
     /// `MAX_HOST_EVENT_NAME` — never silently truncated.
     Result raise_host_event(ClientId by, const std::string& name);
 
+    /// hungarian-ui: does any live subscription listen for `Host` events (a
+    /// loaded script's Alt+1..8)? While none does, the Qt window's left
+    /// Alt + digit types Caps Shift + the digit (host_layout_keys.h).
+    bool has_host_subscribers() const;
+
     // =======================================================================
     // §4.5 — CAP-IN input injection, CAP-CAP capture
     // =======================================================================

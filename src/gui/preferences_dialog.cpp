@@ -84,6 +84,9 @@ PreferencesDialog::PreferencesDialog(const AppConfigData& current, QWidget* pare
         when_slow_combo_->findData(static_cast<int>(current.when_slow_prefer)));
     mouse_release_combo_->setCurrentIndex(
         mouse_release_combo_->findData(static_cast<int>(current.mouse_release)));
+    windows_layout_combo_->setCurrentIndex(
+        windows_layout_combo_->findData(static_cast<int>(current.windows_layout)));
+    alt_digit_check_->setChecked(current.alt_digit_caps_shift);
     scale_combo_->setCurrentIndex(scale_combo_->findData(current.window_scale_x2));
     // Both set (a hand-edited file): the shader wins, as it does at start-up. The Lite
     // style is Soft Scanlines. Without the shader choices only Scanlines can show.
@@ -343,6 +346,27 @@ QWidget* PreferencesDialog::build_input_tab() {
            "mouse is captured."), tab);
     release_note->setWordWrap(true);
     form->addRow(QString(), release_note);
+
+    // hungarian-ui - typing by the host keyboard layout's characters
+    // (platform/host_layout_keys.h). Takes effect at once, like the mouse release.
+    windows_layout_combo_ = new QComboBox(tab);
+    windows_layout_combo_->setObjectName(QStringLiteral("windowsLayoutCombo"));
+    windows_layout_combo_->addItem(tr("Automatic (on with the Hungarian interface)"),
+                                   static_cast<int>(host_layout::Mode::Auto));
+    windows_layout_combo_->addItem(tr("On"), static_cast<int>(host_layout::Mode::On));
+    windows_layout_combo_->addItem(tr("Off"), static_cast<int>(host_layout::Mode::Off));
+    windows_layout_combo_->setToolTip(
+        tr("Each key types the character it types in the host keyboard layout (for example "
+           "Hungarian), not the key in its place on a US keyboard. The extended-mode symbols "
+           "[ ] { } \\ | ~ and the copyright sign are typed as a short key sequence."));
+    form->addRow(tr("Host keyboard layout:"), windows_layout_combo_);
+    alt_digit_check_ = new QCheckBox(tr("Left Alt + digit types Caps Shift + digit"), tab);
+    alt_digit_check_->setObjectName(QStringLiteral("altDigitCapsShiftCheck"));
+    alt_digit_check_->setToolTip(
+        tr("EDIT, CAPS LOCK, TRUE/INV VIDEO, the cursor keys, GRAPH and DELETE, on a keyboard "
+           "whose Shift + digit types other characters. While a debugger script is loaded, "
+           "Alt+1..8 stay its keys."));
+    form->addRow(QString(), alt_digit_check_);
 
     auto* note = new QLabel(
         tr("Cursor keys drive one connector's directions with Space as fire;\n"
@@ -709,6 +733,8 @@ AppConfigData PreferencesDialog::collect() const {
     cfg.window_scale_x2 = scale_combo_->currentData().toInt();
     cfg.mouse_release = static_cast<pointer_capture::ReleaseMethod>(
         mouse_release_combo_->currentData().toInt());
+    cfg.windows_layout = static_cast<host_layout::Mode>(windows_layout_combo_->currentData().toInt());
+    cfg.alt_digit_caps_shift = alt_digit_check_->isChecked();
     const int crt_choice = crt_combo_->currentData().toInt();
     cfg.crt_filter = crt_choice == CRT_SCANLINES;
     if (crt_combo_->findData(CRT_TV) >= 0) {

@@ -1859,6 +1859,22 @@ The Qt window and the SDL\-only build.
 How a captured mouse is released; \f[B]\-\-mouse\-release\f[R].
 The Qt window and the SDL\-only build.
 .TP
+\f[CR]input.windows_layout\f[R] \f[I]auto|on|off\f[R]
+Type the characters of the host keyboard layout (for example Hungarian)
+instead of the US key in each key\(cqs place; the extended\-mode symbols
+are typed as a short key sequence.
+auto = on with the Hungarian interface.
+While it is on, only the left Alt releases a captured mouse with
+Ctrl+Alt (the right Alt is AltGr).
+The Qt window.
+.TP
+\f[CR]input.alt_digit_caps_shift\f[R] \f[I]true|false\f[R]
+Left Alt + digit types Caps Shift + the digit (EDIT, CAPS LOCK, the
+cursor keys, GRAPH, DELETE); while a debugger script is loaded, Alt+1..8
+stay its keys.
+Default true.
+The Qt window.
+.TP
 \f[CR]debugger_keys.\f[R]\f[I]ACTION\f[R] \f[I]COMBO\f[R]
 The key combination of a debugger action, like the \f[B]Preferences\f[R]
 Debugger Keys tab: \f[I]ACTION\f[R] is \f[CR]run\f[R], \f[CR]pause\f[R],

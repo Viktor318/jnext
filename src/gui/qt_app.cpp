@@ -202,6 +202,7 @@ void QtApp::wire_gamepad_and_sources(const EmulatorConfig& cfg) {
     // also clears any release the latch is holding, since that refers to a key
     // of a machine that no longer exists (rows RT-08a/b/c).
     key_router_.attach(emulator_.keyboard());
+    layout_keys_.reset();   // hungarian-ui: what it held refers to the old machine too
     emulator_.keyboard().set_joystick_dispatcher(&gamepad_host_->dispatcher());
     emulator_.on_joystick_source_changed = [this](int slot, JoySource src) {
         if (gamepad_host_) gamepad_host_->set_source(slot, src);
@@ -419,6 +420,15 @@ bool QtApp::init(int argc, char* argv[]) {
     // live in wire_host_keys() so the suite can drive the real wiring; see the
     // header for why that matters (GH #268).
     wire_host_keys(*main_window_, key_router_);
+    // hungarian-ui - the host keyboard layout (platform/host_layout_keys.h):
+    // the window's keys go through the Translator from here on (it replaces
+    // the key and keyboard-lost callbacks just bound), and the Preferences
+    // switches reach it through the mode callback.
+    wire_layout_keys(*main_window_, layout_keys_, key_router_, *debugger_);
+    main_window_->set_layout_mode_callback([this](bool layout, bool alt_digit) {
+        layout_keys_.set_layout(layout);
+        layout_keys_.set_alt_digit(alt_digit);
+    });
     // GH #386 - Quick Save / Quick Load take their turn in the key queue.
     wire_host_actions(*main_window_, key_router_, pending_quick_);
     // GH #26 WP5 — Alt+1..Alt+8 are the script host keys (host_key_wiring.h).
@@ -844,6 +854,7 @@ void QtApp::TickEffects::post_frames(int frames_rendered) {
     // paused tick emulates nothing, so the hold is not yet honoured) lives in
     // Router::on_tick_end and is pinned by rows RT-04a/b/c.
     a.key_router_.on_tick_end(frames_rendered);
+    a.layout_keys_.on_frames(frames_rendered);   // hungarian-ui: after the Router, as wired
 
     // GH #386 - a Quick Save / Quick Load that has waited its turn behind the
     // keys typed before it. The Router holds every later key until

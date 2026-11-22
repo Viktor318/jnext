@@ -8,12 +8,16 @@
 // Hungarian Windows layout (Shift+4 = '!', Shift+2 = '"', AltGr+N = '}', dead
 // AltGr+1 = '~'), and the decisions recorded in doc/hu/jnext-atadas.md
 // ("Windowsos magyar billentyűzet"). HLAY-40 drives the output through the real
-// host_key_latch::Router to the matrix a frame sees.
+// host_key_latch::Router to the matrix a frame sees; HLAY-42..48 the frontend's
+// side (the setting, AltGr, the event a Qt key gives, the mouse release, and the
+// real wiring function, host_key_wiring.h wire_layout_keys).
 //
 // Run: ./build/test/host_layout_keys_test
 
 #include "platform/host_layout_keys.h"
 #include "platform/host_key_latch.h"
+#include "platform/host_key_wiring.h"
+#include "platform/pointer_capture.h"
 
 #include <bitset>
 #include <cstdio>
@@ -615,6 +619,187 @@ void router_rows()
           emode >= STEP_FRAMES && sym_y >= STEP_FRAMES && m.down.none(), all);
 }
 
+
+// --- the frontend's side -------------------------------------------------
+
+constexpr int QK_A = 0x41;                // Qt::Key_A
+constexpr int QK_DEAD_TILDE = 0x01001253;  // Qt::Key_Dead_Tilde
+constexpr int QK_DEAD_HORN = 0x01001262;   // Qt::Key_Dead_Horn (the last one Qt 5 has)
+constexpr int QK_CONTROL = 0x01000021;    // Qt::Key_Control
+
+void frontend_rows()
+{
+    check("HLAY-42", "input.windows_layout: auto follows the interface language, on and off are fixed",
+          layout_on(Mode::Auto, true) && !layout_on(Mode::Auto, false) && layout_on(Mode::On, false)
+              && layout_on(Mode::On, true) && !layout_on(Mode::Off, true) && !layout_on(Mode::Off, false));
+
+    {
+        const bool win = is_right_alt(QT_KEY_ALT, 0x138, RIGHT_ALT_SCAN_WINDOWS)
+                      && !is_right_alt(QT_KEY_ALT, 0x38, RIGHT_ALT_SCAN_WINDOWS);
+        const bool xkb = is_right_alt(QT_KEY_ALT, 108, RIGHT_ALT_SCAN_XKB)
+                      && !is_right_alt(QT_KEY_ALT, 64, RIGHT_ALT_SCAN_XKB);
+        const bool altgr = is_right_alt(QT_KEY_ALTGR, 0, 0) && is_right_alt(QT_KEY_ALTGR, 108, RIGHT_ALT_SCAN_XKB);
+        const bool unknown = !is_right_alt(QT_KEY_ALT, 0, 0) && !is_right_alt(QT_KEY_ALT, 0x138, 0)
+                          && !is_right_alt(QK_A, 0x138, RIGHT_ALT_SCAN_WINDOWS);
+        check("HLAY-43", "the right Alt: Key_AltGr, or Key_Alt with the platform's right-Alt scan code (Windows 0x138, xkb 108); never without one",
+              win && xkb && altgr && unknown);
+    }
+
+    {
+        const KeyEvent a = make_event(QK_A, 0x1e, 0x41, U'a', letter('a'), true, RIGHT_ALT_SCAN_WINDOWS);
+        const KeyEvent b = make_event(QK_A, 0, 0x41, U'a', letter('a'), true, RIGHT_ALT_SCAN_WINDOWS);
+        const KeyEvent c = make_event(QK_A, 0, 0, U'a', letter('a'), true, RIGHT_ALT_SCAN_WINDOWS);
+        const bool phys = a.phys == 0x1e && b.phys == 0x41 && c.phys == static_cast<uint32_t>(QK_A)
+                       && a.sc == letter('a') && a.ch == U'a' && !a.dead;
+        const bool dead = make_event(QK_DEAD_TILDE, 0x02, 0, 0, 0, true, 0).dead
+                       && make_event(QT_KEY_DEAD_FIRST, 0x02, 0, 0, 0, true, 0).dead
+                       && make_event(QK_DEAD_HORN, 0x02, 0, 0, 0, true, 0).dead
+                       && !make_event(QT_KEY_DEAD_LAST + 1, 0x02, 0, 0, 0, true, 0).dead
+                       && !make_event(QT_KEY_ALTGR, 0x02, 0, 0, 0, true, 0).dead;
+        const bool on = make_event(QT_KEY_ALT, 0x138, 0, 0, SC_LALT, true, RIGHT_ALT_SCAN_WINDOWS).sc == SC_RALT
+                     && make_event(QT_KEY_ALTGR, 108, 0, 0, 0, true, RIGHT_ALT_SCAN_XKB).sc == SC_RALT
+                     && make_event(QT_KEY_ALT, 0x38, 0, 0, SC_LALT, true, RIGHT_ALT_SCAN_WINDOWS).sc == SC_LALT;
+        const bool off = make_event(QT_KEY_ALT, 0x138, 0, 0, SC_LALT, false, RIGHT_ALT_SCAN_WINDOWS).sc == SC_LALT
+                      && make_event(QT_KEY_ALTGR, 108, 0, 0, 0, false, RIGHT_ALT_SCAN_XKB).sc == 0;
+        check("HLAY-44", "a Qt key event: physical id scan code, else virtual key, else key; Key_Dead_* is dead; AltGr is SC_RALT only with the layout on",
+              phys && dead && on && off);
+    }
+
+    {
+        using pointer_capture::HostKey;
+        // One key event as the window hands it to the release filter.
+        struct Win {
+            pointer_capture::ReleaseFilter f;
+            AltSides sides;
+            bool layout;
+            bool ctrl = false, alt = false;   // the toolkit's modifier state
+            explicit Win(bool l) : layout(l) { f.set_method(pointer_capture::ReleaseMethod::CtrlAlt); }
+            bool key(int qt_key, uint32_t scan, bool pressed)
+            {
+                sides.on_key(qt_key, scan, RIGHT_ALT_SCAN_WINDOWS, pressed);
+                const HostKey k = qt_key == QK_CONTROL ? HostKey::Ctrl
+                                : qt_key == QT_KEY_ALT ? HostKey::Alt : HostKey::Other;
+                const ReleaseView v = release_view(layout, k, is_right_alt(qt_key, scan, RIGHT_ALT_SCAN_WINDOWS),
+                                                   alt, sides);
+                const bool released = f.on_key(v.key, pressed, ctrl, v.alt_held, true).release;
+                if (qt_key == QK_CONTROL) ctrl = pressed;
+                if (qt_key == QT_KEY_ALT) alt = pressed;
+                return released;
+            }
+        };
+        // AltGr on Windows: a left Ctrl, then the right Alt with Ctrl held.
+        Win on(true);
+        const bool altgr_on = on.key(QK_CONTROL, 0x1d, true) || on.key(QT_KEY_ALT, 0x138, true);
+        on.key(QT_KEY_ALT, 0x138, false); on.key(QK_CONTROL, 0x1d, false);
+        const bool left_on = on.key(QT_KEY_ALT, 0x38, true) ? false : on.key(QK_CONTROL, 0x1d, true);
+        on.key(QK_CONTROL, 0x1d, false); on.key(QT_KEY_ALT, 0x38, false);
+        const bool ctrl_first_on = !on.key(QK_CONTROL, 0x1d, true) && on.key(QT_KEY_ALT, 0x38, true);
+        on.key(QT_KEY_ALT, 0x38, false); on.key(QK_CONTROL, 0x1d, false);
+        Win off(false);
+        const bool altgr_off = !off.key(QK_CONTROL, 0x1d, true) && off.key(QT_KEY_ALT, 0x138, true);
+        check("HLAY-45", "mouse release, layout on: AltGr (Ctrl + right Alt) keeps the mouse, Ctrl + left Alt in either order lets go; layout off: AltGr lets go, as before",
+              !altgr_on && left_on && ctrl_first_on && altgr_off && !on.sides.left() && !on.sides.right());
+    }
+}
+
+/// The window, as wire_layout_keys sees it.
+struct FakeWindow {
+    std::function<bool(const KeyEvent&, bool)> key;
+    std::function<void()> lost;
+    void set_layout_key_callback(std::function<bool(const KeyEvent&, bool)> f) { key = std::move(f); }
+    void set_keyboard_lost_callback(std::function<void()> f) { lost = std::move(f); }
+};
+struct FakeBackend {
+    bool listening = false;
+    bool has_host_subscribers() const { return listening; }
+};
+
+void wiring_rows()
+{
+    Matrix m;
+    MatrixRouter router;
+    router.attach(m);
+    std::vector<int> script;
+    router.set_script_key_callback([&script](int n) { script.push_back(n); });
+    Translator t;
+    t.set_layout(true);
+    t.set_alt_digit(true);
+    FakeWindow w;
+    FakeBackend backend;
+    wire_layout_keys(w, t, router, backend);
+
+    // The matrix each of `n` frames sees, as "LCTRL+1".
+    auto frames = [&](int n) {
+        std::vector<std::string> seen;
+        for (int i = 0; i < n; ++i) {
+            std::string f;
+            for (std::size_t k = 0; k < m.down.size(); ++k)
+                if (m.down.test(k)) { if (!f.empty()) f += '+'; f += name(static_cast<int>(k)); }
+            seen.push_back(f);
+            router.on_tick_end(1);
+            t.on_frames(1);
+        }
+        return seen;
+    };
+    auto any = [](const std::vector<std::string>& seen, const std::string& want) {
+        for (const auto& f : seen) if (f == want) return true;
+        return false;
+    };
+    auto joined = [](const std::vector<std::string>& seen) {
+        std::string all;
+        for (const auto& f : seen) all += "[" + f + "]";
+        return all;
+    };
+
+    // Shift+4 ('!') through the window's callback: Symbol Shift + 1 on the matrix.
+    const bool took = w.key(KeyEvent{0x2a, SC_LSHIFT, 0, false}, true)
+                   && w.key(KeyEvent{K_4, digit(4), U'!', false}, true);
+    auto seen = frames(12);
+    w.key(KeyEvent{K_4, digit(4), U'!', false}, false);
+    w.key(KeyEvent{0x2a, SC_LSHIFT, 0, false}, false);
+    auto after = frames(12);
+    bool caps = false;   // Caps Shift + 1 at any frame
+    for (const auto& f : seen) caps = caps || f == "1+LSHIFT" || f == "1+LCTRL+LSHIFT";
+    // An unmapped key the module has nothing for: the window's default handling.
+    const bool unmapped = !w.key(KeyEvent{0x5b, 0, 0, false}, true);
+    w.key(KeyEvent{0x5b, 0, 0, false}, false);
+    check("HLAY-46", "wire_layout_keys: the window's keys reach the Translator and its output the Router (Shift+4 = Symbol Shift + 1); an unmapped key is not taken",
+          took && any(seen, "1+LCTRL") && !caps && after.back().empty() && unmapped,
+          joined(seen) + joined(after));
+
+    // '[' starts a sequence; the window loses the keyboard in the middle of it.
+    w.key(KeyEvent{K_F, letter('f'), U'[', false}, true);
+    seen = frames(4);
+    const bool running = t.sequence_running() && any(seen, "LCTRL+LSHIFT");
+    w.lost();
+    after = frames(12);
+    check("HLAY-47", "wire_layout_keys: keyboard loss clears the Translator first, then the Router lets go of everything",
+          running && !t.sequence_running() && t.held_count() == 0 && after.back().empty(),
+          joined(seen) + joined(after));
+    w.key(KeyEvent{K_F, letter('f'), U'f', false}, false);   // its key-up went elsewhere; harmless here
+
+    // Left Alt + 1: Caps Shift + 1 (EDIT) with no script listening; the script's
+    // host key (the Router's chord) while one listens.
+    w.key(KeyEvent{0x38, SC_LALT, 0, false}, true);
+    w.key(KeyEvent{K_1, digit(1), U'1', false}, true);
+    seen = frames(12);
+    w.key(KeyEvent{K_1, digit(1), U'1', false}, false);
+    auto mid = frames(12);
+    const bool edit = any(seen, "1+LSHIFT") && script.empty();
+    backend.listening = true;
+    w.key(KeyEvent{K_1, digit(1), U'1', false}, true);
+    after = frames(12);
+    w.key(KeyEvent{K_1, digit(1), U'1', false}, false);
+    w.key(KeyEvent{0x38, SC_LALT, 0, false}, false);
+    auto end = frames(12);
+    bool digit_seen = false;
+    for (const auto& f : after) digit_seen = digit_seen || f.find('1') != std::string::npos;
+    const bool chord = script.size() == 1 && script[0] == 1 && !digit_seen;
+    check("HLAY-48", "wire_layout_keys: Alt+1 is Caps Shift + 1 while no script listens for host events, the script's key while one does",
+          edit && chord && end.back().empty(),
+          joined(seen) + joined(mid) + joined(after) + joined(end));
+}
+
 } // namespace
 
 int main()
@@ -630,6 +815,8 @@ int main()
     alt_digit_rows();
     bookkeeping_rows();
     router_rows();
+    frontend_rows();
+    wiring_rows();
     std::printf("Total: %4d  Passed: %4d  Failed: %4d  Skipped: %4d\n",
                 g_pass + g_fail, g_pass, g_fail, 0);
     return g_fail ? 1 : 0;

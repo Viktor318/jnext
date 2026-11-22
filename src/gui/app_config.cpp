@@ -41,6 +41,13 @@ static_assert(config_keys::word_at(config_keys::info(KeyId::StartupLanguage).val
               config_keys::word_at(config_keys::info(KeyId::StartupLanguage).values,
                   static_cast<int>(ui_language::Choice::Hungarian)) == "hu",
               "config_keys language words must follow the ui_language::Choice order");
+static_assert(config_keys::word_at(config_keys::info(KeyId::InputWindowsLayout).values,
+                  static_cast<int>(host_layout::Mode::Auto)) == "auto" &&
+              config_keys::word_at(config_keys::info(KeyId::InputWindowsLayout).values,
+                  static_cast<int>(host_layout::Mode::On)) == "on" &&
+              config_keys::word_at(config_keys::info(KeyId::InputWindowsLayout).values,
+                  static_cast<int>(host_layout::Mode::Off)) == "off",
+              "config_keys windows_layout words must follow the host_layout::Mode order");
 static_assert(config_keys::word_at(config_keys::info(KeyId::ScreenshotQuickFormat).values,
                   static_cast<int>(ScreenshotFormat::Png)) == "png" &&
               config_keys::word_at(config_keys::info(KeyId::ScreenshotQuickFormat).values,
@@ -79,6 +86,13 @@ QString machine_type_to_key(MachineType t) {
 QString ui_language_to_key(ui_language::Choice c) {
     const std::string_view w = config_keys::word_at(
         config_keys::info(KeyId::StartupLanguage).values, static_cast<int>(c));
+    return QString::fromLatin1(w.data(), static_cast<qsizetype>(w.size()));
+}
+
+// input.windows_layout (hungarian-ui): the table's own word for the mode.
+QString windows_layout_to_key(host_layout::Mode m) {
+    const std::string_view w = config_keys::word_at(
+        config_keys::info(KeyId::InputWindowsLayout).values, static_cast<int>(m));
     return QString::fromLatin1(w.data(), static_cast<qsizetype>(w.size()));
 }
 
@@ -172,6 +186,12 @@ void merge_cli_assignments(AppConfigData& d, const std::vector<config_keys::Assi
             if (i >= 0) d.ui_language = static_cast<ui_language::Choice>(i);
             break;
         }
+        case KeyId::InputWindowsLayout: {
+            const int i = config_keys::word_index(config_keys::info(KeyId::InputWindowsLayout).values, a.text);
+            if (i >= 0) d.windows_layout = static_cast<host_layout::Mode>(i);
+            break;
+        }
+        case KeyId::InputAltDigitCapsShift: d.alt_digit_caps_shift = (a.text == "true"); break;
         default: break;   // not a Qt-window-only key: main.cpp applied it elsewhere
         }
     }
@@ -417,6 +437,15 @@ void AppConfig::load() {
         if (pointer_capture::parse_release_method(v.toStdString(), m))
             data_.mouse_release = m;
     }
+    // hungarian-ui - an unknown word keeps Auto.
+    {
+        const QString v = settings_.value(N(KeyId::InputWindowsLayout)).toString().trimmed().toLower();
+        const int i = config_keys::word_index(config_keys::info(KeyId::InputWindowsLayout).values,
+                                              v.toStdString());
+        if (i >= 0) data_.windows_layout = static_cast<host_layout::Mode>(i);
+    }
+    data_.alt_digit_caps_shift = settings_.value(N(KeyId::InputAltDigitCapsShift),
+                                                 data_.alt_digit_caps_shift).toBool();
     // GH #311 — assigned controller. An id that does not parse is dropped
     // together with its name, so a hand-edit cannot leave a name with no id.
     const char* dev_keys[2]  = { N(KeyId::InputJoy1Device), N(KeyId::InputJoy2Device) };
@@ -550,6 +579,8 @@ void AppConfig::save() const {
     settings_.setValue(N(KeyId::InputJoy2DeviceName), data_.joy_device_name[1]);
     settings_.setValue(N(KeyId::InputMouseRelease),                          // GH #365
                        QString::fromLatin1(pointer_capture::release_method_name(data_.mouse_release)));
+    settings_.setValue(N(KeyId::InputWindowsLayout), windows_layout_to_key(data_.windows_layout));   // hungarian-ui
+    settings_.setValue(N(KeyId::InputAltDigitCapsShift), data_.alt_digit_caps_shift);
     settings_.endGroup();
 
     // GH #1 — ONLY redefinitions are written. The group is removed first so

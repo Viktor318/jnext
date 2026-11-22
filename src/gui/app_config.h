@@ -13,6 +13,7 @@
 #include "platform/audio_pacing.h"
 #include "platform/config_keys.h"
 #include "platform/fast_boot.h"
+#include "platform/host_layout_keys.h"
 #include "gui/ui_language.h"
 #include "platform/pointer_capture.h"
 #include "platform/source_scheme.h"
@@ -74,6 +75,13 @@ struct AppConfigData {
     // the historical behaviour. Persisted as `[input] mouse_release`
     // (ctrl-alt | middle-click | esc), see pointer_capture::release_method_name().
     pointer_capture::ReleaseMethod mouse_release = pointer_capture::kDefaultReleaseMethod;
+
+    // hungarian-ui - typing by the host keyboard layout's characters
+    // (platform/host_layout_keys.h): `[input] windows_layout` (auto|on|off;
+    // auto = on with the Hungarian interface) and `[input]
+    // alt_digit_caps_shift` (left Alt + digit = Caps Shift + digit).
+    host_layout::Mode windows_layout = host_layout::Mode::Auto;
+    bool alt_digit_caps_shift = true;
 
     // GH #311 — the physical controller assigned to each connector, by stable
     // id ("<sdl guid>" or "<sdl guid>#N", see input/joy_source.h). Empty =

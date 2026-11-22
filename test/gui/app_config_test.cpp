@@ -1827,6 +1827,41 @@ static void test_ui_language(QTemporaryDir& dir) {
           (got + " | " + text + " | " + qt_text).toStdString());
 }
 
+// AC-HU-04 (hungarian-ui): input.windows_layout (auto|on|off; an unknown word keeps
+// Auto) and input.alt_digit_caps_shift (Bool, default true): the key rows and
+// Viktor's decisions (doc/hu/jnext-atadas.md, "Windowsos magyar billentyűzet").
+static void test_windows_layout(QTemporaryDir& dir) {
+    set_group("AC-LAYOUT");
+    using host_layout::Mode;
+    const bool def = AppConfigData().windows_layout == Mode::Auto && AppConfigData().alt_digit_caps_shift;
+    const QString pf = fresh_ini_path(dir, "layout-file");
+    { QSettings w(pf, QSettings::IniFormat);
+      w.setValue("input/windows_layout", "ON"); w.setValue("input/alt_digit_caps_shift", false); w.sync(); }
+    AppConfig f(pf);
+    f.load();
+    const QString pu = fresh_ini_path(dir, "layout-unknown");
+    { QSettings w(pu, QSettings::IniFormat); w.setValue("input/windows_layout", "maybe"); w.sync(); }
+    AppConfig u(pu);
+    u.load();
+    const QString ps = fresh_ini_path(dir, "layout-save");
+    { AppConfig w(ps); w.data().windows_layout = Mode::Off; w.data().alt_digit_caps_shift = false; w.save(); }
+    const QString saved_word = QSettings(ps, QSettings::IniFormat).value("input/windows_layout").toString();
+    const QString saved_bool = QSettings(ps, QSettings::IniFormat).value("input/alt_digit_caps_shift").toString();
+    AppConfigData before;
+    AppConfigData merged = before;
+    merge_cli_assignments(merged, {{ config_keys::KeyId::InputWindowsLayout, {}, "on" },
+                                   { config_keys::KeyId::InputAltDigitCapsShift, {}, "false" }});
+    const bool only_these = merged.windows_layout == Mode::On && !merged.alt_digit_caps_shift &&
+                            merged.window_scale_x2 == before.window_scale_x2 &&
+                            merged.mouse_release == before.mouse_release && merged.ui_language == before.ui_language;
+    check("AC-HU-04", "windows_layout defaults to Auto and alt_digit_caps_shift to true; a file with ON/false loads "
+                    "On/false and =maybe loads Auto; save() writes off/false; merge_cli_assignments() changes only these",
+          def && f.data().windows_layout == Mode::On && !f.data().alt_digit_caps_shift &&
+              u.data().windows_layout == Mode::Auto && u.data().alt_digit_caps_shift &&
+              saved_word == "off" && saved_bool == "false" && only_these,
+          (saved_word + " " + saved_bool).toStdString());
+}
+
 int main() {
     QTemporaryDir dir;
     if (!dir.isValid()) {
@@ -1861,6 +1896,7 @@ int main() {
     test_fast_boot_hide(dir);
     test_sd_card2(dir);
     test_ui_language(dir);
+    test_windows_layout(dir);
 
     std::printf("\n");
     for (const auto& r : g_results) {

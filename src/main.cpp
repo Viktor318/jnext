@@ -590,6 +590,8 @@ int main(int argc, char* argv[]) {
         case KeyId::ScreenshotQuickFormat:
         case KeyId::SourceColourScheme:
         case KeyId::StartupLanguage:
+        case KeyId::InputWindowsLayout:       // hungarian-ui
+        case KeyId::InputAltDigitCapsShift:
             qt_assignments.push_back(a);   // merged into the Qt session's copy (merge_cli_assignments)
             break;
         case KeyId::StartupSilent:

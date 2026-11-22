@@ -301,6 +301,10 @@ std::vector<EventId> Debugger::probe_execute(uint16_t pc) const {
 // §4.3 `Host` — raise_host_event
 // ---------------------------------------------------------------------------
 
+bool Debugger::has_host_subscribers() const {
+    return impl_->events.has_kind(EventKind::Host);
+}
+
 Result Debugger::raise_host_event(ClientId by, const std::string& name) {
     if (name.size() > MAX_HOST_EVENT_NAME) return Result::Unsupported;
 

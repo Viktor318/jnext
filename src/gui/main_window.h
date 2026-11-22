@@ -15,6 +15,7 @@
 #include "gui/app_config.h"
 #include "input/joy_assign.h"
 #include "gui/host_shortcuts.h"       // GH #403
+#include "platform/host_layout_keys.h"   // hungarian-ui
 #include "platform/pointer_capture.h"
 #include "platform/quick_snapshot_chord.h"   // jnext::QuickAction (GH #386)
 #include "debug/events.h"        // ClientId — GH #306 pause client
@@ -121,6 +122,20 @@ public:
     void set_keyboard_lost_callback(KeyboardLostCallback cb) {
         keyboard_lost_callback_ = std::move(cb);
     }
+
+    /// hungarian-ui - typing by the host layout's character. Once set, every
+    /// key goes here (as a host_layout::KeyEvent) instead of to the key
+    /// callback; it returns whether it took the key. QtApp binds it to its
+    /// host_layout::Translator (platform/host_key_wiring.h wire_layout_keys).
+    using LayoutKeyCallback = std::function<bool(const host_layout::KeyEvent&, bool pressed)>;
+    void set_layout_key_callback(LayoutKeyCallback cb) { layout_key_callback_ = std::move(cb); }
+
+    /// The Translator's two switches (input.windows_layout resolved against the
+    /// interface language, input.alt_digit_caps_shift): called with the
+    /// current values when set, and again whenever the configuration is applied
+    /// (start-up, Preferences).
+    using LayoutModeCallback = std::function<void(bool layout, bool alt_digit)>;
+    void set_layout_mode_callback(LayoutModeCallback cb);
 
     /// GH #386 - a Quick Save / Quick Load is a host action that must take its
     /// turn behind the keys typed before it (host_key_latch::Router::
@@ -588,6 +603,13 @@ private:
     Emulator*       emulator_        = nullptr;
     KeyCallback      key_callback_;
     KeyboardLostCallback keyboard_lost_callback_;
+    LayoutKeyCallback layout_key_callback_;     // hungarian-ui
+    LayoutModeCallback layout_mode_callback_;
+    bool layout_on_ = false;                    // typing by character (resolved)
+    bool alt_digit_on_ = false;
+    host_layout::AltSides alt_sides_;           // for the Ctrl+Alt mouse release
+    /// The mouse release's view of a key event (left Alt only, with the layout on).
+    host_layout::ReleaseView release_view_of(const QKeyEvent* event) const;
     SpeedCallback    speed_callback_;
     WhenSlowPreferCallback when_slow_prefer_callback_;
     LoadFileCallback load_file_callback_;

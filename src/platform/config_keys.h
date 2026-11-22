@@ -87,6 +87,8 @@ enum class KeyId : uint8_t {
     InputJoy1DeviceName,
     InputJoy2DeviceName,
     InputMouseRelease,
+    InputWindowsLayout,       // hungarian-ui
+    InputAltDigitCapsShift,   // hungarian-ui
     DebuggerKey,            // the family `debugger_keys.<action id>`
     SourceColourScheme,
     EspEnabled,
@@ -233,6 +235,12 @@ inline constexpr Key KEYS[] = {
     { KeyId::InputMouseRelease, "input", "mouse_release", Type::Word, 0, 0,
       "ctrl-alt|middle-click|esc", "--mouse-release", QT | SDL, false, Owner::AppConfig, nullptr,
       "How a captured mouse is released" },
+    { KeyId::InputWindowsLayout, "input", "windows_layout", Type::Word, 0, 0,
+      "auto|on|off", nullptr, QT, false, Owner::AppConfig, nullptr,
+      "Type the characters of the host keyboard layout, auto = with the Hungarian interface" },
+    { KeyId::InputAltDigitCapsShift, "input", "alt_digit_caps_shift", Type::Bool, 0, 0,
+      "true|false", nullptr, QT, false, Owner::AppConfig, nullptr,
+      "Left Alt + digit types Caps Shift + the digit" },
     { KeyId::DebuggerKey, "debugger_keys", "ACTION", Type::Combo, 0, 0,
       "COMBO", nullptr, QT, true, Owner::AppConfig, nullptr,
       "Key combination of a debugger action (run, pause, step_into, step_over, step_out, "

@@ -1590,6 +1590,19 @@ use the key: the Qt window, the SDL-only build (both interactive) or
 :   How a captured mouse is released; **--mouse-release**. The Qt window
     and the SDL-only build.
 
+`input.windows_layout` *auto\|on\|off*
+:   Type the characters of the host keyboard layout (for example
+    Hungarian) instead of the US key in each key’s place; the
+    extended-mode symbols are typed as a short key sequence. auto = on
+    with the Hungarian interface. While it is on, only the left Alt
+    releases a captured mouse with Ctrl+Alt (the right Alt is AltGr).
+    The Qt window.
+
+`input.alt_digit_caps_shift` *true\|false*
+:   Left Alt + digit types Caps Shift + the digit (EDIT, CAPS LOCK, the
+    cursor keys, GRAPH, DELETE); while a debugger script is loaded,
+    Alt+1..8 stay its keys. Default true. The Qt window.
+
 `debugger_keys.`*ACTION* *COMBO*
 :   The key combination of a debugger action, like the **Preferences**
     Debugger Keys tab: *ACTION* is `run`, `pause`, `step_into`,

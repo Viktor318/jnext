@@ -17,6 +17,7 @@
 #include "input/gamepad_host.h"
 #include "platform/frame_sequencer.h"
 #include "platform/host_key_latch.h"
+#include "platform/host_layout_keys.h"   // hungarian-ui
 #include "platform/quick_snapshot_chord.h"
 #include "core/screenshot.h"
 #include "video/renderer.h"
@@ -301,6 +302,11 @@ private:
     // — each a single forwarding statement. That split is deliberate: see the
     // Router preamble for the v0.98.47 wiring regression it exists to prevent.
     host_key_latch::Router<Keyboard, SDL_Scancode> key_router_;
+    // hungarian-ui - typing by the host layout's character, in front of the
+    // Router (platform/host_layout_keys.h): the window hands it every key, it
+    // hands the Router SDL scancodes, and post_frames() steps its timed E-mode
+    // sequences after the Router's on_tick_end. Wired by wire_layout_keys().
+    host_layout::Translator layout_keys_;
     // GH #386 - a Quick Save / Quick Load the Router has let through (it waited
     // for the keys typed before it), serviced by post_frames(); and a count of
     // machine reconstructions, so that tick can tell a load cold-booted.

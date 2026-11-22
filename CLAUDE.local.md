@@ -50,6 +50,6 @@ Teteje: `5b20d8e`. Kész a `hungarian-ui`-n:
 - upstream beolvasztva: 1.3.43 (`62485f8`);
 - kézi GitHubos unit-teszt: `hu-tests.yml` (`77a02cb06`).
 
-Következő feladat: windowsos magyar billentyűzet (előbb felmérés, aztán Viktor jóváhagyása).
+Folyamatban: windowsos magyar billentyűzet – a modul és a bekötés kész (2026-11-22), következik a próba Viktor Windows-gépén.
 
 A részletek (döntések, tervek, a további kívánságlista, hang, DMA) a tárolóban vannak: **`doc/hu/jnext-atadas.md`** (és mellette `jnext-magyaritas.md`, `jnext-dma-meres.md`, `jnext-hang-terv.md`, `jnext-blitter-becsles.md`). Ezeket munka közben olvasd és frissítsd; ha új döntés vagy terv születik, oda írd be, ugyanabban a commitban. A ZEsarUX-beszélgetésben készült JNEXT-jegyzetek a claude.ai-projektbe kerülhetnek; ha Viktor ilyet hoz, vezesd át ide.

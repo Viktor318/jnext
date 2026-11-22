@@ -19,9 +19,16 @@
 // dispatcher BEFORE the release in the same handler. set_mouse_captured(false)
 // resets the dispatcher before any frame can read port 0xFADF.
 //
+// hungarian-ui rows MRQ-HU-01..04 (doc/hu/jnext-atadas.md, "Windowsos magyar
+// billentyűzet"): with the host layout on, only the LEFT Alt releases (the right
+// one is AltGr: AltGr + V types `@`); the window hands the layout module the
+// event's physical key, classic scancode, character and dead-key flag; the
+// Preferences fields; the switches reach the module.
+//
 // Run: ./build/test/mouse_release_test
 
 #include <QApplication>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFocusEvent>
@@ -42,6 +49,7 @@
 #include "gui/app_config.h"
 #include "gui/main_window.h"
 #include "gui/preferences_dialog.h"
+#include "gui/ui_language.h"
 #include "../row_id.h"
 
 namespace {
@@ -97,6 +105,12 @@ struct Fixture {
     void key(Qt::Key k, bool down, Qt::KeyboardModifiers m = Qt::NoModifier)
     {
         QKeyEvent ev(down ? QEvent::KeyPress : QEvent::KeyRelease, k, m);
+        QApplication::sendEvent(&win, &ev);
+    }
+    // A key event with its native scan code and text, as a real keyboard sends it.
+    void native_key(int k, bool down, Qt::KeyboardModifiers m, quint32 scan, const QString& text = {})
+    {
+        QKeyEvent ev(down ? QEvent::KeyPress : QEvent::KeyRelease, k, m, scan, 0, 0, text);
         QApplication::sendEvent(&win, &ev);
     }
     void button(Qt::MouseButton b, bool down)
@@ -259,6 +273,103 @@ int main(int argc, char** argv)
         buttons->button(QDialogButtonBox::Apply)->click();
         check("MRQ-12c", "selecting middle click makes collect() return MiddleClick",
               emitted && collected.mouse_release == RM::MiddleClick);
+    }
+
+    // --- hungarian-ui: the host keyboard layout ----------------------------
+#ifdef Q_OS_WIN
+    const quint32 kRightAlt = host_layout::RIGHT_ALT_SCAN_WINDOWS, kLeftAlt = 0x38, kCtrl = 0x1d;
+#else
+    const quint32 kRightAlt = host_layout::RIGHT_ALT_SCAN_XKB, kLeftAlt = 64, kCtrl = 37;
+#endif
+    {   // MRQ-HU-01
+        auto run = [&](host_layout::Mode mode, bool left) {
+            Fixture f;
+            AppConfigData c;
+            c.windows_layout = mode;
+            f.win.apply_startup_config(c);
+            f.capture_now();
+            f.native_key(Qt::Key_Control, true, Qt::ControlModifier, kCtrl);
+            f.native_key(Qt::Key_Alt, true, kCtrlAlt, left ? kLeftAlt : kRightAlt);
+            return f.captured();
+        };
+        const bool altgr_on = run(host_layout::Mode::On, false);
+        const bool left_on = run(host_layout::Mode::On, true);
+        const bool altgr_off = run(host_layout::Mode::Off, false);
+        check("MRQ-HU-01", "layout on: captured Ctrl + right Alt (AltGr) keeps the mouse, Ctrl + left Alt releases; "
+                           "layout off: Ctrl + right Alt releases, as before",
+              altgr_on && !left_on && !altgr_off);
+    }
+    {   // MRQ-HU-02
+        Fixture f;
+        AppConfigData c;
+        c.windows_layout = host_layout::Mode::On;
+        f.win.apply_startup_config(c);
+        std::vector<std::pair<host_layout::KeyEvent, bool>> got;
+        bool take = true;
+        f.win.set_layout_key_callback([&](const host_layout::KeyEvent& e, bool pressed) {
+            got.emplace_back(e, pressed);
+            return take;
+        });
+        // Hungarian Shift+4 = '!': key Exclam (classic: the 1 key), the 4 key's scan code.
+        f.native_key(Qt::Key_Exclam, true, Qt::ShiftModifier, 13, QStringLiteral("!"));
+        f.native_key(Qt::Key_Exclam, false, Qt::ShiftModifier, 13, QStringLiteral("!"));
+        f.native_key(Qt::Key_Dead_Tilde, true, Qt::NoModifier, 10);
+        f.native_key(Qt::Key_Alt, true, Qt::AltModifier, kRightAlt);
+        f.native_key(Qt::Key_Alt, false, Qt::NoModifier, kRightAlt);
+        const bool bang = got.size() == 5 && got[0].second && !got[1].second &&
+                          got[0].first.phys == 13 && got[0].first.sc == SDL_SCANCODE_1 &&
+                          got[0].first.ch == U'!' && !got[0].first.dead && got[1].first.phys == 13;
+        const bool dead = got.size() == 5 && got[2].first.dead && got[2].first.phys == 10;
+        const bool altgr = got.size() == 5 && got[3].first.sc == SDL_SCANCODE_RALT && got[4].first.sc == SDL_SCANCODE_RALT;
+        check("MRQ-HU-02", "the window hands every key to the layout callback (not the key callback): physical "
+                           "scan code, classic scancode, character, dead key; the right Alt as SC_RALT",
+              bang && dead && altgr && f.keys.empty(),
+              "events=" + std::to_string(got.size()) + " key_callback=" + std::to_string(f.keys.size()));
+    }
+    {   // MRQ-HU-03
+        AppConfigData initial;
+        initial.windows_layout = host_layout::Mode::Off;
+        initial.alt_digit_caps_shift = false;
+        PreferencesDialog dlg(initial);
+        auto* combo = dlg.findChild<QComboBox*>(QStringLiteral("windowsLayoutCombo"));
+        auto* box = dlg.findChild<QCheckBox*>(QStringLiteral("altDigitCapsShiftCheck"));
+        const bool have = combo && box && combo->count() == 3 &&
+            combo->itemData(0).toInt() == static_cast<int>(host_layout::Mode::Auto) &&
+            combo->itemData(1).toInt() == static_cast<int>(host_layout::Mode::On) &&
+            combo->itemData(2).toInt() == static_cast<int>(host_layout::Mode::Off);
+        const bool seeded = have && combo->currentData().toInt() == static_cast<int>(host_layout::Mode::Off) &&
+                            !box->isChecked();
+        AppConfigData collected;
+        bool emitted = false;
+        QObject::connect(&dlg, &PreferencesDialog::apply_requested,
+                         [&](const AppConfigData& c) { collected = c; emitted = true; });
+        if (have) { combo->setCurrentIndex(1); box->setChecked(true); }
+        dlg.findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Apply)->click();
+        check("MRQ-HU-03", "Preferences > Input: windowsLayoutCombo (Auto, On, Off) and altDigitCapsShiftCheck, "
+                           "seeded from the saved values and returned by collect()",
+              seeded && emitted && collected.windows_layout == host_layout::Mode::On && collected.alt_digit_caps_shift);
+    }
+    {   // MRQ-HU-04
+        Fixture f;
+        std::vector<std::pair<bool, bool>> modes;
+        f.win.set_layout_mode_callback([&](bool layout, bool alt_digit) { modes.emplace_back(layout, alt_digit); });
+        AppConfigData c;
+        c.windows_layout = host_layout::Mode::On;
+        c.alt_digit_caps_shift = false;
+        f.win.apply_startup_config(c);
+        c.windows_layout = host_layout::Mode::Auto;
+        c.alt_digit_caps_shift = true;
+        ui_language::set_session_choice(ui_language::Choice::English);
+        f.win.apply_startup_config(c);
+        ui_language::set_session_choice(ui_language::Choice::Hungarian);
+        f.win.apply_startup_config(c);
+        ui_language::set_session_choice(ui_language::Choice::Auto);
+        const std::vector<std::pair<bool, bool>> want = {{false, false}, {true, false}, {false, true}, {true, true}};
+        std::string seen;
+        for (const auto& m : modes) seen += std::string(m.first ? "L" : "-") + (m.second ? "A " : "- ");
+        check("MRQ-HU-04", "the switches reach the layout module: at once when the callback is set, then on every "
+                           "apply_startup_config(); Auto is on with the Hungarian interface only",
+              modes == want, seen);
     }
 
     std::printf("\n==============================================\n");

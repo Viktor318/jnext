@@ -367,6 +367,8 @@ ValueRule config_value_rule(config_keys::KeyId id)
         case K::InputJoy1Source:
         case K::InputJoy2Source:
         case K::InputMouseRelease:
+        case K::InputWindowsLayout:
+        case K::InputAltDigitCapsShift:
         case K::SourceColourScheme:
         case K::EspEnabled:
         case K::NextpiEnabled:

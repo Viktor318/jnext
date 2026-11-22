@@ -338,6 +338,8 @@ private:
 template <typename Sink, typename Scancode>
 class Router {
 public:
+    using scancode_type = Scancode;   // hungarian-ui: host_key_wiring.h wire_layout_keys
+
     /// Bind (or re-bind) the key sink. Called at startup and again on every
     /// cold boot, which reconstructs the Keyboard with an all-released matrix —
     /// hence the latch reset: a release still pending refers to a key of a
