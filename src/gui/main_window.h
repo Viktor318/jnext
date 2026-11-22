@@ -16,6 +16,7 @@
 #include "input/joy_assign.h"
 #include "gui/host_shortcuts.h"       // GH #403
 #include "platform/host_layout_keys.h"   // hungarian-ui
+#include "gui/window_stalls.h"           // hungarian-ui
 #include "platform/pointer_capture.h"
 #include "platform/quick_snapshot_chord.h"   // jnext::QuickAction (GH #386)
 #include "debug/events.h"        // ClientId — GH #306 pause client
@@ -136,6 +137,15 @@ public:
     /// (start-up, Preferences).
     using LayoutModeCallback = std::function<void(bool layout, bool alt_digit)>;
     void set_layout_mode_callback(LayoutModeCallback cb);
+
+    /// hungarian-ui - while a modal dialog is open (and while Preferences is
+    /// being built) the machine is held: QtApp pauses the tick and the sound
+    /// device (gui/window_stalls.h). Called with true on the first hold and
+    /// false on the last release.
+    void set_modal_hold_callback(window_stalls::ModalHold::Callback cb) {
+        modal_hold_.set_callback(std::move(cb));
+    }
+    bool modal_held() const { return modal_hold_.held(); }
 
     /// GH #386 - a Quick Save / Quick Load is a host action that must take its
     /// turn behind the keys typed before it (host_key_latch::Router::
@@ -474,6 +484,14 @@ protected:
     /// Task 77 — intercepts Tab/Backtab before Qt's focus-navigation
     /// handling can swallow them, so Tab can act as ZX EXTEND MODE.
     bool event(QEvent* event) override;
+#ifdef Q_OS_WIN
+    // hungarian-ui - a title-bar click enters the move loop at once (window_stalls.h).
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    bool nativeEvent(const QByteArray& type, void* message, qintptr* result) override;
+#else
+    bool nativeEvent(const QByteArray& type, void* message, long* result) override;
+#endif
+#endif
     /// GH #268 — the keyboard has gone elsewhere; drop every key the guest is
     /// holding before its key-up is delivered to whatever took it.
     void focusOutEvent(QFocusEvent* event) override;
@@ -608,6 +626,8 @@ private:
     bool layout_on_ = false;                    // typing by character (resolved)
     bool alt_digit_on_ = false;
     host_layout::AltSides alt_sides_;           // for the Ctrl+Alt mouse release
+    window_stalls::ModalHold modal_hold_;       // hungarian-ui: modal dialogs hold the machine
+    bool window_blocked_ = false;               // between WindowBlocked and WindowUnblocked
     /// The mouse release's view of a key event (left Alt only, with the layout on).
     host_layout::ReleaseView release_view_of(const QKeyEvent* event) const;
     SpeedCallback    speed_callback_;

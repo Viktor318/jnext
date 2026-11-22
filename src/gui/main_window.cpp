@@ -1563,6 +1563,7 @@ void MainWindow::create_menus() {
     // namespace (#115), and P is free in all of it: no menubar mnemonic, no
     // other shortcut, not one of the guest's Alt+E/G/C.
     QAction* preferences = settings_menu->addAction(tr("&Preferences..."));
+    preferences->setObjectName(QStringLiteral("preferencesAction"));   // hungarian-ui
     preferences->setShortcut(host_shortcuts::sequence(host_shortcuts::Action::Preferences));
     connect(preferences, &QAction::triggered, this, &MainWindow::on_open_preferences);
 
@@ -3388,6 +3389,9 @@ void MainWindow::push_debug_keymap() {
 }
 
 void MainWindow::on_open_preferences() {
+    // hungarian-ui - held from before the dialog is built (it took about a
+    // second on Windows) until it is gone, live applies included.
+    const window_stalls::ModalHold::Scope hold(modal_hold_);
     // GH #1 review follow-up — hand the dialog the combinations THIS window
     // already answers to, harvested from the real QActions rather than
     // hand-listed, so a menu item added later is picked up with no edit here.
@@ -3739,6 +3743,16 @@ bool MainWindow::event(QEvent* ev) {
     // alone, so there is no meaningful Tab traversal to preserve. Dialogs and
     // the debugger window are separate top-level widgets and are unaffected.
     const QEvent::Type t = ev->type();
+    // hungarian-ui - a modal dialog blocks this window: the machine is held
+    // until it closes (window_stalls.h). Qt sends these for its native file
+    // dialogs too, whose modality it keeps on the hidden QFileDialog.
+    if (t == QEvent::WindowBlocked && !window_blocked_) {
+        window_blocked_ = true;
+        modal_hold_.begin();
+    } else if (t == QEvent::WindowUnblocked && window_blocked_) {
+        window_blocked_ = false;
+        modal_hold_.end();
+    }
     // hungarian-ui - AltGr + a key that types a character is the guest's, not
     // a shortcut's: on Windows AltGr is Ctrl + Alt, and Qt fired the Alt+letter
     // shortcuts and menu mnemonics on it (AltGr+B `{` opened a menu).
@@ -4166,3 +4180,34 @@ void MainWindow::closeEvent(QCloseEvent* event) {
 #endif
     QMainWindow::closeEvent(event);
 }
+
+// ---------------------------------------------------------------------------
+// hungarian-ui - a title-bar click on Windows (gui/window_stalls.h)
+// ---------------------------------------------------------------------------
+#ifdef Q_OS_WIN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool MainWindow::nativeEvent(const QByteArray& type, void* message, qintptr* result) {
+#else
+bool MainWindow::nativeEvent(const QByteArray& type, void* message, long* result) {
+#endif
+    const MSG* msg = static_cast<const MSG*>(message);
+    if (msg && window_stalls::nudge_caption_click(msg->message, static_cast<std::uintptr_t>(msg->wParam))) {
+        // Windows now waits (up to ~0.5 s, dispatching nothing) to see whether
+        // the click becomes a drag. A mouse move at the cursor ends that wait,
+        // and its move loop keeps the frame timer running. SDL3 does the same.
+        POINT p;
+        if (GetCursorPos(&p) && ScreenToClient(msg->hwnd, &p))
+            PostMessageW(msg->hwnd, WM_MOUSEMOVE, 0,
+                         static_cast<LPARAM>(window_stalls::mouse_lparam(p.x, p.y)));
+    }
+    return QMainWindow::nativeEvent(type, message, result);
+}
+#endif

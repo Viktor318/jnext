@@ -4529,6 +4529,10 @@ carry on. The button stays pressed, its icon turns into a play triangle, and a
 debugger window does not open. The Pause key and Alt+U (⌘U) also work in fullscreen, where the menu
 and toolbar are hidden. If you open the debugger while paused it shows the same
 pause, and closing it resumes the machine, as it always does.</p>
+<p>The machine also waits, silenced, while a dialog is open over the window (a file
+chooser, <strong>Preferences</strong>, a message), and carries on when it closes: on Windows these
+dialogs hold the window for up to a second at a time, which would otherwise stutter the
+picture and click the sound.</p>
 <p>Everything else in this chapter is about shaping that session.</p>
 <h2 id="programs-that-need-nextzxos">Programs that need NextZXOS<a class="headerlink" href="#programs-that-need-nextzxos" title="Permanent link">&para;</a></h2>
 <p>Loading a file directly (with <code>--load</code>, a bare file name, or <strong>File &gt; Load NEX

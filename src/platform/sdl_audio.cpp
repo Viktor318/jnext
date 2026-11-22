@@ -216,6 +216,13 @@ void SdlAudio::push_from_mixer(Mixer& mixer, bool hold_on_underrun)
     }
 }
 
+void SdlAudio::set_device_paused(bool paused)
+{
+    if (!stream_) return;
+    if (paused) SDL_PauseAudioStreamDevice(stream_);
+    else        SDL_ResumeAudioStreamDevice(stream_);
+}
+
 void SdlAudio::shutdown()
 {
     if (stream_) {

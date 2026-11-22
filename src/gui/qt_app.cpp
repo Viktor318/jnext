@@ -429,6 +429,15 @@ bool QtApp::init(int argc, char* argv[]) {
         layout_keys_.set_layout(layout);
         layout_keys_.set_alt_digit(alt_digit);
     });
+    // hungarian-ui - while a modal dialog is open the machine is held and the
+    // sound device paused, instead of stuttering with the GUI thread (the
+    // native file dialog, Preferences: gui/window_stalls.h). On release the
+    // frame schedule restarts at now: no burst to catch up the held time.
+    main_window_->set_modal_hold_callback([this](bool held) {
+        modal_held_ = held;
+        if (audio_) audio_->set_device_paused(held);
+        if (!held) rebase_frame_timer();
+    });
     // GH #386 - Quick Save / Quick Load take their turn in the key queue.
     wire_host_actions(*main_window_, key_router_, pending_quick_);
     // GH #26 WP5 — Alt+1..Alt+8 are the script host keys (host_key_wiring.h).

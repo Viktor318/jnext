@@ -155,7 +155,8 @@ private:
         double  speed_multiplier() const { return app.speed_multiplier_; }
         bool    audio_present() const { return static_cast<bool>(app.audio_); }
         int     queued_ms() const;  // SdlAudio is incomplete here
-        bool    paused() const { return app.emulator_.debug_state().paused(); }
+        // hungarian-ui: a modal dialog holds the machine too (modal_held_).
+        bool    paused() const { return app.emulator_.debug_state().paused() || app.modal_held_; }
         bool    fastload_active() const { return app.emulator_.fastload_active(); }
         bool    screenshot_due() const { return app.screenshot_countdown_.due(); }
 
@@ -228,6 +229,10 @@ private:
     /// unarmed. frame-loop-wiring-func pins re-armed == ticks, rescued == 0.
     uint64_t      tick_rearms_ = 0;
     uint64_t      rescue_rearms_ = 0;
+    // hungarian-ui - a modal dialog is open (MainWindow::set_modal_hold_callback,
+    // gui/window_stalls.h): the tick emulates nothing and the sound device is
+    // paused; on release the frame schedule restarts at now.
+    bool          modal_held_ = false;
     QTimer*       status_timer_ = nullptr;
     std::unique_ptr<SdlAudio> audio_;
 
