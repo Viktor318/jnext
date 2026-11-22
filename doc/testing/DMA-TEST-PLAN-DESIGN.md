@@ -506,16 +506,29 @@ NR 0x07 gate + `Mmu::sram_read_wait28()` qualifier, burst charged in
 `step_one_instruction`); rows 23.4-23.6 pin the `Dma` seam
 (`read_mem_wait_tstates` hook + `last_burst_read_wait_tstates()`).
 
+hungarian-ui: a byte is charged its read cycle plus its write cycle as the
+timing bytes set them (`Dma::charged_tstates_per_byte()`, dma.vhd:307-342
+`TRANSFERING_READ_1..4`, :359-410 `WRITE_1..4`: "00" 4, "01" 3, "10" 2 states;
+reset "01"), not a fixed 2 T, and the 28 MHz read wait reaches only a 2-cycle
+read: `sram_wait_n` is a one-cycle pulse (zxnext.vhd:3167,3171-3181) that the
+DMA samples, registered (dma.vhd:139-144), in `TRANSFERING_READ_4`
+(:337-342). Measured on a KS3 (`doc/hu/jnext-dma-meres.md`): 3.96 / 5.92 /
+7.88 T a byte for 2+2 / 3+3 / 4+4, and 4.89 / 5.87 / 7.82 at 28 MHz. The
+wait rows therefore program 2+2 cycles.
+
 | # | Test | VHDL Reference | Verification |
 |---|------|----------------|--------------|
-| 23.1 | Burst duration at 28 MHz (mem->mem) | zxnext.vhd:1828-1835,1839,1844,3171-3181 | 8-byte SRAM->SRAM burst = 24 T (8×2 base + 8 read waits); data copied |
-| 23.2 | Burst duration at 14 MHz (mem->mem) | zxnext.vhd:3175 (`cpu_speed="11"` required) | Same 8-byte burst at cpu_speed=2 = 16 T, no stretch |
-| 23.3 | Exempt source: bank-7 BRAM (page 0x0E) | zxnext.vhd:6670-6685,1863,3175 | 8-byte burst sourced from bank 7 at 28 MHz = 16 T (dedicated port, no `sram_req`) |
-| 23.4 | Wait charged per source memory READ | zxnext.vhd:3171-3181,3175 | Hook called once per read at the stepped source address; accumulator = 8; writes exempt |
+| 23.1 | Burst duration at 28 MHz (mem->mem) | zxnext.vhd:1828-1835,1839,1844,3171-3181 | 8-byte SRAM->SRAM burst, 2+2 cycles = 40 T (8×4 base + 8 read waits); data copied |
+| 23.2 | Burst duration at 14 MHz (mem->mem) | zxnext.vhd:3175 (`cpu_speed="11"` required) | Same 8-byte 2+2-cycle burst at cpu_speed=2 = 32 T, no stretch |
+| 23.3 | Exempt source: bank-7 BRAM (page 0x0E) | zxnext.vhd:6670-6685,1863,3175 | 8-byte 2+2-cycle burst sourced from bank 7 at 28 MHz = 32 T (dedicated port, no `sram_req`) |
+| 23.4 | Wait charged per source memory READ | zxnext.vhd:3171-3181,3175 | Hook called once per 2-cycle read at the stepped source address; accumulator = 8; writes exempt |
 | 23.5 | I/O source reads never wait | zxnext.vhd:3144 (`sram_memcycle` needs MREQ) | I/O->mem block: hook never called, accumulator 0 |
-| 23.6 | mem->I/O keeps the read-side wait | zxnext.vhd:3144,3175 | mem->I/O block: all 8 source reads wait; I/O destination irrelevant |
+| 23.6 | mem->I/O keeps the read-side wait | zxnext.vhd:3144,3175 | mem->I/O block: all 8 2-cycle source reads wait; I/O destination irrelevant |
 | 23.7 | ENABLE while a genuine IM2 device request is pending must not permanently stall the CPU, and the LIVE per-instruction `im2_.dma_delay()` resample must track it (GH #102 TX-1696 freeze, session 3; reboot regression, session 4) | zxnext.vhd `dma_holds_bus <= '1' when z80_busak_n = '0'`; dma.vhd:267-269 (`dma_delay_i` defer gate); zxnext.vhd:2001-2010 (`im2_dma_delay`, `rising_edge(i_CLK_CPU)`) | Full-Emulator: CTC0 raised to S_REQ with `dma_int_en` set, then ENABLE issued — DMA stays deferred (`state()==TRANSFERRING`, `dma_holds_bus()==false`) AND the CPU executes a normal instruction that step (PC advances); clearing CTC0's `dma_int_en` (servicing the pending cause) lets the transfer complete on the next step |
-| 23.8 | Layer 2 read mapping (seg 11) over a bank-7 slot waits | zxnext.vhd:3077,3100-3107,1828-1835,3175 | 8-byte burst sourced through the mapping at 28 MHz = 24 T (not 16 T from the slot flag); data copied (GH #391) |
+| 23.8 | Layer 2 read mapping (seg 11) over a bank-7 slot waits | zxnext.vhd:3077,3100-3107,1828-1835,3175 | 8-byte 2+2-cycle burst sourced through the mapping at 28 MHz = 40 T (not 32 T from the slot flag); data copied (GH #391) |
+| DMA-HU-01 | Reset timing (3+3) at 28 MHz: no read wait | dma.vhd:139-144,337-342; zxnext.vhd:3167,3171-3181 | 8-byte SRAM burst = 48 T: 6 T a byte, the 3-cycle read reaches READ_4 after the wait pulse (KS3 5.87 T/byte) |
+| DMA-HU-02 | 4+4 cycles at 3.5 MHz | dma.vhd:307-342,359-410 | 8-byte SRAM burst = 64 T, 8 T a byte (KS3 7.88 T/byte) |
+| DMA-HU-03 | B->A: read with port B's timing, write with port A's | dma.vhd:310-325,362-377 | R1 "00", R2 "10": (2 + 1 wait) + 4 = 7 T a byte at 28 MHz, 8 bytes = 56 T |
 
 ### 25. RZX record/replay of DMA port reads (GH #283) (12 tests)
 

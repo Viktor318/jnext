@@ -210,7 +210,13 @@ public:
     /// The T-states the emulator charges a burst per transferred byte (plus
     /// the read waits above): Emulator::step_one_instruction() advances the
     /// clock by this, and the tape-out capture times each transfer by it.
-    static constexpr uint32_t CHARGED_TSTATES_PER_BYTE = 2;
+    /// hungarian-ui: the byte's read cycle plus its write cycle, as the timing
+    /// bytes set them (dma.vhd:307-342 TRANSFERING_READ_1..4, :359-410
+    /// WRITE_1..4: 4, 3 or 2 states each; the reset default "01" is 3+3).
+    /// It was a fixed 2, which ran a 2-cycle block twice and a 4-cycle one
+    /// four times as fast as Viktor's KS3 (doc/hu/jnext-dma-meres.md: 3.96 /
+    /// 5.92 / 7.88 T per byte for 2+2 / 3+3 / 4+4).
+    uint32_t charged_tstates_per_byte() const { return read_cycles() + write_cycles(); }
 
     // DMA_timer_s — 14-bit prescaler counter.  Exposed for test observation.
     uint16_t dma_timer() const     { return dma_timer_s_; }

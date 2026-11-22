@@ -3111,15 +3111,22 @@ void g23_set_speed(Emulator& emu, uint8_t speed) {
 // the bus. Returns the step's T-state cost (execute_single_instruction
 // returns master_cycles / cpu_divisor). An 8-byte block completes inside
 // the single execute_burst(16) call of that step.
+// hungarian-ui: `timing` (0..3) is written as both ports' timing byte (WR1/WR2
+// bit 6 set, then the byte); -1 keeps the reset default "01" (3+3 cycles).
 int g23_run_dma_step(Emulator& emu, uint16_t src, uint16_t dst,
-                     uint16_t len) {
+                     uint16_t len, int timing = -1) {
     Dma& d = emu.dma();
     auto w = [&](uint8_t v) { d.write(v, false); };
     w(0x7D);
     w(src & 0xFF); w((src >> 8) & 0xFF);
     w(len & 0xFF); w((len >> 8) & 0xFF);
-    w(0x14);                     // R1: port A memory, increment
-    w(0x10);                     // R2: port B memory, increment
+    if (timing < 0) {
+        w(0x14);                 // R1: port A memory, increment
+        w(0x10);                 // R2: port B memory, increment
+    } else {
+        w(0x54); w(static_cast<uint8_t>(timing));   // R1 + timing byte
+        w(0x50); w(static_cast<uint8_t>(timing));   // R2 + timing byte
+    }
     w(0xAD);                     // R4: continuous, port B addr follows
     w(dst & 0xFF); w((dst >> 8) & 0xFF);
     w(0xCF);                     // LOAD
@@ -3130,10 +3137,12 @@ int g23_run_dma_step(Emulator& emu, uint16_t src, uint16_t dst,
 void group23_sram_read_wait28() {
     set_group("G23 SW28 DMA Wait");
 
-    // 23.1 — 28 MHz burst duration, mem->mem from plain SRAM. 8 bytes at
-    // 2 T each = 16 T base; each of the 8 source reads waits +1
-    // (sram_req_t + cpu_rd_n='0' + cpu_speed="11", zxnext.vhd:3154,3167,
-    // 3175); the 8 destination writes are exempt (cpu_rd_n='1') -> 24 T.
+    // 23.1 — 28 MHz burst duration, mem->mem from plain SRAM, both ports
+    // timed "10" (2 cycles). 8 bytes at 2+2 T = 32 T base; each of the 8
+    // source reads waits +1 (sram_req_t + cpu_rd_n='0' + cpu_speed="11",
+    // zxnext.vhd:3154,3167,3175), which a 2-cycle read meets in
+    // TRANSFERING_READ_4 (dma.vhd:337-342); the 8 destination writes are
+    // exempt (cpu_rd_n='1') -> 40 T. hungarian-ui: was 2 T per byte (24 T).
     {
         Emulator emu;
         EmulatorConfig cfg;
@@ -3148,7 +3157,7 @@ void group23_sram_read_wait28() {
             for (int i = 0; i < 8; ++i)
                 emu.mmu().write(static_cast<uint16_t>(0x8000 + i),
                                 static_cast<uint8_t>(0xA0 + i));
-            const int t = g23_run_dma_step(emu, 0x8000, 0x9000, 8);
+            const int t = g23_run_dma_step(emu, 0x8000, 0x9000, 8, 2);
             bool copied = true;
             for (int i = 0; i < 8; ++i)
                 copied = copied
@@ -3156,16 +3165,16 @@ void group23_sram_read_wait28() {
                            == static_cast<uint8_t>(0xA0 + i);
             check("23.1",
                   "8-byte mem->mem DMA burst from SRAM at cpu_speed=3 "
-                  "(28 MHz) = 24 T: 8 source reads wait +1 each, 8 dest "
-                  "writes exempt (zxnext.vhd:1828-1835,1839,1844,"
-                  "3171-3181)",
-                  t == 24 && copied,
-                  fmt("t=%d expected=24 copied=%d", t, (int)copied));
+                  "(28 MHz), 2+2 cycles = 40 T: 8 source reads wait +1 "
+                  "each, 8 dest writes exempt (zxnext.vhd:1828-1835,1839,"
+                  "1844,3171-3181; dma.vhd:307-342,359-410)",
+                  t == 40 && copied,
+                  fmt("t=%d expected=40 copied=%d", t, (int)copied));
         }
     }
 
     // 23.2 — identical burst at cpu_speed=2 (14 MHz): the wait arm
-    // requires cpu_speed="11" (zxnext.vhd:3175) -> unstretched 16 T.
+    // requires cpu_speed="11" (zxnext.vhd:3175) -> unstretched 32 T.
     {
         Emulator emu;
         EmulatorConfig cfg;
@@ -3180,25 +3189,25 @@ void group23_sram_read_wait28() {
             for (int i = 0; i < 8; ++i)
                 emu.mmu().write(static_cast<uint16_t>(0x8000 + i),
                                 static_cast<uint8_t>(0xB0 + i));
-            const int t = g23_run_dma_step(emu, 0x8000, 0x9000, 8);
+            const int t = g23_run_dma_step(emu, 0x8000, 0x9000, 8, 2);
             bool copied = true;
             for (int i = 0; i < 8; ++i)
                 copied = copied
                     && emu.mmu().read(static_cast<uint16_t>(0x9000 + i))
                            == static_cast<uint8_t>(0xB0 + i);
             check("23.2",
-                  "Same 8-byte burst at cpu_speed=2 (14 MHz) = 16 T "
+                  "Same 8-byte 2+2-cycle burst at cpu_speed=2 (14 MHz) = 32 T "
                   "exactly — no sram_wait_n stretch below 28 MHz "
                   "(zxnext.vhd:3175 requires cpu_speed=\"11\")",
-                  t == 16 && copied,
-                  fmt("t=%d expected=16 copied=%d", t, (int)copied));
+                  t == 32 && copied,
+                  fmt("t=%d expected=32 copied=%d", t, (int)copied));
         }
     }
 
     // 23.3 — 28 MHz, source in bank-7 BRAM (page 0x0E): the dedicated
     // CPU read port (cpu_bank7_do, zxnext.vhd:6670-6685 + cpu_di mux
     // :1863) appears nowhere in the :3175 wait expression -> DMA source
-    // reads from bank 7 do NOT wait -> 16 T even at 28 MHz.
+    // reads from bank 7 do NOT wait -> 32 T (2+2 cycles) even at 28 MHz.
     {
         Emulator emu;
         EmulatorConfig cfg;
@@ -3214,19 +3223,19 @@ void group23_sram_read_wait28() {
             for (int i = 0; i < 8; ++i)
                 emu.mmu().write(static_cast<uint16_t>(0x4000 + i),
                                 static_cast<uint8_t>(0xC0 + i));
-            const int t = g23_run_dma_step(emu, 0x4000, 0x8000, 8);
+            const int t = g23_run_dma_step(emu, 0x4000, 0x8000, 8, 2);
             bool copied = true;
             for (int i = 0; i < 8; ++i)
                 copied = copied
                     && emu.mmu().read(static_cast<uint16_t>(0x8000 + i))
                            == static_cast<uint8_t>(0xC0 + i);
             check("23.3",
-                  "8-byte burst sourced from bank-7 BRAM (page 0x0E) at "
-                  "28 MHz = 16 T — cpu_bank7_do has a dedicated port and "
+                  "8-byte 2+2-cycle burst sourced from bank-7 BRAM (page 0x0E) "
+                  "at 28 MHz = 32 T — cpu_bank7_do has a dedicated port and "
                   "is absent from the wait expression (zxnext.vhd:"
                   "6670-6685,1863,3175)",
-                  t == 16 && copied,
-                  fmt("t=%d expected=16 copied=%d", t, (int)copied));
+                  t == 32 && copied,
+                  fmt("t=%d expected=32 copied=%d", t, (int)copied));
         }
     }
 
@@ -3242,14 +3251,16 @@ void group23_sram_read_wait28() {
             return 1;
         };
         program_mem_to_mem_AB(dma, 0x8000, 0x9000, 8);
+        zxn(dma, 0x54); zxn(dma, 0x02);   // hungarian-ui: port A read "10" (2 cycles)
         const int n = dma.execute_burst(16);
         bool addrs_ok = seen.size() == 8;
         for (size_t i = 0; addrs_ok && i < seen.size(); ++i)
             addrs_ok = seen[i] == static_cast<uint16_t>(0x8000 + i);
         check("23.4",
-              "Wait hook: one call per source memory READ at the stepped "
-              "source address; accumulator = 8 for an 8-byte mem->mem "
-              "block — writes never wait (zxnext.vhd:3175 cpu_rd_n='0')",
+              "Wait hook: one call per 2-cycle source memory READ at the "
+              "stepped source address; accumulator = 8 for an 8-byte "
+              "mem->mem block — writes never wait (zxnext.vhd:3175 "
+              "cpu_rd_n='0'; dma.vhd:337-342)",
               n == 8 && addrs_ok && dma.last_burst_read_wait_tstates() == 8,
               fmt("n=%d calls=%zu wait=%u  VHDL zxnext.vhd:3171-3181", n,
                   seen.size(), dma.last_burst_read_wait_tstates()));
@@ -3302,7 +3313,7 @@ void group23_sram_read_wait28() {
         zxn(dma, 0x7D);
         zxn(dma, 0x00); zxn(dma, 0x80);    // port A (mem) = 0x8000
         zxn(dma, 0x08); zxn(dma, 0x00);    // len 8
-        zxn(dma, 0x14);                    // R1: memory, inc
+        zxn(dma, 0x54); zxn(dma, 0x02);    // R1: memory, inc, read "10" (2 cycles)
         zxn(dma, 0x18);                    // R2: I/O
         zxn(dma, 0xAD);
         zxn(dma, 0x30); zxn(dma, 0x00);    // port B (I/O) = 0x0030
@@ -3310,8 +3321,8 @@ void group23_sram_read_wait28() {
         zxn(dma, 0x87);
         const int n = dma.execute_burst(16);
         check("23.6",
-              "mem->I/O block: all 8 source memory reads wait; the I/O "
-              "destination write is irrelevant to the read-side wait "
+              "mem->I/O block: all 8 2-cycle source memory reads wait; the "
+              "I/O destination write is irrelevant to the read-side wait "
               "(zxnext.vhd:3144,3175)",
               n == 8 && calls == 8
                   && dma.last_burst_read_wait_tstates() == 8,
@@ -3459,7 +3470,8 @@ void group23_sram_read_wait28() {
     // sram_active = NOT layer2_A21_A13(8) = 1 (zxnext.vhd:3077,
     // 3100-3107) beats the slot's bank-7 exemption, and the DMA drives the
     // bus signals the wait expression reads (:1828-1835,3175). 8 source
-    // reads wait +1 each -> 24 T (16 T if the slot flag alone decided).
+    // reads wait +1 each -> 40 T with 2+2 cycles (32 T if the slot flag
+    // alone decided).
     {
         Emulator emu;
         EmulatorConfig cfg;
@@ -3477,7 +3489,7 @@ void group23_sram_read_wait28() {
                 emu.mmu().write(static_cast<uint16_t>(0x4000 + i),
                                 static_cast<uint8_t>(0xD0 + i));
             emu.port().out(0x123B, 0xC4);      // seg 11 + read-over
-            const int t = g23_run_dma_step(emu, 0x4000, 0xC000, 8);
+            const int t = g23_run_dma_step(emu, 0x4000, 0xC000, 8, 2);
             emu.port().out(0x123B, 0x00);
             bool copied = true;
             for (int i = 0; i < 8; ++i)
@@ -3485,12 +3497,121 @@ void group23_sram_read_wait28() {
                     && emu.mmu().read(static_cast<uint16_t>(0xC000 + i))
                            == static_cast<uint8_t>(0xD0 + i);
             check("23.8",
-                  "8-byte DMA burst sourced through a Layer 2 read mapping "
-                  "(seg 11) over a bank-7 slot at 28 MHz = 24 T: the "
+                  "8-byte 2+2-cycle DMA burst sourced through a Layer 2 read "
+                  "mapping (seg 11) over a bank-7 slot at 28 MHz = 40 T: the "
                   "mapping's sram_active=1 beats the slot's bank-7 "
                   "exemption (zxnext.vhd:3077,3100-3107,1828-1835,3175)",
-                  t == 24 && copied,
-                  fmt("t=%d expected=24 copied=%d", t, (int)copied));
+                  t == 40 && copied,
+                  fmt("t=%d expected=40 copied=%d", t, (int)copied));
+        }
+    }
+
+    // hungarian-ui - a byte costs its read cycle plus its write cycle, as the
+    // timing bytes set them (dma.vhd:307-342 TRANSFERING_READ_1..4, :359-410
+    // WRITE_1..4: "00" 4, "01" 3, "10" 2, "11" 4 states). Measured on Viktor's
+    // KS3 (doc/hu/jnext-dma-meres.md): 3.96 / 5.92 / 7.88 T a byte for 2+2 /
+    // 3+3 / 4+4, and at 28 MHz 4.89 / 5.87 / 7.82: only a 2-cycle read meets
+    // the one-cycle sram_wait_n pulse (zxnext.vhd:3167,3171-3181) in READ_4.
+    // DMA-HU-01 - the reset timing "01" (3+3) at 28 MHz from SRAM: 6 T a byte,
+    // and the 3-cycle read reaches READ_4 after the wait pulse -> 48 T.
+    {
+        Emulator emu;
+        EmulatorConfig cfg;
+        cfg.type = MachineType::ZXN_ISSUE2;
+        cfg.rewind_buffer_frames = 0;
+        if (!emu.init(cfg)) {
+            check("DMA-HU-01", "Emulator::init failed (Next machine)", false,
+                  "init returned false");
+        } else {
+            g23_set_speed(emu, 3);
+            emu.nextreg().write(0x54, 0x20);
+            for (int i = 0; i < 8; ++i)
+                emu.mmu().write(static_cast<uint16_t>(0x8000 + i),
+                                static_cast<uint8_t>(0x50 + i));
+            const int t = g23_run_dma_step(emu, 0x8000, 0x9000, 8);
+            bool copied = true;
+            for (int i = 0; i < 8; ++i)
+                copied = copied
+                    && emu.mmu().read(static_cast<uint16_t>(0x9000 + i))
+                           == static_cast<uint8_t>(0x50 + i);
+            check("DMA-HU-01",
+                  "reset timing 3+3 cycles, 8-byte SRAM burst at 28 MHz = 48 T: "
+                  "6 T a byte, and a 3-cycle read does not wait (dma.vhd:"
+                  "139-144,337-342; zxnext.vhd:3167,3171-3181; KS3 5.87 T/byte)",
+                  t == 48 && copied,
+                  fmt("t=%d expected=48 copied=%d", t, (int)copied));
+        }
+    }
+    // DMA-HU-02 - 4+4 cycles ("00") at 3.5 MHz: 8 T a byte -> 64 T.
+    {
+        Emulator emu;
+        EmulatorConfig cfg;
+        cfg.type = MachineType::ZXN_ISSUE2;
+        cfg.rewind_buffer_frames = 0;
+        if (!emu.init(cfg)) {
+            check("DMA-HU-02", "Emulator::init failed (Next machine)", false,
+                  "init returned false");
+        } else {
+            g23_set_speed(emu, 0);
+            emu.nextreg().write(0x54, 0x20);
+            for (int i = 0; i < 8; ++i)
+                emu.mmu().write(static_cast<uint16_t>(0x8000 + i),
+                                static_cast<uint8_t>(0x60 + i));
+            const int t = g23_run_dma_step(emu, 0x8000, 0x9000, 8, 0);
+            bool copied = true;
+            for (int i = 0; i < 8; ++i)
+                copied = copied
+                    && emu.mmu().read(static_cast<uint16_t>(0x9000 + i))
+                           == static_cast<uint8_t>(0x60 + i);
+            check("DMA-HU-02",
+                  "4+4 cycles, 8-byte SRAM burst at 3.5 MHz = 64 T: 8 T a byte "
+                  "(dma.vhd:307-342,359-410; KS3 7.88 T/byte)",
+                  t == 64 && copied,
+                  fmt("t=%d expected=64 copied=%d", t, (int)copied));
+        }
+    }
+    // DMA-HU-03 - B->A: the read is port B's timing (R2), the write port A's
+    // (R1) (dma.vhd:310-325,362-377). R1 "00" (4), R2 "10" (2), at 28 MHz
+    // from SRAM: (2 + 1 wait) + 4 = 7 T a byte -> 56 T; the same timings
+    // A->B would read 4 (no wait) and write 2 = 6 T a byte.
+    {
+        Emulator emu;
+        EmulatorConfig cfg;
+        cfg.type = MachineType::ZXN_ISSUE2;
+        cfg.rewind_buffer_frames = 0;
+        if (!emu.init(cfg)) {
+            check("DMA-HU-03", "Emulator::init failed (Next machine)", false,
+                  "init returned false");
+        } else {
+            g23_set_speed(emu, 3);
+            emu.nextreg().write(0x54, 0x20);
+            for (int i = 0; i < 8; ++i)
+                emu.mmu().write(static_cast<uint16_t>(0x8000 + i),
+                                static_cast<uint8_t>(0x70 + i));
+            Dma& d = emu.dma();
+            auto w = [&](uint8_t v) { d.write(v, false); };
+            w(0x79);                          // WR0: B->A, port A address and length follow
+            w(0x00); w(0x90);                 // port A (destination) = 0x9000
+            w(0x08); w(0x00);                 // length 8
+            w(0x54); w(0x00);                 // R1: port A memory, inc, "00" (4 cycles)
+            w(0x50); w(0x02);                 // R2: port B memory, inc, "10" (2 cycles)
+            w(0xAD);                          // R4: continuous, port B address follows
+            w(0x00); w(0x80);                 // port B (source) = 0x8000
+            w(0xCF);                          // LOAD
+            w(0x87);                          // ENABLE
+            const bool per_byte = d.charged_tstates_per_byte() == 6;   // 2 read + 4 write
+            const int t = emu.execute_single_instruction();
+            bool copied = true;
+            for (int i = 0; i < 8; ++i)
+                copied = copied
+                    && emu.mmu().read(static_cast<uint16_t>(0x9000 + i))
+                           == static_cast<uint8_t>(0x70 + i);
+            check("DMA-HU-03",
+                  "B->A reads with port B's timing and writes with port A's: R2 "
+                  "2 cycles + 1 wait, R1 4 cycles, 8 bytes at 28 MHz = 56 T "
+                  "(dma.vhd:310-325,362-377)",
+                  t == 56 && per_byte && copied,
+                  fmt("t=%d expected=56 per_byte=%d copied=%d", t, (int)per_byte, (int)copied));
         }
     }
 }
@@ -3680,15 +3801,17 @@ void group25_gh283_rzx() {
                   "with the value the DMA delivered",
                   log_ok, fmt("captured=%zu (want 4) first=0x%02X live=0x%02X",
                               log.size(), log.empty() ? 0 : log[0], live));
-            // 4 bytes x 2 T (step_one_instruction's DMA charge), and the T-state
+            // 4 bytes x 6 T (the reset timing "01": 3+3 cycles, dma.vhd:307-410;
+            // hungarian-ui, was 2 T), and the T-state
             // counter advances by exactly that. The CPU's own bus cycle
             // (fuse_z80_readport: contention + 4 T per read on that same
             // counter) must not ride along with the hooks.
             check("GH283-03",
                   "a recorded DMA port read keeps the DMA's timing: 4-byte burst "
-                  "= 8 T, and the T-state counter moves by those 8 T only",
-                  t == 8 && ts1 - ts0 == 8,
-                  fmt("t=%d (want 8) tstates %u -> %u (want +8)", t, ts0, ts1));
+                  "= 24 T (3+3 cycles a byte), and the T-state counter moves by "
+                  "those 24 T only",
+                  t == 24 && ts1 - ts0 == 24,
+                  fmt("t=%d (want 24) tstates %u -> %u (want +24)", t, ts0, ts1));
         }
     }
 

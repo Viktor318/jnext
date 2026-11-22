@@ -826,7 +826,17 @@ int Dma::execute_burst(int max_bytes) {
             // I/O reads are IORQ cycles (sram_memcycle needs
             // cpu_mreq_n='0', zxnext.vhd:3144); the destination write
             // below never waits (cpu_rd_n='0' required, zxnext.vhd:3175).
-            if (read_mem_wait_tstates)
+            //
+            // hungarian-ui: only a 2-cycle read feels it. sram_wait_n is low
+            // for ONE 28 MHz cycle after the request edge (zxnext.vhd:3167
+            // sram_req_t, :3171-3181), and the DMA samples it, registered
+            // on the falling edge (dma.vhd:139-144 wait_n_s), only in
+            // TRANSFERING_READ_4 (dma.vhd:337-342). A 2-cycle read goes
+            // READ_1 -> READ_4 and meets the pulse; a 3- or 4-cycle one
+            // reaches READ_4 after it has ended. Measured on a KS3 at 28 MHz:
+            // 4.89 / 5.87 / 7.82 T per byte for 2+2 / 3+3 / 4+4
+            // (doc/hu/jnext-dma-meres.md).
+            if (read_mem_wait_tstates && read_cycles() == 2)
                 last_burst_read_wait_tstates_ += read_mem_wait_tstates(src_);
         }
 

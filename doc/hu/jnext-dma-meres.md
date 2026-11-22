@@ -1,6 +1,6 @@
 # DMA-időzítés: KS3-mérés és ami ebből a JNEXT-re vonatkozik (2026-11-21)
 
-A ZEsarUX-beszélgetésben készült; a JNEXT-munkának szól. A JNEXT-ben még nincs ennek megfelelő javítás. (Eredetileg a claude.ai-projekt `claude/jnext-dma-meres.md` dokumentuma; 2026-11-21 óta a tárolóban él.)
+A ZEsarUX-beszélgetésben készült; a JNEXT-munkának szól. A JNEXT-javítás 2026-11-22-én elkészült (lent: „Megvalósítás”). (Eredetileg a claude.ai-projekt `claude/jnext-dma-meres.md` dokumentuma; 2026-11-21 óta a tárolóban él.)
 
 ## A mérés
 
@@ -40,3 +40,11 @@ A ZEsarUX-beszélgetésben készült; a JNEXT-munkának szól. A JNEXT-ben még 
 ## A ZEsarUX-ban
 
 Kész: `6809ec69` (hungarian-ui) – a fenti modell; a ZEsarUX a KS3-hoz 1–3%-on belül mér (3,5 MHz-en kb. 2 sor állandó eltéréssel, ami a sorszámláló visszaolvasásából jön, nem a DMA-ból).
+
+## Megvalósítás (2026-11-22, Viktor jóváhagyásával, csak a saját forkban)
+
+- **Bájtonkénti idő:** `Dma::charged_tstates_per_byte()` = `read_cycles() + write_cycles()` a fix 2 helyett (`src/peripheral/dma.h`); az `emulator.cpp` két felhasználója (a löket felszámolása és a `port_fe_write_time()`) ezt használja. A reset utáni időzítés „01” = 3+3 ciklus (dma.vhd), így egy program, amely nem állít időzítést, bájtonként 6 T-t kap.
+- **28 MHz-es várakozás csak 2 ciklusos olvasásnál:** a VHDL igazolja a mérést. Az `sram_wait_n` egyetlen 28 MHz-es órajelig alacsony a kérés élétől (zxnext.vhd:3167, :3171-3181), a DMA ezt a lefutó élen regisztrálja (dma.vhd:139-144) és csak a `TRANSFERING_READ_4` állapotban nézi (:337-342). A 2 ciklusos olvasás READ_1 → READ_4, ezért éri az impulzus; a 3 és 4 ciklusos a lejárta után ér oda. Kód: `dma.cpp`, a `read_mem_wait_tstates` hívása `read_cycles() == 2` feltétellel.
+- **Előosztó:** nem kellett hozzányúlni; a JNEXT-ben az előosztó időzítője a bájt elején (READ_1) indul, és a felszámolt átviteli idő beleszámít, ahogy a VHDL-ben.
+- **Tesztek:** `dma_test` 23.1–23.3, 23.8 2+2 ciklussal (40 / 32 / 32 / 40 T), 23.4 és 23.6 2 ciklusos olvasással; új DMA-HU-01 (3+3, 28 MHz: 48 T, várakozás nélkül), DMA-HU-02 (4+4, 3,5 MHz: 64 T), DMA-HU-03 (B→A: az olvasás a B, az írás az A port időzítése; 56 T); GH283-03: 24 T. `tape_save_test` TSAVE-55 (6 T-s impulzusok), TSAVE-56 (28 MHz: 64 impulzus, nincs 0 T-s), TSAVE-62 (a DMA két saját impulzusa kihagyva). A 2 ciklusos feltétel kivételét a DMA-HU-01 elkapja (mutáció). `DMA-TEST-PLAN-DESIGN.md` és a tesztmátrix frissítve (a mátrixot a CI-éval azonos FPGA-core, 3.02.03 alapján helyben generálva).
+- **Hátra van:** a CI regressziós futása (a DMA-t használó képernyőképes sorok elcsúszhatnak), és Viktor próbája a `dmatest.nex`-szel, összevetve a fenti KS3-táblázattal.

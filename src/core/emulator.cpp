@@ -9642,7 +9642,7 @@ uint64_t Emulator::port_fe_write_time() const
     if (in_dma_burst_)
         return clock_.get() +
                (static_cast<uint64_t>(static_cast<uint16_t>(dma_.counter() - dma_counter_base_)) *
-                    Dma::CHARGED_TSTATES_PER_BYTE +
+                    dma_.charged_tstates_per_byte() +
                 dma_.last_burst_read_wait_tstates()) * clock_.cpu_divisor();
     return io_request_edge();
 }
@@ -11520,12 +11520,13 @@ uint64_t Emulator::step_one_instruction()
         // cpu_busreq_n_ untouched, bus stays held) and the very first
         // granted-but-empty-block edge case.
         if (transferred > 0 || dma_.dma_holds_bus()) {
-            // Execute a burst of transfers; each byte ≈ 2 T-states.
+            // Execute a burst of transfers; each byte costs its read and
+            // write cycles (Dma::charged_tstates_per_byte(): 4 to 8 T).
             // GH #106 — add the 28 MHz SRAM read wait accumulated by the
             // burst's source memory reads (zxnext.vhd:3171-3181 via the
             // dma_.read_mem_wait_tstates lambda in init(); +1 T-state per
             // waiting read, 0 at cpu_speed != 3).
-            master_cycles = (static_cast<uint64_t>(transferred) * Dma::CHARGED_TSTATES_PER_BYTE
+            master_cycles = (static_cast<uint64_t>(transferred) * dma_.charged_tstates_per_byte()
                              + dma_.last_burst_read_wait_tstates())
                             * clock_.cpu_divisor();
             if (master_cycles == 0) master_cycles = clock_.cpu_divisor();  // minimum advance

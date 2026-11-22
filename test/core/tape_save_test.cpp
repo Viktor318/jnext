@@ -998,8 +998,9 @@ void emulator_rows() {
         // Round 2 / R2-B1: the DMA drives the bus (zxnext.vhd:1829, :1834), so its
         // writes to port 0xFE latch port_fe_reg one by one. A memory -> port 0xFE
         // transfer of 64 bytes alternating MIC: each write is timed at its place
-        // in the burst (2 T per byte, what a burst is charged), so 63 pulses of
-        // exactly 2 T and no two edges at one time.
+        // in the burst (what a burst is charged a byte: hungarian-ui, the reset
+        // timing's 3+3 cycles, dma.vhd:307-410, was 2 T), so 63 pulses of
+        // exactly 6 T and no two edges at one time.
         auto emu = next_machine();
         const std::string path = tmp("dma.tzx");
         std::filesystem::remove(path);
@@ -1018,17 +1019,18 @@ void emulator_rows() {
         emu->stop_tape_save();
         const TzxView v = view(read_file(path));
         size_t two = 0;
-        for (size_t i = 0; i + 1 < v.pulses.size(); ++i) if (v.pulses[i] == 2) ++two;
+        for (size_t i = 0; i + 1 < v.pulses.size(); ++i) if (v.pulses[i] == 6) ++two;
         check("TSAVE-55", "a DMA burst writing port 0xFE times each transfer at its place in the "
-              "burst: 64 alternating MIC bytes give 64 edges and 63 pulses of exactly 2 T",
+              "burst: 64 alternating MIC bytes give 64 edges and 63 pulses of exactly 6 T (3+3 cycles)",
               edges == 64 && v.pulses.size() == 64 && two == 63 && v.pulses.back() == 3500,
               "edges=" + std::to_string(edges) + " pulses=" + std::to_string(v.pulses.size()) +
                   " two=" + std::to_string(two));
     }
     {
-        // The same transfer at 28 MHz: 2 master cycles per byte, under half a
-        // T-state. Every pulse would round to 0 T; the glitch pairs cancel, and
-        // no 0 T pulse reaches the file.
+        // The same transfer at 28 MHz: 6 master cycles per byte (3+3 cycles,
+        // the 3-cycle read does not wait; hungarian-ui, was 2 master cycles,
+        // whose sub-half-T glitch pairs cancelled to nothing). Every write is
+        // captured and no 0 T pulse reaches the file.
         auto emu = next_machine();
         const std::string path = tmp("dma28.tzx");
         std::filesystem::remove(path);
@@ -1048,9 +1050,9 @@ void emulator_rows() {
         const TzxView v = view(read_file(path));
         size_t zero = 0;
         for (uint32_t p : v.pulses) if (p == 0) ++zero;
-        check("TSAVE-56", "at 28 MHz the DMA's 64 MIC writes (2 master cycles apart) are all "
-              "captured, and the file holds no 0 T pulse: sub-half-T glitch pairs cancel",
-              edges == 64 && zero == 0 && v.pulses.empty(),
+        check("TSAVE-56", "at 28 MHz the DMA's 64 MIC writes (6 master cycles apart, 3+3 cycles) "
+              "are all captured, and the file holds no 0 T pulse",
+              edges == 64 && zero == 0 && v.pulses.size() == 64,
               "edges=" + std::to_string(edges) + " pulses=" + std::to_string(v.pulses.size()) +
                   " zero=" + std::to_string(zero));
     }
@@ -1075,14 +1077,18 @@ void emulator_rows() {
         emu->run_frame();
         emu->stop_tape_save();
         const TzxView v = view(read_file(path));
+        // hungarian-ui: the first two pulses are the DMA's (one byte to the
+        // next, and its last write to the first CPU write), whose length is
+        // the burst's own timing, not an instruction's; counted from the third.
         size_t good = 0, starts = 0;
-        for (uint32_t p : v.pulses) {
+        for (size_t i = 2; i < v.pulses.size(); ++i) {
+            const uint32_t p = v.pulses[i];
             if (p == 19 || p == 30) ++good;
             if (p == 18 || p == 31) ++starts;
         }
         check("TSAVE-62", "after a DMA burst, CPU writes are timed at their own I/O cycle again: "
               "OUT (n),A and OUT (C),A alternating give 19/30 T pulses, never the 18/31 T "
-              "their instruction starts are apart",
+              "their instruction starts are apart (the DMA's own two pulses excluded)",
               good > 400 && starts == 0,
               "good=" + std::to_string(good) + " starts=" + std::to_string(starts) +
                   " pulses=" + std::to_string(v.pulses.size()));
