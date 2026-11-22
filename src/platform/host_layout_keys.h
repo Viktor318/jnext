@@ -196,10 +196,15 @@ inline constexpr int QT_KEY_ALT = 0x01000023;          // Qt::Key_Alt
 inline constexpr int QT_KEY_ALTGR = 0x01001103;        // Qt::Key_AltGr
 inline constexpr int QT_KEY_DEAD_FIRST = 0x01001250;   // Qt::Key_Dead_Grave
 inline constexpr int QT_KEY_DEAD_LAST = 0x0100129f;    // end of the Qt::Key_Dead_* block
-/// The right Alt's native scan code: on Windows the Alt scan code 0x38 with the
-/// extended-key bit (Qt reports it as 0x100); under X11 / Wayland (xkb) keycode
-/// 108, evdev KEY_RIGHTALT + 8. Where it is unknown (macOS reports none), 0.
-inline constexpr uint32_t RIGHT_ALT_SCAN_WINDOWS = 0x138;
+/// The right Alt's native scan code: on Windows the Alt scan code 0x38 of an
+/// extended key, which Qt reports with the 0xE0 prefix as 0xE038 (measured on
+/// Viktor's Windows with Qt 6.8.3, 2026-11-22: left Alt 0x38, right Alt 0xE038,
+/// right Ctrl 0xE01D; AltGr's own Ctrl is the left one, 0x1D); the lParam form
+/// 0x138 (extended-key bit 0x100) is accepted too. Under X11 / Wayland (xkb)
+/// keycode 108, evdev KEY_RIGHTALT + 8. Where it is unknown (macOS reports
+/// none), 0.
+inline constexpr uint32_t RIGHT_ALT_SCAN_WINDOWS = 0xE038;
+inline constexpr uint32_t RIGHT_ALT_SCAN_WINDOWS_LPARAM = 0x138;
 inline constexpr uint32_t RIGHT_ALT_SCAN_XKB = 108;
 
 /// The right Alt (AltGr): Qt::Key_AltGr (X11 with a layout that has AltGr), or
@@ -208,7 +213,9 @@ inline constexpr uint32_t RIGHT_ALT_SCAN_XKB = 108;
 inline bool is_right_alt(int qt_key, uint32_t scan, uint32_t right_alt_scan)
 {
     if (qt_key == QT_KEY_ALTGR) return true;
-    return qt_key == QT_KEY_ALT && right_alt_scan != 0 && scan == right_alt_scan;
+    if (qt_key != QT_KEY_ALT || right_alt_scan == 0) return false;
+    if (right_alt_scan == RIGHT_ALT_SCAN_WINDOWS && scan == RIGHT_ALT_SCAN_WINDOWS_LPARAM) return true;
+    return scan == right_alt_scan;
 }
 
 inline bool is_dead_key(int qt_key)

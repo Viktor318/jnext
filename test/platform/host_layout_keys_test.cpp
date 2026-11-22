@@ -106,7 +106,7 @@ struct Rig {
     // Modifier keys, by their Windows scan codes (the module does not care).
     void mod(int sc, bool pressed)
     {
-        const uint32_t phys = sc == SC_RALT ? 0x138 : sc == SC_LALT ? 0x38
+        const uint32_t phys = sc == SC_RALT ? 0xE038 : sc == SC_LALT ? 0x38
                             : sc == SC_LCTRL ? 0x1d : sc == SC_LSHIFT ? 0x2a : 0x100 + sc;
         if (pressed) t.on_press(KeyEvent{phys, sc, 0, false});
         else         t.on_release(KeyEvent{phys, sc, 0, false});
@@ -638,14 +638,15 @@ void frontend_rows()
               && layout_on(Mode::On, true) && !layout_on(Mode::Off, true) && !layout_on(Mode::Off, false));
 
     {
-        const bool win = is_right_alt(QT_KEY_ALT, 0x138, RIGHT_ALT_SCAN_WINDOWS)
+        const bool win = is_right_alt(QT_KEY_ALT, 0xE038, RIGHT_ALT_SCAN_WINDOWS)
+                      && is_right_alt(QT_KEY_ALT, 0x138, RIGHT_ALT_SCAN_WINDOWS)
                       && !is_right_alt(QT_KEY_ALT, 0x38, RIGHT_ALT_SCAN_WINDOWS);
         const bool xkb = is_right_alt(QT_KEY_ALT, 108, RIGHT_ALT_SCAN_XKB)
                       && !is_right_alt(QT_KEY_ALT, 64, RIGHT_ALT_SCAN_XKB);
         const bool altgr = is_right_alt(QT_KEY_ALTGR, 0, 0) && is_right_alt(QT_KEY_ALTGR, 108, RIGHT_ALT_SCAN_XKB);
         const bool unknown = !is_right_alt(QT_KEY_ALT, 0, 0) && !is_right_alt(QT_KEY_ALT, 0x138, 0)
                           && !is_right_alt(QK_A, 0x138, RIGHT_ALT_SCAN_WINDOWS);
-        check("HLAY-43", "the right Alt: Key_AltGr, or Key_Alt with the platform's right-Alt scan code (Windows 0x138, xkb 108); never without one",
+        check("HLAY-43", "the right Alt: Key_AltGr, or Key_Alt with the platform's right-Alt scan code (Windows 0xE038 or 0x138, xkb 108); never without one",
               win && xkb && altgr && unknown);
     }
 
@@ -660,10 +661,10 @@ void frontend_rows()
                        && make_event(QK_DEAD_HORN, 0x02, 0, 0, 0, true, 0).dead
                        && !make_event(QT_KEY_DEAD_LAST + 1, 0x02, 0, 0, 0, true, 0).dead
                        && !make_event(QT_KEY_ALTGR, 0x02, 0, 0, 0, true, 0).dead;
-        const bool on = make_event(QT_KEY_ALT, 0x138, 0, 0, SC_LALT, true, RIGHT_ALT_SCAN_WINDOWS).sc == SC_RALT
+        const bool on = make_event(QT_KEY_ALT, 0xE038, 0, 0, SC_LALT, true, RIGHT_ALT_SCAN_WINDOWS).sc == SC_RALT
                      && make_event(QT_KEY_ALTGR, 108, 0, 0, 0, true, RIGHT_ALT_SCAN_XKB).sc == SC_RALT
                      && make_event(QT_KEY_ALT, 0x38, 0, 0, SC_LALT, true, RIGHT_ALT_SCAN_WINDOWS).sc == SC_LALT;
-        const bool off = make_event(QT_KEY_ALT, 0x138, 0, 0, SC_LALT, false, RIGHT_ALT_SCAN_WINDOWS).sc == SC_LALT
+        const bool off = make_event(QT_KEY_ALT, 0xE038, 0, 0, SC_LALT, false, RIGHT_ALT_SCAN_WINDOWS).sc == SC_LALT
                       && make_event(QT_KEY_ALTGR, 108, 0, 0, 0, false, RIGHT_ALT_SCAN_XKB).sc == 0;
         check("HLAY-44", "a Qt key event: physical id scan code, else virtual key, else key; Key_Dead_* is dead; AltGr is SC_RALT only with the layout on",
               phys && dead && on && off);
@@ -693,14 +694,14 @@ void frontend_rows()
         };
         // AltGr on Windows: a left Ctrl, then the right Alt with Ctrl held.
         Win on(true);
-        const bool altgr_on = on.key(QK_CONTROL, 0x1d, true) || on.key(QT_KEY_ALT, 0x138, true);
-        on.key(QT_KEY_ALT, 0x138, false); on.key(QK_CONTROL, 0x1d, false);
+        const bool altgr_on = on.key(QK_CONTROL, 0x1d, true) || on.key(QT_KEY_ALT, 0xE038, true);
+        on.key(QT_KEY_ALT, 0xE038, false); on.key(QK_CONTROL, 0x1d, false);
         const bool left_on = on.key(QT_KEY_ALT, 0x38, true) ? false : on.key(QK_CONTROL, 0x1d, true);
         on.key(QK_CONTROL, 0x1d, false); on.key(QT_KEY_ALT, 0x38, false);
         const bool ctrl_first_on = !on.key(QK_CONTROL, 0x1d, true) && on.key(QT_KEY_ALT, 0x38, true);
         on.key(QT_KEY_ALT, 0x38, false); on.key(QK_CONTROL, 0x1d, false);
         Win off(false);
-        const bool altgr_off = !off.key(QK_CONTROL, 0x1d, true) && off.key(QT_KEY_ALT, 0x138, true);
+        const bool altgr_off = !off.key(QK_CONTROL, 0x1d, true) && off.key(QT_KEY_ALT, 0xE038, true);
         check("HLAY-45", "mouse release, layout on: AltGr (Ctrl + right Alt) keeps the mouse, Ctrl + left Alt in either order lets go; layout off: AltGr lets go, as before",
               !altgr_on && left_on && ctrl_first_on && altgr_off && !on.sides.left() && !on.sides.right());
     }
@@ -959,6 +960,28 @@ void chord_rows()
     }
 }
 
+// Qt 6.8.3 on Viktor's Windows (2026-11-22, a key log of the window): left
+// Alt 0x38, right Alt 0xE038, left Ctrl 0x1D (also AltGr's own), right Ctrl
+// 0xE01D. Before this the module expected 0x138 and took AltGr for the left
+// Alt, so a captured mouse was let go by AltGr.
+void measured_rows()
+{
+    AltSides sides;
+    // AltGr + V as logged: Ctrl 0x1D down, Alt 0xE038 down, '@' (Qt::Key_At), ups.
+    sides.on_key(0x01000021, 0x1d, RIGHT_ALT_SCAN_WINDOWS, true);
+    sides.on_key(QT_KEY_ALT, 0xE038, RIGHT_ALT_SCAN_WINDOWS, true);
+    const bool during = sides.right() && !sides.left();
+    const ReleaseView v = release_view(true, pointer_capture::HostKey::Alt,
+                                       is_right_alt(QT_KEY_ALT, 0xE038, RIGHT_ALT_SCAN_WINDOWS), true, sides);
+    sides.on_key(QT_KEY_ALT, 0xE038, RIGHT_ALT_SCAN_WINDOWS, false);
+    sides.on_key(QT_KEY_ALT, 0x38, RIGHT_ALT_SCAN_WINDOWS, true);
+    const bool left = sides.left() && !sides.right();
+    check("HLAY-56", "Windows, Qt 6.8.3 as measured: the right Alt 0xE038 is AltGr (not Alt for the mouse release), the left Alt 0x38 and the right Ctrl 0xE01D are not",
+          during && v.key == pointer_capture::HostKey::Other && !v.alt_held && left
+              && !is_right_alt(0x01000021, 0xE01D, RIGHT_ALT_SCAN_WINDOWS)
+              && make_event(QT_KEY_ALT, 0xE038, 0x12, 0, SC_LALT, true, RIGHT_ALT_SCAN_WINDOWS).sc == SC_RALT);
+}
+
 } // namespace
 
 int main()
@@ -978,6 +1001,7 @@ int main()
     wiring_rows();
     nextbasic_rows();
     chord_rows();
+    measured_rows();
     std::printf("Total: %4d  Passed: %4d  Failed: %4d  Skipped: %4d\n",
                 g_pass + g_fail, g_pass, g_fail, 0);
     return g_fail ? 1 : 0;
