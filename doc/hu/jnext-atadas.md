@@ -183,5 +183,6 @@ Engedélyezett webhelyek: `download.qt.io`, `master.qt.io`, `specnext.com`, `git
 5. Viktor hibalistája (gyűjti); javítani csak jóváhagyás után.
 6. Magyarítás 4. lépése: a magból jövő üzenetek (`doc/hu/jnext-magyaritas.md`).
 6a. Kívánságlista 5–6.: virtuális billentyűzet; a gép állapotának mentése kilépéskor és visszatöltése indításkor (beállítható). Előbb felmérés.
+6b. **Upstream átnézése (Viktor, 2026-11-22):** a `jorgegv/jnext` `main` ága 168 commitot lépett előre a legutóbbi beolvasztás óta (`fcac39b`, 1.3.43 → `6a2fa80`, v1.3.57). Meg kell nézni, mi jött (ütközik-e a magyar munkával: billentyűzet, felület, fordítások, CI), és Viktor dönt a beolvasztásról; a `main` → `hungarian-ui` beolvasztás csak az ő kérésére.
 7. Döntés a független átnézésről; a blitterről.
 8. Kapcsolat a ZEsarUX-szal: a ZEsarUX blittere (`4f552285`, `d3021c55`) a JNEXT-hez minta; a DMA-modell a ZEsarUX-ban kész (`6809ec69`). Ötlet a ZEsarUX-hoz: a „Csak a kép” és az 1.5x megfelelője.
