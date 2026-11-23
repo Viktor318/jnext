@@ -110,6 +110,7 @@ PreferencesDialog::PreferencesDialog(const AppConfigData& current, QWidget* pare
             static_cast<int>(std::lround(current.audio_gain_ay_db[chip])));
     audio_dac_gain_slider_->setValue(
         static_cast<int>(std::lround(current.audio_gain_dac_db)));
+    audio_oversample_check_->setChecked(current.audio_oversample);
     esp_enabled_check_->setChecked(current.esp_enabled);
     {
         QStringList hosts;
@@ -432,6 +433,13 @@ QWidget* PreferencesDialog::build_audio_tab() {
            "master gain; large boosts may clip."), tab);
     note->setWordWrap(true);
     form->addRow(QString(), note);
+
+    audio_oversample_check_ = new QCheckBox(tr("Oversampled sound (4x)"), tab);
+    audio_oversample_check_->setObjectName(QStringLiteral("audioOversampleCheck"));
+    audio_oversample_check_->setToolTip(
+        tr("Mixes at 176.4 kHz and filters down to 44.1 kHz: clearer high notes for a few "
+           "per cent more CPU. Takes effect at once; recordings include it."));
+    form->addRow(QString(), audio_oversample_check_);
 
     return tab;
 }
@@ -766,6 +774,7 @@ AppConfigData PreferencesDialog::collect() const {
         cfg.audio_gain_ay_db[chip] =
             static_cast<float>(audio_ay_gain_slider_[chip]->value());
     cfg.audio_gain_dac_db = static_cast<float>(audio_dac_gain_slider_->value());
+    cfg.audio_oversample = audio_oversample_check_->isChecked();
     QComboBox* const joy_combo[2] = { joy1_source_combo_, joy2_source_combo_ };
     for (int i = 0; i < 2; ++i) {
         const QString key = joy_combo[i]->currentData().toString();

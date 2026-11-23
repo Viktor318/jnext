@@ -1637,6 +1637,12 @@ use the key: the Qt window, the SDL-only build (both interactive) or
     **--audio-gain-ay0-db**, **--audio-gain-ay1-db**,
     **--audio-gain-ay2-db** and **--audio-gain-dac-db**. All frontends.
 
+`audio.oversample` *true\|false*
+:   Mix the sound at 176.4 kHz and filter it down to 44.1 kHz instead of
+    averaging straight to 44.1 kHz: clearer high notes, above all from
+    the DACs, for a few per cent more CPU. WAV and video recordings
+    include it. Default false. All frontends.
+
 `paths.last_load_dir` *PATH*
 :   The directory the Load dialogs open in. The Qt window.
 

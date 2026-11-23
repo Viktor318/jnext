@@ -493,6 +493,7 @@ int main(int argc, char* argv[]) {
     std::string dac_trace_file;
     std::string audio_log_file;
     cli::AudioGainArgs audio_gain;
+    bool        audio_oversample = false, audio_oversample_set = false;   // hungarian-ui --set audio.oversample
     std::string rzx_play_file;
     std::string rzx_record_file;
     int         speed_percent = 100;
@@ -647,6 +648,10 @@ int main(int argc, char* argv[]) {
         case KeyId::AudioGainAy1Db:    gain(cli::OptId::AudioGainAy1Db); break;
         case KeyId::AudioGainAy2Db:    gain(cli::OptId::AudioGainAy2Db); break;
         case KeyId::AudioGainDacDb:    gain(cli::OptId::AudioGainDacDb); break;
+        case KeyId::AudioOversample:
+            audio_oversample = on;
+            audio_oversample_set = true;
+            break;
         case KeyId::PathsSdCardPath:
             sd_card_image = t;
             break;
@@ -2763,6 +2768,7 @@ int main(int argc, char* argv[]) {
         for (int chip = 0; chip < 3; ++chip)
             cfg.audio_gain_ay_db[chip] = audio_gain.ay[chip];
         cfg.audio_gain_dac_db      = audio_gain.dac;
+        cfg.audio_oversample       = audio_oversample;
         cfg.joy_source[0]          = joy_source[0];   // Task 79 (CLI value)
         cfg.joy_source[1]          = joy_source[1];
         cfg.joy_device[0].id       = joy_device_id[0];   // GH #311 (CLI value; SDL-only has no config)
@@ -2817,6 +2823,9 @@ int main(int argc, char* argv[]) {
             cfg.audio_gain_dac_db = merge_cli_precedence(
                 audio_gain.dac_set, audio_gain.dac,
                 gui_app_config.data().audio_gain_dac_db);
+            cfg.audio_oversample = merge_cli_precedence(
+                audio_oversample_set, audio_oversample,
+                gui_app_config.data().audio_oversample);
             // Task 79 — per-connector input source: CLI wins, else saved config.
             cfg.joy_source[0] = merge_cli_precedence(joy_source_set[0], joy_source[0],
                                                      gui_app_config.data().joy_source[0]);
@@ -3124,6 +3133,7 @@ int main(int argc, char* argv[]) {
                 gui_app_config.data().audio_gain_ay_db[chip] =
                     cfg.audio_gain_ay_db[chip];
             gui_app_config.data().audio_gain_dac_db = cfg.audio_gain_dac_db;
+            gui_app_config.data().audio_oversample = cfg.audio_oversample;
             // Issue #35 — the degradation policy has a CLI competitor too, and
             // is resolved the same way. It is NOT carried in EmulatorConfig:
             // the emulated machine has no opinion about which of picture and

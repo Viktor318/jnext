@@ -6045,6 +6045,11 @@ at start-up. The Qt window.</dd>
 <strong>--audio-gain-db</strong>, <strong>--audio-gain-beeper-db</strong>,
 <strong>--audio-gain-ay0-db</strong>, <strong>--audio-gain-ay1-db</strong>,
 <strong>--audio-gain-ay2-db</strong> and <strong>--audio-gain-dac-db</strong>. All frontends.</dd>
+<dt><code>audio.oversample</code> <em>true|false</em></dt>
+<dd>Mix the sound at 176.4 kHz and filter it down to 44.1 kHz instead of
+averaging straight to 44.1 kHz: clearer high notes, above all from
+the DACs, for a few per cent more CPU. WAV and video recordings
+include it. Default false. All frontends.</dd>
 <dt><code>paths.last_load_dir</code> <em>PATH</em></dt>
 <dd>The directory the Load dialogs open in. The Qt window.</dd>
 <dt><code>paths.sd_card_path</code> <em>FILE</em></dt>

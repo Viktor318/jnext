@@ -10,6 +10,7 @@
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QSlider>
+#include <QCheckBox>
 
 #include <cstdio>
 #include "../row_id.h"
@@ -97,6 +98,18 @@ int main(int argc, char** argv)
                     collected.audio_gain_ay_db[2] == -5.0f &&
                     collected.audio_gain_dac_db == -6.0f);
 
+    // hungarian-ui: the oversampling checkbox - off as given, collected, applied live.
+    {
+        auto* box = dialog.findChild<QCheckBox*>(QStringLiteral("audioOversampleCheck"));
+        const bool off = box && !box->isChecked() && !collected.audio_oversample;
+        if (box) box->setChecked(true);
+        buttons->button(QDialogButtonBox::Apply)->click();
+        check("SGP-HU-01", off && collected.audio_oversample);
+        PreferencesDialog again(collected);
+        auto* box2 = again.findChild<QCheckBox*>(QStringLiteral("audioOversampleCheck"));
+        check("SGP-HU-02", box2 && box2->isChecked());
+    }
+
     Emulator emulator;
     EmulatorConfig config;
     config.type = MachineType::ZX48K;
@@ -114,6 +127,11 @@ int main(int argc, char** argv)
                     emulator.mixer().ay_gain_db(1) == -4.0f &&
                     emulator.mixer().ay_gain_db(2) == -5.0f &&
                     emulator.mixer().dac_gain_db() == -6.0f);
+
+    const bool live_on = emulator.mixer().oversample();
+    collected.audio_oversample = false;
+    window.apply_startup_config(collected);
+    check("SGP-HU-03", live_on && !emulator.mixer().oversample());
 
     std::printf("Total: %d Passed: %d Failed: %d Skipped: 0\n",
                 passed + failed, passed, failed);

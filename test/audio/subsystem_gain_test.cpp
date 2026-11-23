@@ -236,6 +236,21 @@ void lifecycle_tests()
                    emulator.mixer().ay_gain_db(1) == 4.0f &&
                    emulator.mixer().ay_gain_db(2) == 5.0f &&
                    emulator.mixer().dac_gain_db() == 6.0f);
+
+    // hungarian-ui: audio.oversample takes the same road - init, reset, cold boot.
+    EmulatorConfig os_cfg;
+    os_cfg.audio_oversample = true;
+    Emulator os_emu;
+    const bool os_init = os_emu.init(os_cfg) && os_emu.mixer().oversample();
+    os_emu.mixer().set_oversample(false);
+    EmulatorConfig os_seen;
+    ColdBootHooks os_hooks;
+    os_hooks.rewire_host = [&os_seen](const EmulatorConfig& used) { os_seen = used; };
+    emulator_frontend_cold_boot(os_emu, os_cfg, "", os_hooks);
+    const bool os_off = !os_seen.audio_oversample && !os_emu.mixer().oversample();
+    os_emu.mixer().set_oversample(true);
+    emulator_frontend_cold_boot(os_emu, EmulatorConfig(), "", os_hooks);
+    check("SG-HU-01", os_init && os_off && os_seen.audio_oversample && os_emu.mixer().oversample());
 }
 
 void cli_assignment_tests()

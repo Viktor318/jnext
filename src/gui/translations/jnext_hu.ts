@@ -3568,6 +3568,14 @@ Csak a módosított hozzárendelések kerülnek a beállításfájlba.</translat
         <source>EDIT, CAPS LOCK, TRUE/INV VIDEO, the cursor keys, GRAPH and DELETE, on a keyboard whose Shift + digit types other characters. While a debugger script is loaded, Alt+1..8 stay its keys.</source>
         <translation>EDIT, CAPS LOCK, TRUE/INV VIDEO, a kurzorbillentyűk, GRAPH és DELETE olyan billentyűzeten, amelyen a Shift + számjegy más karaktert ad. Amíg hibakereső-szkript van betöltve, az Alt+1..8 a szkripté marad.</translation>
     </message>
+    <message>
+        <source>Oversampled sound (4x)</source>
+        <translation>Túlmintavételezett hang (4x)</translation>
+    </message>
+    <message>
+        <source>Mixes at 176.4 kHz and filters down to 44.1 kHz: clearer high notes for a few per cent more CPU. Takes effect at once; recordings include it.</source>
+        <translation>176,4 kHz-en kever, majd 44,1 kHz-re szűr: tisztább magas hangok, néhány százalékkal több processzoridőért. Azonnal életbe lép; a felvételekben is benne van.</translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>

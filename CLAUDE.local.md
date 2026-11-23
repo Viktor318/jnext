@@ -53,7 +53,8 @@ Alap: upstream 1.3.66 (beolvasztás `b32ebe7`; a teljes CI utána zöld, `451788
 - windowsos magyar billentyűzet (karakter szerinti gépelés, bal Alt + számjegy; `1263eb4`, `c743724`, `3f109af`), Viktor Windowson kipróbálta (2026-11-22);
 - a címsorra kattintás nem akasztja az emulációt (Windows, `gui/window_stalls.h`);
 - DMA-időzítés a KS3 mérése szerint (`6cf89c6`, `188907b`, `e5b2fef`): 3,5 MHz-en pontosan a KS3-é, 28 MHz-en 1 soron belül;
-- az NXModPlayer recsegése: két IM2 RETI-hiba javítva (`doc/hu/jnext-hang-terv.md` vége).
+- az NXModPlayer recsegése: két IM2 RETI-hiba javítva (`6f4a015`), Viktor kipróbálta: megszűnt;
+- 4×-es túlmintavétel (`audio.oversample`, alapból ki; `doc/hu/jnext-hang-terv.md` vége).
 
 Következik: a **hangterv felülvizsgált sorrendje Viktor döntésére vár** (`doc/hu/jnext-hang-terv.md` vége: előbb mérés az ő gépén, aztán állítható hangpuffer – ez a párbeszédablakok alatti akadásra is –, DAC-keverő, jobb mintavételezés, „tévé” szűrő). Felmérésre vár: az átméretezhető ablak (7.), a virtuális billentyűzet (5.), az állapotmentés kilépéskor (6.). A blitter (3.03-as core) egyelőre nem kell (Viktor, 2026-11-21).
 

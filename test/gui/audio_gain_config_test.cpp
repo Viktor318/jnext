@@ -119,6 +119,21 @@ int main(int argc, char** argv)
     check("SGC-21", close(valid.data().audio_gain_ay_db[2], 5.0f));
     check("SGC-22", close(valid.data().audio_gain_dac_db, 6.0f));
 
+    // hungarian-ui: audio.oversample, a Bool, default off.
+    check("SGC-HU-01", !AppConfigData().audio_oversample && !d.audio_oversample &&
+                       !valid.data().audio_oversample);
+    {
+        const QString os_path = dir.filePath(QStringLiteral("oversample.conf"));
+        AppConfig w(os_path);
+        w.data().audio_oversample = true;
+        w.save();
+        QSettings raw(os_path, QSettings::IniFormat);
+        AppConfig r(os_path);
+        r.load();
+        check("SGC-HU-02", raw.value(QStringLiteral("audio/oversample")).toString() == QStringLiteral("true") &&
+                           r.data().audio_oversample);
+    }
+
     std::printf("Total: %d Passed: %d Failed: %d Skipped: 0\n",
                 passed + failed, passed, failed);
     return failed == 0 ? 0 : 1;

@@ -65,6 +65,7 @@ struct AppConfigData {
     float       audio_gain_beeper_db   = 0.0f;
     float       audio_gain_ay_db[3]    = {0.0f, 0.0f, 0.0f};
     float       audio_gain_dac_db      = 0.0f;
+    bool        audio_oversample       = false;   // hungarian-ui
 
     // Task 79 — per-connector host input source (index 0 = Joy 1, 1 = Joy 2).
     // Default Sdl/Sdl reproduces the historical behaviour. Persisted as the

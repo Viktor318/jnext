@@ -352,6 +352,8 @@ void AppConfig::load() {
         load_gain(settings_, KeyId::AudioGainAy1Db, data_.audio_gain_ay_db[1]);
         load_gain(settings_, KeyId::AudioGainAy2Db, data_.audio_gain_ay_db[2]);
         load_gain(settings_, KeyId::AudioGainDacDb, data_.audio_gain_dac_db);
+        data_.audio_oversample = settings_.value(
+            N(KeyId::AudioOversample), data_.audio_oversample).toBool();
     }
     settings_.endGroup();
 
@@ -537,6 +539,7 @@ void AppConfig::save() const {
     settings_.setValue(N(KeyId::AudioGainAy1Db), gain_text(data_.audio_gain_ay_db[1]));
     settings_.setValue(N(KeyId::AudioGainAy2Db), gain_text(data_.audio_gain_ay_db[2]));
     settings_.setValue(N(KeyId::AudioGainDacDb), gain_text(data_.audio_gain_dac_db));
+    settings_.setValue(N(KeyId::AudioOversample), data_.audio_oversample);
     settings_.endGroup();
 
     settings_.beginGroup(S(KeyId::PathsLastLoadDir));

@@ -48,6 +48,9 @@ beeper, each of the three TurboSound AY chips, and the DAC family. Every slider
 is centred on the 0 dB default, which leaves that source unchanged. Subsystem
 gains are applied before the master. Changes apply immediately to playback and
 WAV/video recording; large positive boosts can clip.
+**Oversampled sound (4x)** (`audio.oversample`, off by default) mixes at
+176.4 kHz and filters down to 44.1 kHz, which gives clearer high notes, above all
+from the DACs, for a few per cent more CPU.
 
 **Network** holds the emulated ESP-01 WiFi module: an **Enable** checkbox and
 an **Allowed hosts** box, one host name per line — a comma separates entries

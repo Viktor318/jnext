@@ -110,6 +110,7 @@ private:
     QSlider* audio_beeper_gain_slider_ = nullptr;
     QSlider* audio_ay_gain_slider_[3] = {nullptr, nullptr, nullptr};
     QSlider* audio_dac_gain_slider_ = nullptr;
+    QCheckBox* audio_oversample_check_ = nullptr;   // hungarian-ui
 
     QCheckBox*      esp_enabled_check_ = nullptr;   // GH #25
     QPlainTextEdit* esp_hosts_edit_    = nullptr;

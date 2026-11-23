@@ -1642,6 +1642,12 @@ The master, beeper, AY \#0, \#1, \#2 and DAC gains in dB;
 **--audio-gain-ay0-db**, **--audio-gain-ay1-db**,
 **--audio-gain-ay2-db** and **--audio-gain-dac-db**. All frontends.
 
+`audio.oversample` *true\|false*  
+Mix the sound at 176.4 kHz and filter it down to 44.1 kHz instead of
+averaging straight to 44.1 kHz: clearer high notes, above all from the
+DACs, for a few per cent more CPU. WAV and video recordings include it.
+Default false. All frontends.
+
 `paths.last_load_dir` *PATH*  
 The directory the Load dialogs open in. The Qt window.
 
@@ -3895,7 +3901,8 @@ Capture Layer 2 on its own, then the ULA and sprites together:
 GUI configuration, in INI format. Written by **Settings \>
 Preferences**. Host gains are stored under `[audio]` as `gain_db`
 (master), `gain_beeper_db`, `gain_ay0_db`, `gain_ay1_db`, `gain_ay2_db`,
-and `gain_dac_db`. The degradation policy is stored under `[startup]` as
+and `gain_dac_db`; `oversample` (`true`/`false`) is the 4x oversampled
+sound. The degradation policy is stored under `[startup]` as
 `when_slow_prefer` (`audio` or `video`, the persistent form of
 **--when-slow-prefer**); an unrecognised value keeps the default rather
 than changing how the emulator degrades. The emulated ESP-01 is stored

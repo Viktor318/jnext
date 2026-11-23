@@ -76,4 +76,15 @@ A DAC-írások szórásának csökkentése (a hang szempontjából a lejárat pi
   - egy RETI-t kétszer dolgozott fel (`on_reti()`, majd ugyanazt az impulzust a `step_devices()`), így egymásba ágyazott megszakításnál a külső eszköz is felszabadult (`im2_device.vhd:123-128` szerint csak egy).
 - **Mérés** (26.11a-s kártya, `dune_ecolove`, 30 különböző indítási képkocka): javítás előtt 6 hibás indítás, javítva 0; 21 szakasz a 0-s leállítás és újraindítás után: előtte 2 rossz fázisú, javítva 0. Csak a második javítással a zene elnémul (a kettős feloldás eltakarta az elveszett RETI-t), ezért a kettő együtt kellett.
 - **Tesztek:** IM2C-08 és IM2C-09 a VHDL-hez igazítva (a régi, lehívásonkénti modellt rögzítették); új IM2C-HU-01..03, IM2P-HU-01..02. Mutációval mindegyik ellenőrizve.
-- **Ami a tervből marad** (mind Viktor döntésére vár): állítható hangpuffer (a párbeszédablakok alatti akadásra, kívánságlista 3.), DAC-keverő, jobb mintavételezés, „tévé” szűrő.
+- **Viktor próbája (2026-11-23, `6f4a015` Windows-build): a recsegés megszűnt.**
+- **Ami a tervből marad** (mind Viktor döntésére vár): állítható hangpuffer (a párbeszédablakok alatti akadásra, kívánságlista 3.), DAC-keverő, „tévé” szűrő. A jobb mintavételezés kész (lent).
+
+## 4×-es túlmintavétel (2026-11-23, Viktor jóváhagyásával)
+
+Viktor két WAV-ot hasonlított össze (Jarresque, a mostani és a 4×-es módszer ugyanabból a DAC-felvételből), és hallotta a különbséget.
+
+- **Megvalósítás:** `src/audio/oversampler.{h,cpp}`: az átlagolás a kimeneti minta négy részén (176,4 kHz), majd 256 együtthatós lineáris fázisú FIR (Blackman, 20,5 kHz) 44,1 kHz-re. A `Mixer`-ben csak egy elágazás; kikapcsolva a mai út fut. Nem a gép állapota, mentésbe nem kerül.
+- **Beállítás:** `audio.oversample` (alapból **ki**), Beállítások > Hang > „Túlmintavételezett hang (4x)”, azonnal életbe lép; `--set audio.oversample=true`. A felvételekben is benne van.
+- **Mérés:** 3 kHz-es, 31,25 kHz-en lépcsőzött hang visszahajló összetevői legalább 30 dB-lel kisebbek (OS-HU-04); 16 kHz-en a mai −2 dB helyett 0,3 dB-en belül. A Jarresque-on a program kimenete a meghallgatott WAV-val 0,37 egységen belül egyezik; kikapcsolva bitre a korábbi. Sebesség (NXModPlayer, Release, SDL-build): kikapcsolva nem lassabb, bekapcsolva 4–6%. Késleltetés 0,7 ms; átkapcsoláskor apró pattanás lehet.
+- **Tesztek:** OS-HU-01..07, SG-HU-01, SGC-HU-01..02, SGP-HU-01..03, mutációval ellenőrizve.
+- **ZEsarUX:** nem kell, a DAC ott a jó minőségű hangnál már sávkorlátozott (Blip_Buffer, `audio_hq_dac`, 48 kHz).

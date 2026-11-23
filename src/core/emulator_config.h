@@ -435,6 +435,7 @@ struct EmulatorConfig {
     float audio_gain_beeper_db = 0.0f;
     float audio_gain_ay_db[3] = {0.0f, 0.0f, 0.0f};
     float audio_gain_dac_db = 0.0f;
+    bool  audio_oversample = false;   // hungarian-ui: 4x oversampled mix (audio/oversampler.h)
 
     // GH #25 — the emulated ESP-01 WiFi module on UART 0.
     //

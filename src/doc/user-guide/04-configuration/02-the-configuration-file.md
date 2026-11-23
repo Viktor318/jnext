@@ -47,7 +47,9 @@ Host audio gains are stored in the `[audio]` section: `gain_db` is the master,
 with `gain_beeper_db`, `gain_ay0_db`, `gain_ay1_db`, `gain_ay2_db`, and
 `gain_dac_db` for the individual sources. Each accepts -24 through +24; an
 invalid value falls back to 0 dB. An explicit matching `--audio-gain-...-db`
-value overrides the saved setting for that run.
+value overrides the saved setting for that run. `oversample` (`true` or `false`,
+default `false`) is the 4x oversampled sound of the Preferences **Audio** tab;
+`--set audio.oversample=true` turns it on for one run.
 
 The Source tab's colour scheme is stored in the `[source]` section as `colour_scheme`: `auto`, `light`,
 `dark` or `borland`. Anything else in that key keeps `auto`. It is the persistent form of the

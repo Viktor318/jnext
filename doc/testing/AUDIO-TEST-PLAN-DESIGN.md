@@ -587,6 +587,24 @@ deck is derived from its position, MX-93..100). Full-machine rows in `audio_next
 | MX-100 | A WAV restore finds the edge by looking back      | young (1000 T): mix 512; old (9000 T, look-back capped at 8192 T): mix 0 |
 | MX-101 | A `.jns` load inside a tape's hold re-derives the tape edge at the deck reattach | TAP played 1000 T into the first pause, saved, loaded into a fresh machine: age within 800 master cycles, mix 512, deck playing |
 
+### 5.5 Oversampled output (hungarian-ui)
+
+`audio.oversample` (off by default): the mix is averaged over four equal parts of each output sample (176.4 kHz)
+and brought back to 44.1 kHz by a 256-tap linear-phase FIR (`src/audio/oversampler.h`). A host feature, no VHDL.
+
+| ID       | Test                                                   | Verification                                              |
+|----------|--------------------------------------------------------|-----------------------------------------------------------|
+| OS-HU-01 | Off by default, off again after on                     | Output bit-identical to a mixer that never had it on      |
+| OS-HU-02 | Silence with it on                                     | Exact digital 0                                           |
+| OS-HU-03 | Constant level, left full positive, right full negative | Settles at the plain path's level on each side            |
+| OS-HU-04 | Stepped 3 kHz tone at 31.25 kHz (NXModPlayer's rate)   | The images folded to 15.85 and 9.85 kHz at least 30 dB lower than on the plain path |
+| OS-HU-05 | Passband                                               | 0 dB at 1 kHz, within 0.3 dB at 16 kHz (the plain path: -2 dB) |
+| OS-HU-06 | Slicing of the emulated time                           | 1 cycle, 47 cycles or whole spans give the same samples   |
+| OS-HU-07 | `Mixer::reset()`                                       | Clears the filter's past, keeps the setting               |
+
+SG-HU-01 (`subsystem_gain_test`: init and cold boot), SGC-HU-01/02 (`audio_gain_config_test`: jnext.conf) and
+SGP-HU-01..03 (`audio_gain_preferences_test`: the checkbox, live apply) cover the setting.
+
 ## 6. NextREG Configuration
 
 ### 6.1 PSG Mode (NextREG 0x06)

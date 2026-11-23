@@ -7,6 +7,7 @@
 #include "audio/turbosound.h"
 #include "audio/dac.h"
 #include "audio/audio_mute.h"
+#include "audio/oversampler.h"
 
 class I2s;
 
@@ -132,6 +133,16 @@ public:
     void set_dac_gain_db(float db);
     float dac_gain_db() const { return dac_gain_db_; }
 
+    /// hungarian-ui - 4x oversampled output (audio.oversample; oversampler.h). A
+    /// host setting like the gains: reset() keeps it. Turning it on starts the
+    /// filter from silence.
+    void set_oversample(bool on)
+    {
+        if (on && !oversample_) oversampler_.reset();
+        oversample_ = on;
+    }
+    bool oversample() const { return oversample_; }
+
     /// Wire the I2s source (not owned). When set, generate_sample() adds
     /// the latched 10-bit L/R pair (zero-extended) into the 13-bit sum,
     /// mirroring audio_mixer.vhd:89-90,99-100.
@@ -190,4 +201,6 @@ private:
     float ay_gain_[3]{1.0f, 1.0f, 1.0f};
     float dac_gain_db_{0.0f};
     float dac_gain_{1.0f};
+    bool        oversample_{false};
+    Oversampler oversampler_;
 };

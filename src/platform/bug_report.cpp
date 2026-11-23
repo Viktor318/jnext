@@ -364,6 +364,7 @@ ValueRule config_value_rule(config_keys::KeyId id)
         case K::AudioGainAy1Db:
         case K::AudioGainAy2Db:
         case K::AudioGainDacDb:
+        case K::AudioOversample:
         case K::ScreenshotQuickFormat:
         case K::SnapshotQuickKeep:
         case K::InputJoy1Source:

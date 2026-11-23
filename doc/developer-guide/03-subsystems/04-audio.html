@@ -3315,6 +3315,10 @@ arrived as bug fixes:</p>
   DC offset. It makes every buffer seam a step of that height, heard as a click
   train.</li>
 </ul>
+<p>With <code>audio.oversample</code> on (off by default) <code>accumulate()</code> also feeds an <code>Oversampler</code> (<code>src/audio/oversampler.h</code>), which
+averages over four parts of each output sample (176.4 kHz) and low-passes them with a 256-tap FIR; its result replaces the
+single average in <code>emit_sample()</code>. It removes the images of stepped DAC signals that the box filter lets fold back, and the
+box filter's roll-off. Like the gains it is a host setting.</p>
 <p>Output is stereo <code>int16_t</code> at 44 100 Hz into a 4096-pair ring buffer, about four
 frames' worth, which drops the oldest sample on overrun. Two optional callbacks
 tap the same samples, one for <code>--record</code> video muxing and one for <code>--wav-record</code>

@@ -29,6 +29,7 @@
 #include "audio/i2s.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
@@ -3978,6 +3979,167 @@ static void g_io() {
 // Main
 // =====================================================================
 
+// ---- 5.5 Oversampled output (hungarian-ui, audio.oversample) --------
+//
+// A host feature with no VHDL: the rows pin what it is for (the images of a
+// stepped DAC signal no longer fold back, the top octave is not attenuated) and
+// what it must not do (change the default path, the level, the silence).
+
+namespace {
+
+// Drive the mixer as Emulator::advance_audio() does (chunks that stop at each
+// 28 MHz / 44.1 kHz sample boundary) with a sine of `freq` written to both left
+// DAC channels every `hold` master cycles. Left samples, the first `skip` dropped.
+std::vector<double> os_run(bool on, double freq, uint32_t hold, int samples, int skip, uint32_t slice)
+{
+    Beeper beeper; TurboSound ts; Dac dac; Mixer mixer;
+    mixer.set_oversample(on);
+    std::vector<double> out;
+    uint64_t accum = 0, now = 0, next_write = 0;
+    while (static_cast<int>(out.size()) < samples + skip) {
+        if (now == next_write) {
+            const double v = 128.0 + 100.0 * std::sin(2.0 * 3.14159265358979323846 * freq * now / 28.0e6);
+            const uint8_t b = static_cast<uint8_t>(std::lround(v));
+            dac.write_channel(0, b);
+            dac.write_channel(1, b);
+            next_write += hold;
+        }
+        uint64_t span = std::min<uint64_t>(slice, next_write - now);
+        now += span;
+        while (span > 0) {
+            const uint64_t need = (28000000u - accum + 44100 - 1) / 44100;
+            const uint64_t take = std::min(span, need);
+            mixer.accumulate(beeper, ts, dac, static_cast<uint32_t>(take));
+            accum += take * 44100;
+            span -= take;
+            if (accum >= 28000000u) { accum -= 28000000u; mixer.emit_sample(); }
+        }
+        int16_t pair[2];
+        while (mixer.read_samples(pair, 1) == 1) out.push_back(pair[0]);
+    }
+    out.erase(out.begin(), out.begin() + skip);
+    out.resize(static_cast<size_t>(samples));
+    return out;
+}
+
+// Amplitude of `freq` in x (Hann-windowed single-bin DFT).
+double os_tone(const std::vector<double>& x, double freq)
+{
+    const double pi = 3.14159265358979323846;
+    const size_t n = x.size();
+    double re = 0, im = 0, win = 0;
+    for (size_t i = 0; i < n; ++i) {
+        const double w = 0.5 - 0.5 * std::cos(2 * pi * i / n);
+        re += x[i] * w * std::cos(2 * pi * freq * i / 44100.0);
+        im -= x[i] * w * std::sin(2 * pi * freq * i / 44100.0);
+        win += w;
+    }
+    return 2.0 * std::sqrt(re * re + im * im) / win;
+}
+
+double os_db(double a, double b) { return 20.0 * std::log10((a + 1e-9) / (b + 1e-9)); }
+
+void g_oversample()
+{
+    set_group("5.5 Oversampling");
+    const std::string no_vhdl = "host feature, no VHDL";
+
+    {
+        Beeper beeper; TurboSound ts; Dac dac; Mixer never, toggled;
+        bool same = !never.oversample();
+        toggled.set_oversample(true);
+        toggled.set_oversample(false);
+        for (int i = 0; i < 500; ++i) {
+            dac.write_channel(i & 3, static_cast<uint8_t>(i * 37));
+            beeper.set_ear((i / 7) & 1);
+            never.accumulate(beeper, ts, dac, 635);   never.emit_sample();
+            toggled.accumulate(beeper, ts, dac, 635); toggled.emit_sample();
+            int16_t a[2], b[2];
+            same = same && never.read_samples(a, 1) == 1 && toggled.read_samples(b, 1) == 1 &&
+                   a[0] == b[0] && a[1] == b[1];
+        }
+        check("OS-HU-01", "off by default; off again after on, the output is bit-identical", same, no_vhdl);
+    }
+    {
+        Beeper beeper; TurboSound ts; Dac dac; Mixer mixer;
+        mixer.set_oversample(true);
+        bool zero = true;
+        for (int i = 0; i < 300; ++i) {
+            mixer.accumulate(beeper, ts, dac, 635);
+            mixer.emit_sample();
+            int16_t p[2];
+            zero = zero && mixer.read_samples(p, 1) == 1 && p[0] == 0 && p[1] == 0;
+        }
+        check("OS-HU-02", "a silent machine is exact digital zero with oversampling on", zero, no_vhdl);
+    }
+    {
+        // Left at full positive, right at full negative: the settled level is
+        // the plain path's, and neither side leaks into the other.
+        Beeper beeper; TurboSound ts; Dac dac; Mixer on, off;
+        on.set_oversample(true);
+        dac.write_channel(0, 0xFF); dac.write_channel(1, 0xFF);
+        dac.write_channel(2, 0x00); dac.write_channel(3, 0x00);
+        int16_t a[2] = {}, b[2] = {};
+        for (int i = 0; i < 400; ++i) {
+            on.accumulate(beeper, ts, dac, 635);  on.emit_sample();  on.read_samples(a, 1);
+            off.accumulate(beeper, ts, dac, 635); off.emit_sample(); off.read_samples(b, 1);
+        }
+        check("OS-HU-03", "a constant level settles at the plain path's level, left and right separately",
+              a[0] == b[0] && a[1] == b[1] && b[0] == 4064 && b[1] == -4096, no_vhdl);
+    }
+    {
+        // 31.25 kHz steps (896 cycles, NXModPlayer's rate) of a 3 kHz tone: its
+        // images 31.25 -/+ 3 kHz lie at 28.25 and 34.25 kHz and fold to 15.85 and
+        // 9.85 kHz. The plain path leaves them 26 and 33 dB under the tone.
+        const auto off = os_run(false, 3000.0, 896, 8820, 400, 64);
+        const auto on  = os_run(true,  3000.0, 896, 8820, 400, 64);
+        const double off1 = os_db(os_tone(off, 15850.0), os_tone(off, 3000.0));
+        const double off2 = os_db(os_tone(off,  9850.0), os_tone(off, 3000.0));
+        const double on1  = os_db(os_tone(on,  15850.0), os_tone(on,  3000.0));
+        const double on2  = os_db(os_tone(on,   9850.0), os_tone(on,  3000.0));
+        check("OS-HU-04", "the folded images of a stepped 3 kHz tone are at least 30 dB lower than on the plain path",
+              off1 > -30.0 && off2 > -38.0 && on1 < off1 - 30.0 && on2 < off2 - 30.0,
+              "off " + std::to_string(off1) + " / " + std::to_string(off2) +
+              " dB, on " + std::to_string(on1) + " / " + std::to_string(on2) + " dB");
+    }
+    {
+        // Finely stepped tones: flat to 16 kHz, where the averaging alone loses 2 dB.
+        const double full = 200.0 * 16.0;   // both left channels, x4 to 13 bits, x4 to 16
+        const auto lo_on = os_run(true, 1000.0, 20, 8820, 400, 20);
+        const auto hi_on = os_run(true, 16000.0, 20, 8820, 400, 20);
+        const auto hi_off = os_run(false, 16000.0, 20, 8820, 400, 20);
+        const double a = os_db(os_tone(lo_on, 1000.0), full), b = os_db(os_tone(hi_on, 16000.0), full),
+                     c = os_db(os_tone(hi_off, 16000.0), full);
+        check("OS-HU-05", "unity gain at 1 kHz and within 0.3 dB at 16 kHz, where the plain path is down 1.5 dB or more",
+              std::fabs(a) < 0.1 && std::fabs(b) < 0.3 && c < -1.5,
+              "1 kHz " + std::to_string(a) + ", 16 kHz on " + std::to_string(b) + ", off " + std::to_string(c));
+    }
+    {
+        // The result must not depend on how the time is sliced: one cycle at a
+        // time, whole instructions, or spans across several parts.
+        const auto a = os_run(true, 3000.0, 896, 1500, 0, 1);
+        const auto b = os_run(true, 3000.0, 896, 1500, 0, 47);
+        const auto c = os_run(true, 3000.0, 896, 1500, 0, 100000);
+        check("OS-HU-06", "the output does not depend on how the span is sliced", a == b && b == c, no_vhdl);
+    }
+    {
+        Beeper beeper; TurboSound ts; Dac dac; Mixer mixer;
+        mixer.set_oversample(true);
+        dac.write_channel(0, 0xFF);
+        for (int i = 0; i < 100; ++i) { mixer.accumulate(beeper, ts, dac, 635); mixer.emit_sample(); }
+        mixer.reset();
+        dac.reset();
+        mixer.accumulate(beeper, ts, dac, 635);
+        mixer.emit_sample();
+        int16_t p[2] = {1, 1};
+        const int got = mixer.read_samples(p, 1);
+        check("OS-HU-07", "Mixer::reset() clears the filter's past and keeps the setting",
+              got == 1 && p[0] == 0 && p[1] == 0 && mixer.oversample(), no_vhdl);
+    }
+}
+
+}  // namespace
+
 int main() {
     std::printf("Audio Subsystem Compliance Tests (Phase 2 rewrite)\n");
     std::printf("====================================================\n\n");
@@ -4003,6 +4165,7 @@ int main() {
     g_dac();           std::printf("  3   DAC -- done\n");
     g_beeper();        std::printf("  4   Beeper -- done\n");
     g_mixer();         std::printf("  5   Mixer -- done\n");
+    g_oversample();    std::printf("  5.5 Oversampling -- done\n");
     g_nextreg();       std::printf("  6   NextREG -- done\n");
     g_io();            std::printf("  7   IO -- done\n");
 

@@ -3155,6 +3155,7 @@ void MainWindow::apply_startup_config(const AppConfigData& cfg, bool program_cpu
         for (int chip = 0; chip < 3; ++chip)
             emulator_->mixer().set_ay_gain_db(chip, cfg.audio_gain_ay_db[chip]);
         emulator_->mixer().set_dac_gain_db(cfg.audio_gain_dac_db);
+        emulator_->mixer().set_oversample(cfg.audio_oversample);
     }
     if (tape_fast_action_) tape_fast_action_->setChecked(cfg.tape_fast_load);
     if (tape_auto_action_) tape_auto_action_->setChecked(cfg.tape_auto_play);

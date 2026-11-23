@@ -1398,7 +1398,7 @@ int main() {
             "startup.tape_fast_load", "startup.tape_auto_play", "startup.when_slow_prefer",
             "startup.fast_boot_seconds", "startup.fast_boot_hide_screen", "startup.language",
             "audio.gain_db", "audio.gain_beeper_db", "audio.gain_ay0_db", "audio.gain_ay1_db",
-            "audio.gain_ay2_db", "audio.gain_dac_db", "screenshot.quick_format", "snapshot.quick_keep",
+            "audio.gain_ay2_db", "audio.gain_dac_db", "audio.oversample", "screenshot.quick_format", "snapshot.quick_keep",
             "input.joy1_source", "input.joy2_source", "input.mouse_release", "input.windows_layout",
             "input.alt_digit_caps_shift", "source.colour_scheme",
             "esp.enabled", "nextpi.enabled", "nextpi.release", "config.version",

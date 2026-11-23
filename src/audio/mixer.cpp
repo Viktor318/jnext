@@ -47,6 +47,7 @@ void Mixer::reset()
     // via set_exc_i(beep_spkr_excl()) once NR 0x08 has settled to 0x10.
     exc_i_ = false;
     acc_l_ = acc_r_ = acc_cycles_ = 0;
+    oversampler_.reset();
 }
 
 [[gnu::always_inline]] inline void Mixer::mix(const Beeper& beeper, const TurboSound& ts, const Dac& dac,
@@ -183,6 +184,7 @@ void Mixer::reset()
     acc_l_ += static_cast<int64_t>(pcm_L) * master_cycles;
     acc_r_ += static_cast<int64_t>(pcm_R) * master_cycles;
     acc_cycles_ += master_cycles;
+    if (oversample_) [[unlikely]] oversampler_.accumulate(pcm_L, pcm_R, master_cycles);
 }
 
 void Mixer::accumulate(const Beeper& beeper, const TurboSound& ts, const Dac& dac, uint32_t master_cycles)
@@ -223,6 +225,13 @@ void Mixer::generate_sample(const Beeper& beeper, const TurboSound& ts, const Da
     // midpoint.  Scale by 4 to use more of the int16 dynamic range.
     int32_t sL = avg4_L - MIX_REST_LEVEL * 4;
     int32_t sR = avg4_R - MIX_REST_LEVEL * 4;
+
+    if (oversample_) [[unlikely]] {
+        float l, r;
+        oversampler_.finish(MIX_REST_LEVEL, 4.0f, l, r);
+        sL = static_cast<int32_t>(std::lround(l));
+        sR = static_cast<int32_t>(std::lround(r));
+    }
 
     if (output_gain_ != 1.0f) {
         sL = static_cast<int32_t>(std::lround(static_cast<float>(sL) * output_gain_));
