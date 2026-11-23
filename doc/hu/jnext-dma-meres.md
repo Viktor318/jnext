@@ -84,5 +84,5 @@ Kész: `6809ec69` (hungarian-ui) – a fenti modell; a ZEsarUX a KS3-hoz 1–3%-
 
 - **VHDL:** löketes módban a DMA minden várakozás után újra kéri a sínt; a T80 a BUSRQ_n-t egy órajellel regisztrálja (`BusReq_s`, t80n.vhd:1663), és csak ezután adhatja át a sínt a gépi ciklus végén (:1746-1747). Folyamatos módban a sín a DMA-nál marad, ott ez nem jelentkezik.
 - **Megvalósítás:** `Dma::BURST_REQUEST_CLOCKS = 1`: löketes módban a várakozás utáni bájt `RESUME_CLOCKS + 1` órajelet fizet a READ_1 előtt (ez sem számít bele a következő előosztó-ablakba).
-- **Tesztek:** DMA-HU-05 (NOP-ok: 34, 38, 38 órajel), DMA-HU-06 (19 órajeles utasítás: 44, 29, 48); `BURST_REQUEST_CLOCKS = 0`-val mindkettő bukik, a folyamatos DMA-HU-04 változatlan. A 26.11a-s kártya bootja (meleg indítás felvétele) 780 helyett 782 képkocka lett (`WSCARD-02`, `warm-start-chans-func`).
+- **Tesztek:** DMA-HU-05 (NOP-ok: 34, 38, 38 órajel), DMA-HU-06 (19 órajeles utasítás: 44, 29, 48); `BURST_REQUEST_CLOCKS = 0`-val mindkettő bukik, a folyamatos DMA-HU-04 változatlan. A 26.11a-s kártya bootja (meleg indítás felvétele) a CI-ben változatlanul 780 képkocka (a helyi, már írt kártyamásolaton 782 jött ki, ez félrevezetett).
 - **Várható `dmatest`-eredmény:** C8 ≈ 90 (342) / 74, D2 ≈ 280 (513) / 158, a többi változatlan – Viktor próbájára vár.
