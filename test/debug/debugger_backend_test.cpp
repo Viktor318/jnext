@@ -7674,6 +7674,7 @@ static void e25_mem_coverage_rows() {
 // Verb table (every non-const public method of debugger.h):
 //   bump      set_register poke set_mmu_slot nextreg_write port_in port_out
 //             set_sprite_attr_raw write_pattern_ram set_audio_mute_mask
+//             set_audio_channel_mute_mask
 //             set_palette set_border set_key set_extended_key set_joystick
 //             press_key press_nmi reset(Soft) load_state_bytes bookmark_restore
 //             load_map clear_symbols load_source_map clear_source_map
@@ -7733,6 +7734,8 @@ static void gh428_rev_rows() {
                 return d.write_pattern_ram(a, 0x100, pat, 2) == Result::Ok; });
     rev_row1("REV-08", "set_audio_mute_mask advances the revision",
             [](Debugger& d, Emulator&, ClientId a) { return d.set_audio_mute_mask(a, 0x01) == Result::Ok; });
+    rev_row1("REV-47", "set_audio_channel_mute_mask advances the revision (GH #533)",
+            [](Debugger& d, Emulator&, ClientId a) { return d.set_audio_channel_mute_mask(a, 0x0003) == Result::Ok; });
     rev_row1("REV-09", "set_palette advances the revision",
             [](Debugger& d, Emulator&, ClientId a) {
                 return d.set_palette(a, jnext::dbg::PaletteId::UlaFirst, 3, 0x1FF) == Result::Ok; });
@@ -8147,6 +8150,66 @@ static void gh428_rev_rows() {
         check("CTL-06-03", "and the stop names the target it was given",
               dbg.state().pause_reason.kind == PauseReason::Kind::RunTo &&
               dbg.state().pause_reason.addr == AFTER_CALL);
+    }
+    {
+        // GH #548 - run_to() takes the memory that must supply the fetch (the panel's
+        // qualifier, EventFilter::space, events.h). Learn which memory supplies AFTER_CALL
+        // from the machine itself, then ask for it, and for another page.
+        MemSpace seen = MemSpace::cpu();
+        {
+            Emulator emu; build(emu);
+            Debugger dbg(emu);
+            attach_and_pause(emu);
+            Subscription probe;
+            probe.kind      = EventKind::Execute;
+            probe.filter.lo = probe.filter.hi = AFTER_CALL;
+            probe.transient = true;
+            probe.action    = Action::Continue;
+            probe.handler   = [&](const DbgEvent& ev, Debugger&) { seen = ev.space; return Action::Continue; };
+            dbg.subscribe(4, probe);
+            dbg.run_to(3, PARK);
+            run_until_paused(emu);
+        }
+        const bool is_page = seen.kind == MemSpace::Kind::Page;
+        bool stops_in_its_page = false, passes_other = false;
+        {
+            Emulator emu; build(emu);
+            Debugger dbg(emu);
+            attach_and_pause(emu);
+            dbg.run_to(3, AFTER_CALL, seen);
+            run_until_paused(emu);
+            stops_in_its_page = dbg.state().paused && pc_of(emu) == AFTER_CALL &&
+                                dbg.state().pause_reason.kind == PauseReason::Kind::RunTo;
+        }
+        {
+            Emulator emu; build(emu);
+            Debugger dbg(emu);
+            attach_and_pause(emu);
+            dbg.run_to(3, AFTER_CALL, MemSpace::page(static_cast<uint16_t>(seen.index + 1)));
+            run_until_paused(emu);
+            passes_other = !dbg.state().paused && emu.cpu().get_registers().PC != AFTER_CALL;
+        }
+        check("CTL-06-05", "GH #548: run_to(addr, space) stops at addr only while that memory supplies the "
+                           "fetch; the same address under another page runs through",
+              is_page && stops_in_its_page && passes_other,
+              "kind=" + std::to_string(static_cast<int>(seen.kind)) + " index=" + std::to_string(seen.index) +
+                  " stops=" + std::to_string(stops_in_its_page) + " passes=" + std::to_string(passes_other));
+    }
+    {
+        // GH #548 - the default memory is "any": run_to(addr) is as it was.
+        Emulator emu; build(emu);
+        Debugger dbg(emu);
+        attach_and_pause(emu);
+        dbg.run_to(3, AFTER_CALL, MemSpace::cpu());
+        run_until_paused(emu);
+        const bool explicit_any = dbg.state().paused && pc_of(emu) == AFTER_CALL;
+        Emulator emu2; build(emu2);
+        Debugger dbg2(emu2);
+        attach_and_pause(emu2);
+        dbg2.run_to(3, AFTER_CALL);
+        run_until_paused(emu2);
+        check("CTL-06-06", "GH #548: run_to(addr) with no memory stops at addr in any memory, as MemSpace::cpu() does",
+              explicit_any && dbg2.state().paused && pc_of(emu2) == AFTER_CALL);
     }
     {
         // GH #423 - a second run_to while the machine RUNS re-targets: the first

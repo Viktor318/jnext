@@ -283,6 +283,13 @@ struct EmulatorConfig {
     // window when a hit pauses the machine.
     bool persistent_breakpoints = false;
 
+    // GH #548 (--debugger, --break-at): start the program paused under the debugger, at
+    // the stop point of its format, or at `break_at` (an address, a symbol or a source
+    // line, as the Breakpoints panel reads one). A launch action like --load, not a
+    // setting the GUI holds, so no Preferences field.
+    bool        debugger_start = false;
+    std::string break_at;
+
     // GH #287 (--debug-listen-address): where the debugger protocol servers
     // (DZRP #12, ZRCP #280, GDB RSP #281) bind. LOOPBACK BY DEFAULT: none of
     // those protocols has any authentication, so exposing the debugger to the
@@ -587,6 +594,10 @@ struct EmulatorConfig {
 
 /// Master clock frequency (28 MHz).
 static constexpr uint64_t MASTER_CLOCK_HZ = 28'000'000ULL;
+
+/// The PSG clock enable is the master clock divided by this (turbosound.vhd
+/// clock_en_i, zxnext_top_issue2.vhd:1209,1217 builds it, zxnext.vhd:6995 wires it): 28 MHz / 16 = 1.75 MHz.
+static constexpr uint64_t PSG_CLOCK_DIVISOR = 16;
 
 /// Per-machine timing parameters derived from VHDL (zxula_timing.vhd).
 ///

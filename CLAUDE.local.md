@@ -37,7 +37,7 @@ Ez a fájl a tároló `CLAUDE.md`-je mellett érvényes, a helyi (WSL, `~/jnext`
 - Windows-változat: `~/jnext/tools/hu/build-windows-cross.sh` (kapcsolók: `nopull`, `clean`; kimenet `C:\Dev\jnext-bin\jnext\jnext.exe` + zip). Pár perc.
 - Linuxos tesztfordításhoz (Qt6, SDL3, ccache stb.) előbb mérd fel, mi van telepítve a WSL-ben (Ubuntu 26.04), és a hiányzó csomagokat Viktorral egyeztesd (sudo-t kér).
 - A GitHub Actions is használható (Viktor engedélyezte): `gh workflow run "Windows Build (manual)" -R Viktor318/jnext --ref hungarian-ui -f qt6=true -f qt5=false -f win32=false`, és a teljes teszt-CI: `gh workflow run CI -R Viktor318/jnext --ref hungarian-ui`.
-- SD-kép: Viktor a 26.11a-t használja (`JNEXT_SDCARD_DISTRO_URL` = `https://www.specnext.com/distro/26.11a/sn-emulator-26.11a.zip`). A jnext írja a képet: kézi próbához másolatot használj.
+- SD-kép: Viktor a 26.11a-t használja (`JNEXT_SDCARD_DISTRO_URL` = `https://www.specnext.com/distro/26.11a/sn-emulator-26.11a.zip`). A jnext írja a képet: kézi próbához másolatot használj. A WSL-es `~/.jnext/sdcard/cspect-next-1gb-fixed.img`-et Viktor kézzel módosította, **ne írd felül**; a helyi tesztekhez az eredeti kártya másolata kell: `JNEXT_TEST_SD_IMAGE=~/.cache/jnext-hu-tools/test-home/copy.img`.
 
 ## Ahol tartunk (2026-11-21)
 
@@ -48,7 +48,7 @@ Teteje: `5b20d8e`. Kész a `hungarian-ui`-n:
 - Csak a kép / Shift+F11 (`c313eff`);
 - Windows-fordítás WSL-ből: `tools/hu/build-windows-cross.sh` (`a109030f6`);
 - a NextZXOS 26.11a az alapértelmezett letöltés (előbb saját beállítással, `a4ffecba6`; az 1.3.57 óta az upstreamben is);
-- upstream beolvasztva: 1.3.57 (2026-11-22; előtte 1.3.43, `62485f8`);
+- upstream beolvasztva: 1.3.66 (2026-11-23; előtte 1.3.57, 1.3.43);
 - kézi GitHubos unit-teszt: `hu-tests.yml` (`77a02cb06`);
 - windowsos magyar billentyűzet (karakter szerinti gépelés, bal Alt + számjegy; `1263eb4`, `c743724`, `3f109af`), Viktor Windowson kipróbálta (2026-11-22).
 

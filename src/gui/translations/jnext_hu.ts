@@ -2,6 +2,81 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="hu_HU" sourcelanguage="en">
 <context>
+    <name>AudioLogView</name>
+    <message>
+        <source>Not recording</source>
+        <translation>Nincs felvétel</translation>
+    </message>
+    <message>
+        <source>Export CSV...</source>
+        <translation>CSV exportálása…</translation>
+    </message>
+    <message>
+        <source>Any</source>
+        <translation>Bármelyik</translation>
+    </message>
+    <message>
+        <source>AY register</source>
+        <translation>AY-regiszter</translation>
+    </message>
+    <message>
+        <source>AY select</source>
+        <translation>AY-választás</translation>
+    </message>
+    <message>
+        <source>DAC</source>
+        <translation>DAC</translation>
+    </message>
+    <message>
+        <source>DAC mirror</source>
+        <translation>DAC-tükör</translation>
+    </message>
+    <message>
+        <source>Beeper</source>
+        <translation>Csipogó</translation>
+    </message>
+    <message>
+        <source>CPU</source>
+        <translation>CPU</translation>
+    </message>
+    <message>
+        <source>DMA</source>
+        <translation>DMA</translation>
+    </message>
+    <message>
+        <source>Copper</source>
+        <translation>Copper</translation>
+    </message>
+    <message>
+        <source>Debugger</source>
+        <translation>Hibakereső</translation>
+    </message>
+    <message>
+        <source>Envelope restarts only</source>
+        <translation>Csak a burkológörbe-újraindítások</translation>
+    </message>
+    <message>
+        <source>Dropped only</source>
+        <translation>Csak az eldobottak</translation>
+    </message>
+    <message>
+        <source>Export audio log</source>
+        <translation>Hangnapló exportálása</translation>
+    </message>
+    <message>
+        <source>CSV (*.csv)</source>
+        <translation>CSV (*.csv)</translation>
+    </message>
+    <message>
+        <source>The log could not be written to %1.</source>
+        <translation>A naplót nem sikerült ide írni: %1.</translation>
+    </message>
+    <message>
+        <source>Recording</source>
+        <translation>Felvétel</translation>
+    </message>
+</context>
+<context>
     <name>AudioPanel</name>
     <message>
         <source>Sources</source>
@@ -62,6 +137,326 @@
     <message>
         <source>Stereo: %1</source>
         <translation>Sztereó: %1</translation>
+    </message>
+    <message>
+        <source>AY ports off (NR 0x84 bit 0)</source>
+        <translation>AY-portok kikapcsolva (NR 0x84, 0. bit)</translation>
+    </message>
+    <message>
+        <source>AY held in reset (NR 0x06 = 11)</source>
+        <translation>Az AY alaphelyzetben tartva (NR 0x06 = 11)</translation>
+    </message>
+    <message>
+        <source>Chip select, TurboSound off</source>
+        <translation>Csipválasztás, a TurboSound ki van kapcsolva</translation>
+    </message>
+    <message>
+        <source>Ignored 0xFFFD value</source>
+        <translation>Figyelmen kívül hagyott 0xFFFD-érték</translation>
+    </message>
+    <message>
+        <source>Register address 16-31</source>
+        <translation>16–31-es regisztercím</translation>
+    </message>
+    <message>
+        <source>DAC port family off (NR 0x84)</source>
+        <translation>A DAC-portcsoport kikapcsolva (NR 0x84)</translation>
+    </message>
+    <message>
+        <source>DAC off (NR 0x08 bit 3)</source>
+        <translation>DAC kikapcsolva (NR 0x08, 3. bit)</translation>
+    </message>
+    <message>
+        <source>DAC mirror, DAC off (NR 0x08 bit 3)</source>
+        <translation>DAC-tükör, a DAC ki van kapcsolva (NR 0x08, 3. bit)</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>Képkocka</translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation>Sor</translation>
+    </message>
+    <message>
+        <source>HC</source>
+        <translation>HC</translation>
+    </message>
+    <message>
+        <source>T-state</source>
+        <translation>T-állapot</translation>
+    </message>
+    <message>
+        <source>PC</source>
+        <translation>PC</translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation>Forrás</translation>
+    </message>
+    <message>
+        <source>Target</source>
+        <translation>Cél</translation>
+    </message>
+    <message>
+        <source>Chip</source>
+        <translation>Csip</translation>
+    </message>
+    <message>
+        <source>Reg</source>
+        <translation>Reg</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Érték</translation>
+    </message>
+    <message>
+        <source>Prev</source>
+        <translation>Előző</translation>
+    </message>
+    <message>
+        <source>Flags</source>
+        <translation>Jelzők</translation>
+    </message>
+    <message>
+        <source>AY register</source>
+        <translation>AY-regiszter</translation>
+    </message>
+    <message>
+        <source>AY select</source>
+        <translation>AY-választás</translation>
+    </message>
+    <message>
+        <source>DAC mirror</source>
+        <translation>DAC-tükör</translation>
+    </message>
+    <message>
+        <source>dropped: </source>
+        <translation>eldobva: </translation>
+    </message>
+    <message>
+        <source>restart</source>
+        <translation>újraindítás</translation>
+    </message>
+    <message>
+        <source>Chips</source>
+        <translation>Csipek</translation>
+    </message>
+    <message>
+        <source>DAC &amp;&amp; Beeper</source>
+        <translation>DAC és csipogó</translation>
+    </message>
+    <message>
+        <source>Log</source>
+        <translation>Napló</translation>
+    </message>
+    <message>
+        <source>Tracker</source>
+        <translation>Tracker</translation>
+    </message>
+    <message>
+        <source>Scopes</source>
+        <translation>Hullámformák</translation>
+    </message>
+    <message>
+        <source>Not available yet.</source>
+        <translation>Még nem érhető el.</translation>
+    </message>
+    <message>
+        <source>DAC channels</source>
+        <translation>DAC-csatornák</translation>
+    </message>
+    <message>
+        <source>Mute this channel</source>
+        <translation>A csatorna némítása</translation>
+    </message>
+    <message>
+        <source>Solo this channel (mute the other twelve)</source>
+        <translation>Csak ez a csatorna szóljon (a másik tizenkettő némítása)</translation>
+    </message>
+    <message>
+        <source>PSG mode: YM</source>
+        <translation>PSG-mód: YM</translation>
+    </message>
+    <message>
+        <source>AY ports: on</source>
+        <translation>AY-portok: be</translation>
+    </message>
+    <message>
+        <source>AY writes dropped: 0 (&lt;a href=&quot;drops&quot;&gt;show&lt;/a&gt;)</source>
+        <translation>Eldobott AY-írások: 0 (&lt;a href=&quot;drops&quot;&gt;megjelenítés&lt;/a&gt;)</translation>
+    </message>
+    <message>
+        <source>Hex</source>
+        <translation>Hexa</translation>
+    </message>
+    <message>
+        <source>AY #%1</source>
+        <translation>AY #%1</translation>
+    </message>
+    <message>
+        <source>ACTIVE</source>
+        <translation>AKTÍV</translation>
+    </message>
+    <message>
+        <source>mono</source>
+        <translation>monó</translation>
+    </message>
+    <message>
+        <source>stereo</source>
+        <translation>sztereó</translation>
+    </message>
+    <message>
+        <source>in mix</source>
+        <translation>a keverésben</translation>
+    </message>
+    <message>
+        <source>not in mix</source>
+        <translation>nincs a keverésben</translation>
+    </message>
+    <message>
+        <source>PSG mode: %1</source>
+        <translation>PSG-mód: %1</translation>
+    </message>
+    <message>
+        <source>AY ports: %1</source>
+        <translation>AY-portok: %1</translation>
+    </message>
+    <message>
+        <source>on</source>
+        <translation>be</translation>
+    </message>
+    <message>
+        <source>off</source>
+        <translation>ki</translation>
+    </message>
+    <message>
+        <source>AY writes dropped: %1 (&lt;a href=&quot;drops&quot;&gt;show&lt;/a&gt;)</source>
+        <translation>Eldobott AY-írások: %1 (&lt;a href=&quot;drops&quot;&gt;megjelenítés&lt;/a&gt;)</translation>
+    </message>
+    <message>
+        <source>DAC: off</source>
+        <translation>DAC: ki</translation>
+    </message>
+    <message>
+        <source>Port families (NR 0x84)</source>
+        <translation>Portcsoportok (NR 0x84)</translation>
+    </message>
+    <message>
+        <source>EAR</source>
+        <translation>EAR</translation>
+    </message>
+    <message>
+        <source>MIC</source>
+        <translation>MIC</translation>
+    </message>
+    <message>
+        <source>Tape EAR</source>
+        <translation>Kazetta EAR</translation>
+    </message>
+    <message>
+        <source>Internal speaker: off</source>
+        <translation>Belső hangszóró: ki</translation>
+    </message>
+    <message>
+        <source>Beep to speaker only: off</source>
+        <translation>Csipogó csak a hangszóróra: ki</translation>
+    </message>
+    <message>
+        <source>EAR/MIC reach the mix: yes</source>
+        <translation>Az EAR/MIC a keverésbe jut: igen</translation>
+    </message>
+    <message>
+        <source>Pi I2S</source>
+        <translation>Pi I2S</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Bal</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Jobb</translation>
+    </message>
+    <message>
+        <source>Pi to EAR: off</source>
+        <translation>Pi az EAR-ra: ki</translation>
+    </message>
+    <message>
+        <source>Host</source>
+        <translation>Számítógép</translation>
+    </message>
+    <message>
+        <source>Muted: none</source>
+        <translation>Némítva: semmi</translation>
+    </message>
+    <message>
+        <source>Synthesis: on</source>
+        <translation>Hangelőállítás: be</translation>
+    </message>
+    <message>
+        <source>Dropped writes</source>
+        <translation>Eldobott írások</translation>
+    </message>
+    <message>
+        <source>Reason</source>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <source>Count</source>
+        <translation>Darab</translation>
+    </message>
+    <message>
+        <source>Port</source>
+        <translation>Port</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Törlés</translation>
+    </message>
+    <message>
+        <source>DAC: on</source>
+        <translation>DAC: be</translation>
+    </message>
+    <message>
+        <source>Internal speaker: %1</source>
+        <translation>Belső hangszóró: %1</translation>
+    </message>
+    <message>
+        <source>Beep to speaker only: %1</source>
+        <translation>Csipogó csak a hangszóróra: %1</translation>
+    </message>
+    <message>
+        <source>EAR/MIC reach the mix: %1</source>
+        <translation>Az EAR/MIC a keverésbe jut: %1</translation>
+    </message>
+    <message>
+        <source>no</source>
+        <translation>nem</translation>
+    </message>
+    <message>
+        <source>yes</source>
+        <translation>igen</translation>
+    </message>
+    <message>
+        <source>Pi to EAR: %1</source>
+        <translation>Pi az EAR-ra: %1</translation>
+    </message>
+    <message>
+        <source>AY #%1 %2</source>
+        <translation>AY #%1 %2</translation>
+    </message>
+    <message>
+        <source>DAC %1</source>
+        <translation>DAC %1</translation>
+    </message>
+    <message>
+        <source>Muted: %1</source>
+        <translation>Némítva: %1</translation>
+    </message>
+    <message>
+        <source>Synthesis: off (--silent)</source>
+        <translation>Hangelőállítás: ki (--silent)</translation>
     </message>
 </context>
 <context>
@@ -145,6 +540,10 @@
     <message>
         <source> (client %1)</source>
         <translation> (%1. kliens)</translation>
+    </message>
+    <message>
+        <source>Audio Write</source>
+        <translation>Hangírás</translation>
     </message>
 </context>
 <context>
@@ -332,6 +731,78 @@
     <message>
         <source>e.g. 4000, $4000, symbol or file.bas:12</source>
         <translation>pl. 4000, $4000, szimbólum vagy fájl.bas:12</translation>
+    </message>
+    <message>
+        <source>Audio Write</source>
+        <translation>Hangírás</translation>
+    </message>
+    <message>
+        <source>AY register</source>
+        <translation>AY-regiszter</translation>
+    </message>
+    <message>
+        <source>AY chip select</source>
+        <translation>AY-csipválasztás</translation>
+    </message>
+    <message>
+        <source>DAC</source>
+        <translation>DAC</translation>
+    </message>
+    <message>
+        <source>Any</source>
+        <translation>Bármelyik</translation>
+    </message>
+    <message>
+        <source>Audio target:</source>
+        <translation>Hang célja:</translation>
+    </message>
+    <message>
+        <source>AY chip / DAC channel:</source>
+        <translation>AY-csip / DAC-csatorna:</translation>
+    </message>
+    <message>
+        <source>R13 (envelope restart)</source>
+        <translation>R13 (burkológörbe újraindítása)</translation>
+    </message>
+    <message>
+        <source>AY register:</source>
+        <translation>AY-regiszter:</translation>
+    </message>
+    <message>
+        <source>optional, hex 00-FF: empty = any value</source>
+        <translation>nem kötelező, hexa 00–FF: üres = bármely érték</translation>
+    </message>
+    <message>
+        <source>Value (optional):</source>
+        <translation>Érték (nem kötelező):</translation>
+    </message>
+    <message>
+        <source>optional, hex 00-FF: empty = FF</source>
+        <translation>nem kötelező, hexa 00–FF: üres = FF</translation>
+    </message>
+    <message>
+        <source>Value mask (optional):</source>
+        <translation>Értékmaszk (nem kötelező):</translation>
+    </message>
+    <message>
+        <source>Dropped writes only</source>
+        <translation>Csak az eldobott írások</translation>
+    </message>
+    <message>
+        <source>The value is not a hex number from 00 to FF: %1</source>
+        <translation>Az érték nem 00 és FF közötti hexa szám: %1</translation>
+    </message>
+    <message>
+        <source>The mask is not a hex number from 00 to FF: %1</source>
+        <translation>A maszk nem 00 és FF közötti hexa szám: %1</translation>
+    </message>
+    <message>
+        <source>A mask needs a value: fill in Value or clear the mask.</source>
+        <translation>A maszkhoz érték is kell: töltse ki az Érték mezőt, vagy törölje a maszkot.</translation>
+    </message>
+    <message>
+        <source>The value has bits outside the mask: it can never match.</source>
+        <translation>Az értékben a maszkon kívüli bitek is vannak: soha nem illeszkedhet.</translation>
     </message>
 </context>
 <context>
@@ -3527,6 +3998,10 @@ Csak akkor frissül, amikor az emulátor szünetel.</translation>
     <message>
         <source>jnext - Downloading</source>
         <translation>jnext – Letöltés</translation>
+    </message>
+    <message>
+        <source>Any</source>
+        <translation>Bármelyik</translation>
     </message>
 </context>
 <context>
