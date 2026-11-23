@@ -52,6 +52,6 @@ Teteje: `5b20d8e`. Kész a `hungarian-ui`-n:
 - kézi GitHubos unit-teszt: `hu-tests.yml` (`77a02cb06`);
 - windowsos magyar billentyűzet (karakter szerinti gépelés, bal Alt + számjegy; `1263eb4`, `c743724`, `3f109af`), Viktor Windowson kipróbálta (2026-11-22).
 
-Következik (Viktor gondolkodik rajtuk, 2026-11-22): a párbeszédablakok alatti akadás (kívánságlista 3., a címsor kész), az átméretezhető ablak (7.), a hangkeverő (4.), a DMA-időzítés.
+Következik (Viktor gondolkodik rajtuk, 2026-11-22): a párbeszédablakok alatti akadás (kívánságlista 3., a címsor kész), az átméretezhető ablak (7.), a hangkeverő (4.), a virtuális billentyűzet (5.), az állapotmentés kilépéskor (6.). A DMA-időzítés kész (2026-11-23, `e5b2fef`): 3,5 MHz-en pontosan a KS3-é.
 
 A részletek (döntések, tervek, a további kívánságlista, hang, DMA) a tárolóban vannak: **`doc/hu/jnext-atadas.md`** (és mellette `jnext-magyaritas.md`, `jnext-dma-meres.md`, `jnext-hang-terv.md`, `jnext-blitter-becsles.md`). Ezeket munka közben olvasd és frissítsd; ha új döntés vagy terv születik, oda írd be, ugyanabban a commitban. A ZEsarUX-beszélgetésben készült JNEXT-jegyzetek a claude.ai-projektbe kerülhetnek; ha Viktor ilyet hoz, vezesd át ide.
