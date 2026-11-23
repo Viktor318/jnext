@@ -155,7 +155,7 @@ VHDL-derived compliance test suite for the JNEXT ZX Spectrum Next emulator. All 
 | Snapshot IM latch (NR 0xC0) |        4 |        4 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Loading .sna/.szx/.z80 selects the saved machine (GH #323) |       26 |       26 |      0 |       0 |    100% | 🟢 All tests pass. |
 | POK trainers (.pok, GH #381) |       61 |       61 |      0 |       0 |    100% | 🟢 All tests pass. |
-| DMA                   |      189 |      189 |      0 |       0 |    100% | 🟢 All tests pass. |
+| DMA                   |      192 |      192 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Tilemap               |      113 |      113 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Tilemap raster splits |       12 |       12 |      0 |       0 |    100% | 🟢 All tests pass. |
 | LoRes                 |       57 |       57 |      0 |       0 |    100% | 🟢 All tests pass. |
@@ -244,6 +244,6 @@ VHDL-derived compliance test suite for the JNEXT ZX Spectrum Next emulator. All 
 | Debugger Verbs (GH #278) |      186 |      186 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Source panel |      299 |      299 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Variables panel |       55 |       55 |      0 |       0 |    100% | 🟢 All tests pass. |
-| **Total**             | **17394**| **17394**|  **0** |   **0** | **100%**| 🟢 All tests pass. |
+| **Total**             | **17397**| **17397**|  **0** |   **0** | **100%**| 🟢 All tests pass. |
 
 **SKIP:** A row its suite could not exercise on the host that ran it. A SKIP fails the run (owner, 2026-10-06). A planned row whose feature does not exist yet is PLANNED in its `*-TEST-PLAN-DESIGN.md`, not a SKIP.

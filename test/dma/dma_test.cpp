@@ -3614,6 +3614,90 @@ void group23_sram_read_wait28() {
                   fmt("t=%d expected=56 per_byte=%d copied=%d", t, (int)per_byte, (int)copied));
         }
     }
+
+    // hungarian-ui - after a prescaler wait the machine goes back to the next
+    // byte through WAITING_ACK (continuous) or START_DMA + WAITING_ACK (burst),
+    // Dma::RESUME_CLOCKS = 3 CPU clocks before its READ_1, which restarts the
+    // window (dma.vhd:309, :436-462, :266-300); in burst mode a grant later than
+    // BURST_GRANT_CLOCKS = 4 into the CPU's instruction starts the next window
+    // early by the excess (the Z80 yields at a machine cycle's end). Measured on
+    // Viktor's KS3 (doc/hu/jnext-dma-meres.md): B8 80 lines, D2 280, C8 90.
+    // g23_prescaled_starts runs `steps` emulator steps of a 4-byte mem->mem
+    // block, 3+3 cycles, prescaler 8, at 3.5 MHz, and returns the elapsed
+    // T-states at the start of each step that moved a byte.
+    auto g23_prescaled_starts = [](bool burst, uint8_t fill_op) {
+        std::vector<long> starts;
+        Emulator emu;
+        EmulatorConfig cfg;
+        cfg.type = MachineType::ZXN_ISSUE2;
+        cfg.rewind_buffer_frames = 0;
+        if (!emu.init(cfg)) return starts;
+        g23_set_speed(emu, 0);
+        emu.nextreg().write(0x54, 0x20);
+        for (int i = 0; i < 0x800; ++i)                       // the CPU's filler, then JR $
+            emu.mmu().write(static_cast<uint16_t>(0x8000 + i), fill_op);
+        emu.mmu().write(0x8800, 0x18); emu.mmu().write(0x8801, 0xFE);
+        Z80Registers r = emu.cpu().get_registers();
+        r.PC = 0x8000; r.SP = 0xFF00; r.IFF1 = 0; r.IFF2 = 0; r.halted = false;
+        emu.cpu().set_registers(r);
+        Dma& d = emu.dma();
+        auto w = [&](uint8_t v) { d.write(v, false); };
+        w(0x7D); w(0x00); w(0x90); w(0x04); w(0x00);          // A = 0x9000, length 4
+        w(0x14);                                              // R1: memory, inc
+        w(0x50); w(0x21); w(0x08);                            // R2: memory, inc, "01", prescaler 8
+        w(burst ? 0xCD : 0xAD); w(0x00); w(0xA0);             // R4: burst / continuous, B = 0xA000
+        w(0xCF); w(0x87);                                     // LOAD, ENABLE
+        long now = 0;
+        for (int step = 0; step < 400 && starts.size() < 4; ++step) {
+            const uint16_t before = d.counter();
+            const int t = emu.execute_single_instruction();
+            if (d.counter() != before) starts.push_back(now);
+            now += t;
+        }
+        return starts;
+    };
+    // DMA-HU-04 - continuous with prescaler: the bus is held, the byte steps
+    // come 32 + 3 clocks apart (the first one 32: no wait before it).
+    {
+        const std::vector<long> s = g23_prescaled_starts(false, 0x00);
+        const bool ok = s.size() == 4 && s[1] - s[0] == 32 && s[2] - s[1] == 35 && s[3] - s[2] == 35;
+        check("DMA-HU-04",
+              "continuous, prescaler 8, 3.5 MHz: a byte after a prescaler wait starts 32 + 3 "
+              "clocks after the previous one (WAITING_ACK before READ_1, dma.vhd:436-462,"
+              "309; KS3 B8 80 lines)",
+              ok, fmt("starts=%ld,%ld,%ld,%ld (want 0,32,67,102)",
+                      s.size() > 0 ? s[0] : -1, s.size() > 1 ? s[1] : -1,
+                      s.size() > 2 ? s[2] : -1, s.size() > 3 ? s[3] : -1));
+    }
+    // DMA-HU-05 - burst with prescaler, the CPU running NOPs (4 T): the gate
+    // opens 2 clocks into the 7th NOP after a byte (within the 4-clock grant),
+    // so a byte step is 6 + 3 clocks and 7 NOPs = 37 clocks apart.
+    {
+        const std::vector<long> s = g23_prescaled_starts(true, 0x00);
+        const bool ok = s.size() == 4 && s[1] - s[0] == 34 && s[2] - s[1] == 37 && s[3] - s[2] == 37;
+        check("DMA-HU-05",
+              "burst, prescaler 8, NOPs at 3.5 MHz: the bus is taken back at the instruction "
+              "end, 3 clocks (START_DMA, WAITING_ACK) before READ_1: bytes 37 clocks apart "
+              "(dma.vhd:436-462,266-300)",
+              ok, fmt("starts=%ld,%ld,%ld,%ld (want 0,34,71,108)",
+                      s.size() > 0 ? s[0] : -1, s.size() > 1 ? s[1] : -1,
+                      s.size() > 2 ? s[2] : -1, s.size() > 3 ? s[3] : -1));
+    }
+    // DMA-HU-06 - burst with prescaler, the CPU running EX (SP),HL (19 T): a
+    // grant 12 clocks late (8 past the 4-clock machine-cycle bound) starts the
+    // next window 8 clocks early, so the byte steps come 28 and 47 clocks
+    // apart in turn (37.5 on average), not 47 each.
+    {
+        const std::vector<long> s = g23_prescaled_starts(true, 0xE3);
+        const bool ok = s.size() == 4 && s[1] - s[0] == 44 && s[2] - s[1] == 28 && s[3] - s[2] == 47;
+        check("DMA-HU-06",
+              "burst, prescaler 8, 19-T instructions at 3.5 MHz: what the instruction ran past "
+              "the Z80's 4-clock bus grant starts the next window early (28, 47 clocks apart, "
+              "not 47, 47)",
+              ok, fmt("starts=%ld,%ld,%ld,%ld (want 0,44,72,119)",
+                      s.size() > 0 ? s[0] : -1, s.size() > 1 ? s[1] : -1,
+                      s.size() > 2 ? s[2] : -1, s.size() > 3 ? s[3] : -1));
+    }
 }
 
 // ══ Group 24 — GH #230: write_io lifetime across Emulator::init() ═════

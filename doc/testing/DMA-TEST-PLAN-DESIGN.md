@@ -529,6 +529,9 @@ wait rows therefore program 2+2 cycles.
 | DMA-HU-01 | Reset timing (3+3) at 28 MHz: no read wait | dma.vhd:139-144,337-342; zxnext.vhd:3167,3171-3181 | 8-byte SRAM burst = 48 T: 6 T a byte, the 3-cycle read reaches READ_4 after the wait pulse (KS3 5.87 T/byte) |
 | DMA-HU-02 | 4+4 cycles at 3.5 MHz | dma.vhd:307-342,359-410 | 8-byte SRAM burst = 64 T, 8 T a byte (KS3 7.88 T/byte) |
 | DMA-HU-03 | B->A: read with port B's timing, write with port A's | dma.vhd:310-325,362-377 | R1 "00", R2 "10": (2 + 1 wait) + 4 = 7 T a byte at 28 MHz, 8 bytes = 56 T |
+| DMA-HU-04 | Continuous + prescaler: 3 clocks back to the next byte | dma.vhd:309,436-462 | prescaler 8, 3+3 cycles, 3.5 MHz: byte steps 32, 35, 35 clocks apart (WAITING_ACK before READ_1; KS3 B8 80 lines) |
+| DMA-HU-05 | Burst + prescaler: bus taken back at the instruction end, +3 clocks | dma.vhd:266-300,436-462 | CPU on NOPs: byte steps 34, 37, 37 clocks apart |
+| DMA-HU-06 | Burst + prescaler: a late grant starts the next window early | dma.vhd:309,436-462 (the Z80 yields at a machine cycle's end) | CPU on 19-T EX (SP),HL: byte steps 44, 28, 47 clocks apart (37.5 on average, not 47) |
 
 ### 25. RZX record/replay of DMA port reads (GH #283) (12 tests)
 

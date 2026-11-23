@@ -207,6 +207,28 @@ public:
         return last_burst_read_wait_tstates_;
     }
 
+    /// hungarian-ui - the CPU clocks the LAST execute_burst() spent getting
+    /// back to a byte after a prescaler wait, before its TRANSFERING_READ_1:
+    /// RESUME_CLOCKS, or 0. Charged with the burst like the read waits
+    /// (Emulator::step_one_instruction(), port_fe_write_time()); not counted
+    /// into the next prescaler window, which dma.vhd starts at READ_1 (:309).
+    /// Transient, like the read waits: NOT part of the save state.
+    uint32_t last_burst_resume_tstates() const { return last_burst_resume_tstates_; }
+
+    /// After a prescaler wait the state machine leaves WAITING_CYCLES and
+    /// goes through WAITING_ACK (continuous: the bus is still held) or
+    /// START_DMA + WAITING_ACK (burst: it was given back) before the next
+    /// READ_1 (dma.vhd:436-462, :266-300). Measured on Viktor's KS3 as about
+    /// 3 CPU clocks a byte in both modes (doc/hu/jnext-dma-meres.md: B8 80
+    /// lines against 74 without them; the ZEsarUX model uses the same 3).
+    static constexpr uint32_t RESUME_CLOCKS = 3;
+
+    /// In burst mode the Z80 hands the bus back at the end of a machine cycle,
+    /// at most about this many clocks after the wait ends; the emulator steps
+    /// whole instructions, so whatever a long instruction ran past that is
+    /// taken off the next window (the byte is timed as if granted on time).
+    static constexpr uint32_t BURST_GRANT_CLOCKS = 4;
+
     /// The T-states the emulator charges a burst per transferred byte (plus
     /// the read waits above): Emulator::step_one_instruction() advances the
     /// clock by this, and the tape-out capture times each transfer by it.
@@ -384,6 +406,10 @@ private:
     // execute_burst() call and consumed by the caller in the same
     // emulator step — deliberately NOT serialized in save_state().
     uint32_t last_burst_read_wait_tstates_ = 0;
+    // hungarian-ui: last_burst_resume_tstates(); and the clocks of it the
+    // next tick_burst_wait() must not count (they precede READ_1). Transient.
+    uint32_t last_burst_resume_tstates_ = 0;
+    uint32_t uncounted_clocks_ = 0;
 
     // VHDL dma.vhd:424 / :451 wait gate:
     //   R2_portB_preescaler_s > 0 AND ('0' & preescaler) > DMA_timer_s(13:5)

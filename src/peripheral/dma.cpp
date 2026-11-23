@@ -110,6 +110,8 @@ void Dma::reset() {
     // does not assign turbo_i).
     dma_timer_s_ = 0;
     in_waiting_cycles_ = false;
+    last_burst_resume_tstates_ = 0;   // hungarian-ui (transient)
+    uncounted_clocks_ = 0;
 
     wr_seq_ = WrSeq::IDLE;
     rd_seq_ = RdSeq::STATUS;
@@ -755,8 +757,12 @@ int Dma::execute_burst(int max_bytes) {
     // GH #106 — fresh accumulator per call so a caller reading
     // last_burst_read_wait_tstates() after a zero-transfer call sees 0.
     last_burst_read_wait_tstates_ = 0;
+    last_burst_resume_tstates_ = 0;
 
     if (state_ != State::TRANSFERRING) return 0;
+
+    bool     resume_pending = false;      // hungarian-ui: see the wait branch below
+    uint32_t window_head_start = 0;       // master cycles the next window starts early
 
     // VHDL dma.vhd:439-464 — while the state machine is in WAITING_CYCLES
     // it loops on itself until the prescaler comparison opens.  Model:
@@ -773,6 +779,19 @@ int Dma::execute_burst(int max_bytes) {
         if (counter_ >= block_len_) {
             finish_block_();
             return 0;
+        }
+        // hungarian-ui: back to the next byte through WAITING_ACK (and
+        // START_DMA in burst mode), RESUME_CLOCKS before its READ_1.
+        resume_pending = true;
+        if (mode_ == 2) {
+            // The wait ended `late` master cycles ago, while the CPU ran on
+            // (a whole instruction here, a machine cycle on the Z80): what
+            // ran past BURST_GRANT_CLOCKS starts the next window early.
+            const uint32_t unit = turbo_ == 0 ? 8u : turbo_ == 1 ? 4u : turbo_ == 2 ? 2u : 1u;
+            const uint32_t gate = 32u * port_b_prescaler_;
+            const uint32_t late = dma_timer_s_ > gate ? dma_timer_s_ - gate : 0u;
+            const uint32_t grant = BURST_GRANT_CLOCKS * unit;
+            window_head_start = late > grant ? late - grant : 0u;
         }
     }
 
@@ -807,7 +826,16 @@ int Dma::execute_burst(int max_bytes) {
         // VHDL dma.vhd:309 — entering TRANSFERING_READ_1 clears DMA_timer_s.
         // Reset the timer at the START of each source-byte read so the
         // prescaler comparison measures the post-read elapsed time.
-        dma_timer_s_ = 0;
+        // hungarian-ui: the first byte after a wait pays RESUME_CLOCKS before
+        // its READ_1, which this step's tick_burst_wait() must not count; a
+        // late burst grant starts the window by its excess early.
+        dma_timer_s_ = static_cast<uint16_t>(window_head_start & 0x3FFF);
+        window_head_start = 0;
+        if (resume_pending) {
+            resume_pending = false;
+            last_burst_resume_tstates_ = RESUME_CLOCKS;
+            uncounted_clocks_ = RESUME_CLOCKS;
+        }
 
         // Read byte from source
         uint8_t data;
@@ -946,6 +974,11 @@ void Dma::tick_burst_wait(uint64_t cpu_clocks) {
     // Accumulate in 32-bit, then mask to 14 bits to match the VHDL register
     // width (dma.vhd:129).  The maximum in-wait growth is prescaler*32 =
     // 255*32 = 8160 < 16384, so no in-wait wrap can confuse the gate.
+    // hungarian-ui: the resume clocks charged with this step came before the
+    // byte's READ_1, which restarted the window (execute_burst()).
+    const uint64_t skip = cpu_clocks < uncounted_clocks_ ? cpu_clocks : uncounted_clocks_;
+    uncounted_clocks_ = 0;
+    cpu_clocks -= skip;
     uint32_t next = static_cast<uint32_t>(dma_timer_s_) +
                     static_cast<uint32_t>(inc_per_clock) *
                     static_cast<uint32_t>(cpu_clocks);
@@ -1070,6 +1103,8 @@ void Dma::load_state(StateReader& r)
     // hardware can be in.
     turbo_       = static_cast<uint8_t>(turbo_ & 0x03);
     dma_timer_s_ = static_cast<uint16_t>(dma_timer_s_ & 0x3FFF);
+    last_burst_resume_tstates_ = 0;   // hungarian-ui: transient, never saved
+    uncounted_clocks_ = 0;
 }
 
 // ---------------------------------------------------------------------------

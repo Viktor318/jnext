@@ -30,7 +30,7 @@ mentions them, so a test can no longer be absent from this document.
 | Copper                                     |   115 |  115 |    0 |    0 |       0 |          0 |
 | Compositor                                 |   300 |  300 |    0 |    0 |       0 |          0 |
 | Audio                                      |   275 |  275 |    0 |    0 |       0 |          0 |
-| DMA                                        |   189 |  189 |    0 |    0 |       0 |          0 |
+| DMA                                        |   192 |  192 |    0 |    0 |       0 |          0 |
 | DivMMC+SPI                                 |   173 |  173 |    0 |    0 |       0 |          0 |
 | Multiface                                  |    58 |   58 |    0 |    0 |       0 |          0 |
 | CTC+Interrupts                             |   203 |  203 |    0 |    0 |       0 |          0 |
@@ -71,9 +71,9 @@ mentions them, so a test can no longer be absent from this document.
 | Companion: uart_integration_native_test    |     4 |    4 |    0 |    0 |       0 |          0 |
 | Companion: uart_posix_test                 |    51 |   51 |    0 |    0 |       0 |          0 |
 | Companion: nextpi_test                     |   102 |  102 |    0 |    0 |       0 |          0 |
-| **Total**                                  |  6304 | 6304 |    0 |    0 |       0 |          0 |
+| **Total**                                  |  6307 | 6307 |    0 |    0 |       0 |          0 |
 
-Rows the sections above carry: **6304**. Distinct row IDs recorded anywhere in this document (every table, including "Extra coverage"): **5780**. Rows the 238 suites declared in `test/unit-tests.conf` run live: **17416**.
+Rows the sections above carry: **6307**. Distinct row IDs recorded anywhere in this document (every table, including "Extra coverage"): **5783**. Rows the 238 suites declared in `test/unit-tests.conf` run live: **17419**.
 
 The `Rows` column counts rows that publish a **`Status`**, so it equals pass+fail+skip+missing by construction. A further **0** rows live in the 4-column "Extra coverage (not in plan)" tables, which have no `Status` column: their `VHDL file:line` and `Test file:line` ARE recomputed on every run (they were not, for two years — GH #192), and a row asserted nowhere reads `missing` in the location column exactly as it would in a main table. A further **0** rows sit in **0** tables that carry neither column and are therefore not refreshed at all; each says so above itself.
 
@@ -2302,21 +2302,24 @@ Notes and rationale: [DMA-TEST-PLAN-DESIGN.md](DMA-TEST-PLAN-DESIGN.md).
 | DMA-HU-01 | Emulator::init failed (Next machine) | dma.vhd, zxnext.vhd:3167,3171-3181 | pass | test/dma/dma_test.cpp:3537 |
 | DMA-HU-02 | Emulator::init failed (Next machine) | dma.vhd:307-342,359-410 | pass | test/dma/dma_test.cpp:3566 |
 | DMA-HU-03 | Emulator::init failed (Next machine) | dma.vhd:310-325,362-377 | pass | test/dma/dma_test.cpp:3609 |
-| GH283-01 | Emulator::init failed (48K) | zxnext.vhd:2405,2643 | pass | test/dma/dma_test.cpp:3793 |
-| GH283-02 | under RZX recording every DMA port read is captured, in order, with the value the DMA delivered | — | pass | test/dma/dma_test.cpp:3799 |
-| GH283-03 | a recorded DMA port read keeps the DMA's timing: 4-byte burst = 24 T (3+3 cycles a byte), and the T-state counter moves by those 24 T only | — | pass | test/dma/dma_test.cpp:3809 |
-| GH283-04 | Emulator::init failed (48K) | — | pass | test/dma/dma_test.cpp:3824 |
-| GH283-05 | and the live port is not read: a replay never consults the hardware the recording was made against | — | pass | test/dma/dma_test.cpp:3849 |
-| GH283-06 | Emulator::init failed (48K) | — | pass | test/dma/dma_test.cpp:3863 |
-| GH283-07 | Emulator::init failed (48K) | — | pass | test/dma/dma_test.cpp:3880 |
-| GH283-08 | RZX playback: an IO_READ watchpoint stops the machine on the DMA's replayed read of the watched port | — | pass | test/dma/dma_test.cpp:3956 |
-| GH283-09 | RZX playback: an IO_READ watchpoint stops the machine after the CPU's replayed IN of the watched port | — | pass | test/dma/dma_test.cpp:3974 |
-| GH283-10 | and a watchpoint on another port does not stop either replayed read | — | pass | test/dma/dma_test.cpp:3992 |
-| GH283-11 | RZX playback: a Port subscription sees the DMA's read and then the CPU's, each carrying the REPLAYED value, not the live one | — | pass | test/dma/dma_test.cpp:4026 |
-| GH283-12 | and a subscription on another port sees neither | — | pass | test/dma/dma_test.cpp:4038 |
-| GH230-08 | write_io still alive when Emulator::init() would reassign it mid-burst | — | pass | test/dma/dma_test.cpp:3699 |
-| GH230-09 | executing write_io reads its own capture after the reassignment | — | pass | test/dma/dma_test.cpp:3706 |
-| GH230-10 | the burst still delivered the byte to the I/O destination | — | pass | test/dma/dma_test.cpp:3711 |
+| DMA-HU-04 | continuous, prescaler 8, 3.5 MHz: a byte after a prescaler wait starts 32 + 3 clocks after the previous one (WAITING_ACK before READ_1, dma.vhd:436-462,309; KS3 B8 80 lines) | dma.vhd:436-462 | pass | test/dma/dma_test.cpp:3664 |
+| DMA-HU-05 | burst, prescaler 8, NOPs at 3.5 MHz: the bus is taken back at the instruction end, 3 clocks (START_DMA, WAITING_ACK) before READ_1: bytes 37 clocks apart (dma.vhd:436-462,266-300) | dma.vhd:436-462,266-300 | pass | test/dma/dma_test.cpp:3678 |
+| DMA-HU-06 | burst, prescaler 8, 19-T instructions at 3.5 MHz: what the instruction ran past the Z80's 4-clock bus grant starts the next window early (28, 47 clocks apart, not 47, 47) | dma.vhd:309,436-462 | pass | test/dma/dma_test.cpp:3693 |
+| GH283-01 | Emulator::init failed (48K) | zxnext.vhd:2405,2643 | pass | test/dma/dma_test.cpp:3877 |
+| GH283-02 | under RZX recording every DMA port read is captured, in order, with the value the DMA delivered | — | pass | test/dma/dma_test.cpp:3883 |
+| GH283-03 | a recorded DMA port read keeps the DMA's timing: 4-byte burst = 24 T (3+3 cycles a byte), and the T-state counter moves by those 24 T only | — | pass | test/dma/dma_test.cpp:3893 |
+| GH283-04 | Emulator::init failed (48K) | — | pass | test/dma/dma_test.cpp:3908 |
+| GH283-05 | and the live port is not read: a replay never consults the hardware the recording was made against | — | pass | test/dma/dma_test.cpp:3933 |
+| GH283-06 | Emulator::init failed (48K) | — | pass | test/dma/dma_test.cpp:3947 |
+| GH283-07 | Emulator::init failed (48K) | — | pass | test/dma/dma_test.cpp:3964 |
+| GH283-08 | RZX playback: an IO_READ watchpoint stops the machine on the DMA's replayed read of the watched port | — | pass | test/dma/dma_test.cpp:4040 |
+| GH283-09 | RZX playback: an IO_READ watchpoint stops the machine after the CPU's replayed IN of the watched port | — | pass | test/dma/dma_test.cpp:4058 |
+| GH283-10 | and a watchpoint on another port does not stop either replayed read | — | pass | test/dma/dma_test.cpp:4076 |
+| GH283-11 | RZX playback: a Port subscription sees the DMA's read and then the CPU's, each carrying the REPLAYED value, not the live one | — | pass | test/dma/dma_test.cpp:4110 |
+| GH283-12 | and a subscription on another port sees neither | — | pass | test/dma/dma_test.cpp:4122 |
+| GH230-08 | write_io still alive when Emulator::init() would reassign it mid-burst | — | pass | test/dma/dma_test.cpp:3783 |
+| GH230-09 | executing write_io reads its own capture after the reassignment | — | pass | test/dma/dma_test.cpp:3790 |
+| GH230-10 | the burst still delivered the byte to the I/O destination | — | pass | test/dma/dma_test.cpp:3795 |
 
 ## DivMMC+SPI — `test/divmmc/divmmc_test.cpp`
 
