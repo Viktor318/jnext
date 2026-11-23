@@ -47,4 +47,17 @@ Kész: `6809ec69` (hungarian-ui) – a fenti modell; a ZEsarUX a KS3-hoz 1–3%-
 - **28 MHz-es várakozás csak 2 ciklusos olvasásnál:** a VHDL igazolja a mérést. Az `sram_wait_n` egyetlen 28 MHz-es órajelig alacsony a kérés élétől (zxnext.vhd:3167, :3171-3181), a DMA ezt a lefutó élen regisztrálja (dma.vhd:139-144) és csak a `TRANSFERING_READ_4` állapotban nézi (:337-342). A 2 ciklusos olvasás READ_1 → READ_4, ezért éri az impulzus; a 3 és 4 ciklusos a lejárta után ér oda. Kód: `dma.cpp`, a `read_mem_wait_tstates` hívása `read_cycles() == 2` feltétellel.
 - **Előosztó:** nem kellett hozzányúlni; a JNEXT-ben az előosztó időzítője a bájt elején (READ_1) indul, és a felszámolt átviteli idő beleszámít, ahogy a VHDL-ben.
 - **Tesztek:** `dma_test` 23.1–23.3, 23.8 2+2 ciklussal (40 / 32 / 32 / 40 T), 23.4 és 23.6 2 ciklusos olvasással; új DMA-HU-01 (3+3, 28 MHz: 48 T, várakozás nélkül), DMA-HU-02 (4+4, 3,5 MHz: 64 T), DMA-HU-03 (B→A: az olvasás a B, az írás az A port időzítése; 56 T); GH283-03: 24 T. `tape_save_test` TSAVE-55 (6 T-s impulzusok), TSAVE-56 (28 MHz: 64 impulzus, nincs 0 T-s), TSAVE-62 (a DMA két saját impulzusa kihagyva). A 2 ciklusos feltétel kivételét a DMA-HU-01 elkapja (mutáció). `DMA-TEST-PLAN-DESIGN.md` és a tesztmátrix frissítve (a mátrixot a CI-éval azonos FPGA-core, 3.02.03 alapján helyben generálva).
-- **Hátra van:** a CI regressziós futása (a DMA-t használó képernyőképes sorok elcsúszhatnak), és Viktor próbája a `dmatest.nex`-szel, összevetve a fenti KS3-táblázattal.
+- **CI:** `45067641285` (`6cf89c6`) minden feladata zöld, a regresszió is: egyetlen képernyőképes sor sem csúszott el.
+- **Viktor próbája a `dmatest.nex`-szel (2026-11-23, `6cf89c6` Windows-build):**
+
+| (3,5 MHz / 28 MHz, sor; zárójelben körök) | KS3 3.03.03, 50 Hz | JNEXT régi | JNEXT `6cf89c6`, 50 Hz | JNEXT `6cf89c6`, 60 Hz |
+|---|---|---|---|---|
+| A2 | 73 / 45 | 37 / 27 | **73 / 45** | 74 / 45 |
+| A3 | 109 / 54 | 37 / 27 | **109 / 54** | 109 / 54 |
+| A4 | 145 / 72 | 38 / 27 | **145 / 72** | 145 / 72 |
+| B8 | 80 / 72 | 74 / 72 | 74 / 72 | 73 / 72 |
+| C8 | 90 (342) / 74 (2940) | 80 (385) / 73 (2429) | 81 (342) / 72 (2386) | 81 (342) / 72 (2386) |
+| D2 | 280 (513) / 160 (5632) | 196 (820) / 152 (4915) | 222 (586) / 152 (4681) | 222 (586) / 152 (4681) |
+| E (képkocka) | 52 | 51 | 51 | 61 |
+
+  Az előosztó nélküli folyamatos átvitel (A) pontos. A 60 Hz-es sorszámok a ±1 kerekítésen túl azonosak (a Next képsora 50 és 60 Hz-en is 1824 mesterciklus); az E a képfrissítés arányában nő. **Ami még eltér:** az előosztós módok (B, C, D) 3,5 MHz-en bájtonként kb. 3–4 órajellel gyorsabbak (B8: 6 sor / 512 B ≈ 2,6 T; C8: 9 sor ≈ 3,9 T; D2: 58 sor / 4096 B ≈ 3,2 T); 28 MHz-en kicsi. Ez a mérés 2. pontjának „a várakozás után még kb. 3 / 7 órajel”-e: a VHDL várakozás utáni állapotváltásai, amelyeket a JNEXT nem számol. **Második lépés:** felmérés alatt (Viktor kérése, 2026-11-23).
