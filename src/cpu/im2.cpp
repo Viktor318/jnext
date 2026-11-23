@@ -831,6 +831,12 @@ void Im2Controller::on_reti() {
             dev_[i].im2_int_req = false;
         }
     }
+    // The pulse is used up. o_reti_seen is high for one CPU clock and the
+    // chain is sampled once on it (im2_device.vhd:123-128), so one RETI clears
+    // one device. Leaving it set let step_devices() walk the already updated
+    // chain again in the same instruction's tick and clear the next device
+    // in as well: a nested RETI also ended the outer ISR (hungarian-ui).
+    reti_seen_pulse_ = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -1367,6 +1373,19 @@ bool Im2Controller::ieo(DevIdx d) const {
 // (stay) branch we simply do nothing new.
 // -----------------------------------------------------------------------------
 void Im2Controller::advance_decoder(uint8_t opcode) {
+    // vhdl:181-192 - S_ED4D_T4 / S_ED45_T4 -> S_SRL_T1 -> S_SRL_T2 -> S_0 is
+    // unconditional, one step per CPU CLOCK (the state register, :148-156), not
+    // per fetch. The RETI/RETN pops take 6 T after the T4 of the second opcode
+    // byte, so the FSM is back in S_0 before any later fetch reaches T3, where
+    // ifetch_fe_t3 is sampled. Stepping it once per fetch swallowed the next
+    // three opcodes: an ISR of just EI; RETI taken right after a RETI lost its
+    // own RETI, and its device kept the daisy chain blocked (hungarian-ui).
+    // dma_delay_ctrl_ keeps the window up until this call, i.e. through the
+    // tick of the RETI/RETN instruction itself.
+    if (dec_state_ == DecState::S_ED4D_T4 || dec_state_ == DecState::S_ED45_T4 ||
+        dec_state_ == DecState::S_SRL_T1  || dec_state_ == DecState::S_SRL_T2) {
+        dec_state_ = DecState::S_0;
+    }
     switch (dec_state_) {
 
         // vhdl:161-170
@@ -1409,23 +1428,11 @@ void Im2Controller::advance_decoder(uint8_t opcode) {
             }
             break;
 
-        // vhdl:181-183 — ED 4D path joins the shared SRL delay window
+        // Left above, before the switch (vhdl:181-192: a clock, not a fetch).
         case DecState::S_ED4D_T4:
-            dec_state_ = DecState::S_SRL_T1;
-            break;
-
-        // vhdl:190-192 — ED 45 path joins the shared SRL delay window
         case DecState::S_ED45_T4:
-            dec_state_ = DecState::S_SRL_T1;
-            break;
-
-        // vhdl:186-189 — "extra states prevent accumulation of return
-        // addresses on the stack" (DMA-interruption guard).
         case DecState::S_SRL_T1:
-            dec_state_ = DecState::S_SRL_T2;
-            break;
         case DecState::S_SRL_T2:
-            dec_state_ = DecState::S_0;
             break;
 
         // vhdl:193-198 — CB is a one-opcode-lookahead prefix; the next
@@ -1570,8 +1577,9 @@ void Im2Controller::step_devices() {
     for (int i = 0; i < N; ++i) {
         step_state_machine_with_iei(i, iei_snap[i]);
     }
-    // Note: reti_seen_pulse_ is a one-cycle pulse owned by Agent A's
-    // decoder; it's cleared on the next on_m1_cycle call.
+    // reti_seen_pulse_ is one CPU clock wide (im2_control.vhd:234) and this
+    // step was that clock: one RETI must not be applied on two ticks.
+    reti_seen_pulse_ = false;
 
     // ── Phase 3: isr_serviced cleanup (documented no-op, Agent D) ──────────
     propagate_isr_serviced();

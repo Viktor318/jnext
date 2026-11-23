@@ -64,3 +64,16 @@ A fenti „valószínű okok” mérés nélküli becslések voltak; ez a rész 
 5. **„Tévé” szűrő** (100 Hz / 10 kHz): fél nap, csak ha az újrahallgatás után is hiányzik.
 
 A DAC-írások szórásának csökkentése (a hang szempontjából a lejárat pillanatára visszadátumozva) külön felmérést kérne, egyelőre nincs a sorban.
+
+## A recsegés oka és javítása (2026-11-23, Viktor jóváhagyásával, csak a saját forkban)
+
+**A fenti 1. lépés (mérés) lezárva; a felülvizsgált sorrend 2. és 4. lépése az NXModPlayer recsegésének nem megoldása.** Viktor naplóiban lejátszás közben nem volt `audio-fill`, duplázás vagy kihagyás (a puffer 66–84 ms), a lejátszási oldal hibátlan. A 28 MHz-es memória-várakozás kipróbálva: nem ez az ok.
+
+- **Tünet:** Viktor felvételén (`dune_ecolove.mod`) a bal csatornán pontosan 0,160 másodpercenként (zenei soronként) kattanás; a lejátszó 0 gombja (leállítja, majd új fázisban újraindítja a mintakimenetet) néha megszünteti, néha sokkal rosszabbá teszi. A ZEsarUX-ban ugyanez a dal nem recseg.
+- **A lejátszó:** két 10 mintás félpuffer; a CTC0 (28 MHz / 896 = 31 250 Hz) kiírja, a CTC1 (pontosan 10-szer ritkább) a másik félbe kever, csatornánként külön megnézve, melyik fél szól. Dalindításkor a kezelők csak `EI; RETI`, és az első CTC1 állítja be a fázist (önmódosító `LD IY,$FA00`). Ha a fázis rossz, a félváltás a keverés közben történik: rossz blokk szól.
+- **Két JNEXT-hiba a `src/cpu/im2.cpp`-ben (VHDL-eltérés):**
+  - a RETI-dekóder S_ED4D_T4 / S_ED45_T4 → S_SRL_T1 → S_SRL_T2 → S_0 útja a VHDL-ben *órajelenként* lép (`im2_control.vhd:181-192`), a JNEXT *utasításlehívásonként* léptette, így a RETI utáni három lehívást elnyelte. Egy RETI után azonnal elfogadott megszakítás `EI; RETI` kezelője elvesztette a saját RETI-jét, a CTC0 kiszolgálás alatt maradt, és a következő sormegszakításig (a mért esetben kb. 18 ms) nem jött CTC-megszakítás; a függőben maradt CTC1 állította be a (rossz) fázist;
+  - egy RETI-t kétszer dolgozott fel (`on_reti()`, majd ugyanazt az impulzust a `step_devices()`), így egymásba ágyazott megszakításnál a külső eszköz is felszabadult (`im2_device.vhd:123-128` szerint csak egy).
+- **Mérés** (26.11a-s kártya, `dune_ecolove`, 30 különböző indítási képkocka): javítás előtt 6 hibás indítás, javítva 0; 21 szakasz a 0-s leállítás és újraindítás után: előtte 2 rossz fázisú, javítva 0. Csak a második javítással a zene elnémul (a kettős feloldás eltakarta az elveszett RETI-t), ezért a kettő együtt kellett.
+- **Tesztek:** IM2C-08 és IM2C-09 a VHDL-hez igazítva (a régi, lehívásonkénti modellt rögzítették); új IM2C-HU-01..03, IM2P-HU-01..02. Mutációval mindegyik ellenőrizve.
+- **Ami a tervből marad** (mind Viktor döntésére vár): állítható hangpuffer (a párbeszédablakok alatti akadásra, kívánságlista 3.), DAC-keverő, jobb mintavételezés, „tévé” szűrő.

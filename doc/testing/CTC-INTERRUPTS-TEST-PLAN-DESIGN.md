@@ -255,13 +255,16 @@ Tests based on `im2_control.vhd` state machine.
 | IM2C-05 | o_reti_decode asserted during S_ED_T4 | Peripherals see decode window |
 | IM2C-06 | CB prefix: enter S_CB_T4, wait for next fetch | CB handled correctly (not ED) |
 | IM2C-07 | DD/FD prefix chain: stay in S_DDFD_T4 | Multiple DD/FD prefixes handled |
-| IM2C-08 | DMA delay: asserted during ED, ED4D, ED45, SRL states | o_dma_delay covers RETI pop sequence |
-| IM2C-09 | SRL delay states: 2 extra cycles after RETI/RETN | Prevents DMA accumulation of return addresses |
+| IM2C-08 | DMA delay: asserted during ED, ED4D, ED45, SRL states (the last three one CPU clock each, :181-192) | o_dma_delay covers the RETI and is down at the next fetch |
+| IM2C-09 | SRL delay states: 2 extra CPU clocks, inside the RETI/RETN | Prevents DMA accumulation of return addresses; down at the next fetch |
 | IM2C-10 | IM mode detection: ED 46 = IM 0 | im_mode = "00" |
 | IM2C-11 | IM mode detection: ED 56 = IM 1 | im_mode = "01" |
 | IM2C-12 | IM mode detection: ED 5E = IM 2 | im_mode = "10" |
 | ~~IM2C-13~~ | ~~IM mode updates on falling edge of CLK_CPU~~ | **RETIRED 2026-09-24** (GH #201) — (B) VHDL-internal clock phase. `im2_control.vhd:218-227` clocks `im_mode` on `falling_edge(i_CLK_CPU)` while the decoder state machine it reads runs on the rising edge, so the latch lands half a CPU cycle early. jnext evaluates the decoder once per instruction, which collapses both phases into one call — there is no sub-instruction observer for the half-cycle to move. The value it carries (`im_mode` reflects the latest ED 4[6E]/56/5E decode) is covered by IM2C-10/11/12 and its reset default by IM2C-14. Matches the RETIRED comment in `test/ctc/ctc_test.cpp` at IM2C-13. No `check()` row exists. |
 | IM2C-14 | IM mode default after reset: IM 0 | im_mode = "00" after reset |
+| IM2C-HU-01 | RETI, then EI; RETI with no opcode in between, then RETI (hungarian-ui) | Every RETI decoded: the SRL states take clocks, not fetches |
+| IM2C-HU-02 | RETN, then RETI, RETN, IM 1 as the next opcodes (hungarian-ui) | All decoded |
+| IM2C-HU-03 | Full machine: CTC0 and CTC1 with EI; RETI handlers at every relative phase, 4 frames (hungarian-ui) | No RETI lost, the CTC interrupts never stall |
 | IM2C-G87-01 | RETI (ED 4D) seen by Im2Controller via real Z80Cpu M1 stream | skip — Z80Cpu::on_m1_cycle fires once per execute() with FIRST byte only; ED 2nd byte unobserved (see G87) |
 | IM2C-G87-02 | RETN (ED 45) seen by Im2Controller via real Z80Cpu M1 stream | skip — same per-byte-M1-hook prerequisite as IM2C-G87-01 (see G87) |
 
@@ -299,6 +302,8 @@ Tests based on daisy chain logic in `im2_device.vhd` and `peripherals.vhd`.
 | IM2P-06 | Lower-priority device queued while higher is serviced | IEO=0 blocks lower device's INT_n |
 | IM2P-07 | After RETI of higher-priority ISR: lower device proceeds | IEO restored, lower device can now be acknowledged |
 | IM2P-08 | Chain of 3: device 0 in ISR, device 1 requesting, device 2 requesting | Device 1 next after device 0 RETI |
+| IM2P-HU-01 | CTC0 nested in CTC1's ISR, CTC2 waiting; RETI via on_m1_cycle + on_reti() + tick (hungarian-ui) | One device per RETI: CTC1 stays in service and keeps CTC2 blocked |
+| IM2P-HU-02 | The same, RETI consumed by tick alone, two ticks (hungarian-ui) | The second tick does not repeat it |
 | IM2P-09 | INT_n is AND of all device int_n signals | Any device can assert interrupt |
 | IM2P-10 | Vector OR: only acknowledged device outputs non-zero vector | Correct vector formed by OR-combine |
 
@@ -777,9 +782,9 @@ bash test/regression.sh
 | 4. CTC Chaining | 6 | ZC/TO cascade, circular topology |
 | 5. CTC Control/Vector | 11 | Register protocol, write classification |
 | 6. CTC NextREG Enable | 4 | NextREG 0xC5 interaction |
-| 7. IM2 Control Block | 16 | RETI/RETN decode, IM mode, DMA delay (+G87×2) |
+| 7. IM2 Control Block | 19 | RETI/RETN decode, IM mode, DMA delay (+G87×2, +HU×3) |
 | 8. IM2 Device | 12 | Per-device state machine, vector, ACK |
-| 9. IM2 Daisy Chain | 10 | Priority, blocking, chain restore |
+| 9. IM2 Daisy Chain | 12 | Priority, blocking, chain restore |
 | 10. Pulse Mode | 15 | Legacy pulse timing, mode selection (+G89×4 +G90 +G121) |
 | 11. IM2 Peripheral | 10 | Edge detect, status, domain crossing (+G119) |
 | 12. ULA/Line Interrupts | 9 | ULA timing, line number, priority |
@@ -789,7 +794,7 @@ bash test/regression.sh
 | 16. Unqualified Int | 5 | Bypass enable, NextREG 0x20 |
 | 17. Joystick IO Mode | 2 | CTC ch3 ZC/TO toggle |
 | GH #265 timing | 25 | INT sampling, status/pulse reads, ordered writes, CTC port and chain edges |
-| **Total** | **~188** | |
+| **Total** | **~193** | |
 
 ## Planned rows carried over from the traceability matrix (GH #196)
 

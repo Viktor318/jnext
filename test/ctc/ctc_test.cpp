@@ -1141,7 +1141,10 @@ void section7_im2_control() {
 
     // IM2C-08 — im2_control.vhd:238: o_dma_delay high across all RETI
     // decode states: S_ED_T4, S_ED4D_T4, S_ED45_T4, S_SRL_T1, S_SRL_T2.
-    // Track across an ED 4D sequence.
+    // Track across an ED 4D sequence. The last three states take one CPU
+    // clock each (:148-156), so the window closes inside RETI's 6 T of stack
+    // reads and the next fetch finds S_0 (hungarian-ui: the model used to
+    // spend one FETCH per state and kept the window up for three opcodes).
     {
         fresh(im2);
         bool ok = true;
@@ -1149,35 +1152,68 @@ void section7_im2_control() {
         im2.on_m1_cycle(0x0000, 0xED);
         ok = ok && im2.dma_delay_control();  // S_ED_T4
         im2.on_m1_cycle(0x0001, 0x4D);
-        ok = ok && im2.dma_delay_control();  // S_ED4D_T4
+        ok = ok && im2.dma_delay_control();  // S_ED4D_T4 / S_SRL_T1 / S_SRL_T2
         im2.on_m1_cycle(0x0002, 0x00);
-        ok = ok && im2.dma_delay_control();  // S_SRL_T1 (next-state = SRL_T2)
-        im2.on_m1_cycle(0x0003, 0x00);
-        ok = ok && im2.dma_delay_control();  // S_SRL_T2
-        im2.on_m1_cycle(0x0004, 0x00);
         ok = ok && !im2.dma_delay_control(); // back to S_0
         check("IM2C-08", ok,
               "im2_control.vhd:238 o_dma_delay covers S_ED_T4 / S_ED4D_T4 / S_SRL_T1/T2",
               "dma_delay_control sequence mismatch");
     }
 
-    // IM2C-09 — im2_control.vhd:186-192: the SRL_T1/T2 pair adds 2 "ticks"
-    // (two on_m1_cycle calls) of dma_delay_control after ED 4D / ED 45.
-    // From S_ED45_T4 → S_SRL_T1 → S_SRL_T2 → S_0.
+    // IM2C-09 — im2_control.vhd:186-192: the SRL_T1/T2 pair adds two CPU
+    // CLOCKS of dma_delay_control after ED 45 (S_ED45_T4 → S_SRL_T1 →
+    // S_SRL_T2 → S_0), all of them inside the RETN itself: the window is up
+    // at the end of the ED 45 and down at the next fetch.
     {
         fresh(im2);
         im2.on_m1_cycle(0x0000, 0xED);
-        im2.on_m1_cycle(0x0001, 0x45);  // now S_ED45_T4 (dma_delay high)
-        int delay_cycles = 0;
-        if (im2.dma_delay_control()) ++delay_cycles;
-        im2.on_m1_cycle(0x0002, 0x00);  // S_SRL_T1 (dma_delay high)
-        if (im2.dma_delay_control()) ++delay_cycles;
-        im2.on_m1_cycle(0x0003, 0x00);  // S_SRL_T2 (dma_delay high)
-        if (im2.dma_delay_control()) ++delay_cycles;
-        im2.on_m1_cycle(0x0004, 0x00);  // S_0 (dma_delay low)
-        check("IM2C-09", delay_cycles == 3 && !im2.dma_delay_control(),
-              "im2_control.vhd:186-192 SRL_T1/T2 extend dma_delay beyond RETN",
-              fmt("extra delay cycles=%d (expected 3)", delay_cycles));
+        im2.on_m1_cycle(0x0001, 0x45);  // S_ED45_T4 (dma_delay high)
+        const bool in_retn = im2.dma_delay_control();
+        im2.on_m1_cycle(0x0002, 0x00);  // S_0 (dma_delay low)
+        const bool after = im2.dma_delay_control();
+        check("IM2C-09", in_retn && !after,
+              "im2_control.vhd:186-192 dma_delay covers the RETN and ends before the next fetch",
+              fmt("in_retn=%d after=%d", in_retn, after));
+    }
+
+    // IM2C-HU-01 — im2_control.vhd:148-156, 181-192: the decoder is back in
+    // S_0 at the first fetch after a RETI, so an ISR of EI; RETI taken right
+    // after it (FB ED 4D with no opcode in between) is seen, as is a RETI
+    // that is the very next opcode.
+    {
+        fresh(im2);
+        im2.on_m1_cycle(0x0000, 0xED);
+        im2.on_m1_cycle(0x0001, 0x4D);
+        im2.on_m1_cycle(0x0010, 0xFB);
+        im2.on_m1_cycle(0x0011, 0xED);
+        const bool decode = im2.reti_decode_active();
+        im2.on_m1_cycle(0x0012, 0x4D);
+        const bool seen = im2.reti_seen_this_cycle();
+        im2.on_m1_cycle(0x0020, 0xED);
+        im2.on_m1_cycle(0x0021, 0x4D);
+        const bool next = im2.reti_seen_this_cycle();
+        check("IM2C-HU-01", decode && seen && next,
+              "im2_control.vhd:181-192 RETI, EI, RETI, RETI: every RETI is decoded",
+              fmt("decode=%d after_ei=%d back_to_back=%d", decode, seen, next));
+    }
+
+    // IM2C-HU-02 — the same after RETN (S_ED45_T4), and for what else the
+    // decoder follows: a RETN and an IM instruction as the next opcode.
+    {
+        fresh(im2);
+        im2.on_m1_cycle(0x0000, 0xED);
+        im2.on_m1_cycle(0x0001, 0x45);
+        im2.on_m1_cycle(0x0002, 0xED);
+        im2.on_m1_cycle(0x0003, 0x4D);
+        const bool reti = im2.reti_seen_this_cycle();
+        im2.on_m1_cycle(0x0004, 0xED);
+        im2.on_m1_cycle(0x0005, 0x45);
+        const bool retn = im2.retn_seen_this_cycle();
+        im2.on_m1_cycle(0x0006, 0xED);
+        im2.on_m1_cycle(0x0007, 0x56);  // IM 1
+        check("IM2C-HU-02", reti && retn && im2.im_mode() == 1,
+              "im2_control.vhd:181-192 RETN then RETI, RETN, IM 1: all decoded",
+              fmt("reti=%d retn=%d im=%d", reti, retn, im2.im_mode()));
     }
 
     // IM2C-10 — im2_control.vhd:218-227: ED 46 decodes IM 0 (bit4=0).
@@ -1581,6 +1617,73 @@ void section9_daisy_chain() {
               fmt("line_cleared=%d ctc3_int=%d", line_cleared, ctc3_can_int));
     }
 
+    // IM2P-HU-01 — im2_device.vhd:123-128: i_reti_seen is one CPU clock wide
+    // and IEI is the chain as it stands on that clock, so a nested RETI ends
+    // the inner ISR only. CTC1 in service, CTC0 nested in it, CTC2 waiting;
+    // the RETI arrives as the Emulator delivers it: on_m1_cycle, on_reti(),
+    // then the instruction's tick.
+    {
+        fresh(im2);
+        im2.set_mode(true);
+        im2.set_int_en(Dev::CTC0, true);
+        im2.set_int_en(Dev::CTC1, true);
+        im2.set_int_en(Dev::CTC2, true);
+        im2.raise_req(Dev::CTC1);
+        im2.tick(1);
+        (void)im2.ack_vector();
+        im2.tick(1);             // CTC1 in S_ISR
+        im2.raise_req(Dev::CTC0);
+        im2.raise_req(Dev::CTC2);
+        im2.tick(1);
+        (void)im2.ack_vector();
+        im2.tick(1);             // CTC0 nested in S_ISR, CTC2 in S_REQ
+        const bool nested = im2.state(Dev::CTC0) == DevState::S_ISR &&
+                            im2.state(Dev::CTC1) == DevState::S_ISR &&
+                            im2.state(Dev::CTC2) == DevState::S_REQ;
+        auto reti = [&]() {
+            im2.on_m1_cycle(0x0000, 0xED);
+            im2.on_m1_cycle(0x0001, 0x4D);
+            im2.on_reti();
+            im2.tick(1);
+        };
+        reti();
+        const bool inner_only = im2.state(Dev::CTC0) == DevState::S_0 &&
+                                im2.state(Dev::CTC1) == DevState::S_ISR &&
+                                !im2.int_line_asserted();  // CTC2 stays blocked
+        reti();
+        const bool outer = im2.state(Dev::CTC1) == DevState::S_0 &&
+                           im2.int_line_asserted();        // now CTC2
+        check("IM2P-HU-01", nested && inner_only && outer,
+              "im2_device.vhd:123-128 one RETI clears one device; the outer ISR keeps the chain",
+              fmt("nested=%d inner_only=%d outer=%d", nested, inner_only, outer));
+    }
+
+    // IM2P-HU-02 — the same with the RETI consumed by the tick alone: two
+    // ticks before the next fetch are still one RETI.
+    {
+        fresh(im2);
+        im2.set_mode(true);
+        im2.set_int_en(Dev::CTC0, true);
+        im2.set_int_en(Dev::CTC1, true);
+        im2.raise_req(Dev::CTC1);
+        im2.tick(1);
+        (void)im2.ack_vector();
+        im2.tick(1);
+        im2.raise_req(Dev::CTC0);
+        im2.tick(1);
+        (void)im2.ack_vector();
+        im2.tick(1);
+        im2.on_m1_cycle(0x0000, 0xED);
+        im2.on_m1_cycle(0x0001, 0x4D);
+        im2.tick(1);
+        im2.tick(1);
+        check("IM2P-HU-02",
+              im2.state(Dev::CTC0) == DevState::S_0 && im2.state(Dev::CTC1) == DevState::S_ISR,
+              "im2_control.vhd:234 o_reti_seen is one clock: a second tick does not repeat it",
+              fmt("ctc0=%d ctc1=%d", static_cast<int>(im2.state(Dev::CTC0)),
+                  static_cast<int>(im2.state(Dev::CTC1))));
+    }
+
     // IM2P-08 — peripherals.vhd generate-loop with 3 devices: priority
     // chain resolves IntAck through LINE > CTC0 > CTC3 in order.
     {
@@ -1967,10 +2070,9 @@ void section11_im2_peripheral() {
     //   (b) raise → full service (latch clear) → clear_status → composite
     //       goes fully false.
     //
-    // Helper that fully drains the decoder after a RETI so a follow-up
-    // ED sequence starts fresh at S_0.
+    // Helper that runs a few opcodes after a RETI (the decoder is back in S_0
+    // at the first of them).
     auto drain_decoder = [&]() {
-        // From S_ED4D_T4 → S_SRL_T1 → S_SRL_T2 → S_0. Three no-op opcodes.
         im2.on_m1_cycle(0xF000, 0x00);
         im2.on_m1_cycle(0xF000, 0x00);
         im2.on_m1_cycle(0xF000, 0x00);
@@ -2458,8 +2560,8 @@ void section14_status_clear() {
     // int_req=1 while int_req_d=0). clear_req is deferred to after the
     // first tick so the latch doesn't re-fire on subsequent ticks.
     //
-    // After the RETI decode consumes the latch, we drain the decoder
-    // state machine back to S_0 (via three dummy opcodes) so a subsequent
+    // After the RETI decode consumes the latch, three dummy opcodes follow;
+    // the decoder is back in S_0 at the first of them, so a subsequent
     // ED/4D sequence in the calling test body starts fresh.
     auto raise_and_service = [&](Dev d) {
         im2.set_int_en(d, true);
@@ -2471,7 +2573,7 @@ void section14_status_clear() {
         im2.on_m1_cycle(0x0000, 0xED);
         im2.on_m1_cycle(0x0001, 0x4D);
         im2.tick(1);            // im2_isr_serviced → latch cleared
-        // Drain decoder: S_ED4D_T4 → S_SRL_T1 → S_SRL_T2 → S_0.
+        // A few opcodes after the RETI.
         im2.on_m1_cycle(0xF000, 0x00);
         im2.on_m1_cycle(0xF000, 0x00);
         im2.on_m1_cycle(0xF000, 0x00);

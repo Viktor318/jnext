@@ -31,8 +31,8 @@ VHDL-derived compliance test suite for the JNEXT ZX Spectrum Next emulator. All 
 | Input (integration)   |       64 |       64 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Input (integration, native) |        1 |        1 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Phantom Typist        |       26 |       26 |      0 |       0 |    100% | 🟢 All tests pass. |
-| CTC + Interrupts      |      134 |      134 |      0 |       0 |    100% | 🟢 All tests pass. |
-| CTC (integration)     |       88 |       88 |      0 |       0 |    100% | 🟢 All tests pass. |
+| CTC + Interrupts      |      138 |      138 |      0 |       0 |    100% | 🟢 All tests pass. |
+| CTC (integration)     |       89 |       89 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Layer 2               |      174 |      174 |      0 |       0 |    100% | 🟢 All tests pass. |
 | UART + I2C/RTC        |      104 |      104 |      0 |       0 |    100% | 🟢 All tests pass. |
 | UART (integration)    |       38 |       38 |      0 |       0 |    100% | 🟢 All tests pass. |
@@ -250,6 +250,6 @@ VHDL-derived compliance test suite for the JNEXT ZX Spectrum Next emulator. All 
 | Debugger Verbs (GH #278) |      203 |      203 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Source panel |      299 |      299 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Variables panel |       55 |       55 |      0 |       0 |    100% | 🟢 All tests pass. |
-| **Total**             | **17871**| **17871**|  **0** |   **0** | **100%**| 🟢 All tests pass. |
+| **Total**             | **17876**| **17876**|  **0** |   **0** | **100%**| 🟢 All tests pass. |
 
 **SKIP:** A row its suite could not exercise on the host that ran it. A SKIP fails the run (owner, 2026-10-06). A planned row whose feature does not exist yet is PLANNED in its `*-TEST-PLAN-DESIGN.md`, not a SKIP.

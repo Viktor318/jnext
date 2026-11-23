@@ -1058,6 +1058,43 @@ static void test_im2_decoder_gaps(Emulator& emu) {
               + " retn_count " + std::to_string(pre_retn) + "->" + std::to_string(post_retn));
     }
 
+    // ── IM2C-HU-03 — no RETI is lost under load (hungarian-ui; the crackle of
+    //    NXModPlayer). CTC0 (28 MHz / 16 / 57) and CTC1 (28 MHz / 256 / 3)
+    //    interrupt a JR $ loop, both with an EI; RETI handler, at every
+    //    relative phase: CTC0 is often taken right after CTC1's RETI. The
+    //    decoder must have left the SRL states by then (im2_control.vhd:181-192),
+    //    or CTC0's own RETI is missed, it stays in service and every further
+    //    CTC interrupt is blocked. 4 frames hold 4 x 567264 / 912 = 2488 CTC0
+    //    periods; each of them, and each of the 2954 CTC1 periods, ends in a
+    //    RETI (a few are still in progress or merged at the ends).
+    {
+        fresh(emu);
+        for (int i = 0; i < 0x100; i += 2) {
+            emu.mmu().write(0xC100 + i, 0x10);   // every vector -> 0xC010
+            emu.mmu().write(0xC101 + i, 0xC0);
+        }
+        emu.mmu().write(0xC010, 0xFB);           // EI
+        emu.mmu().write(0xC011, 0xED);           // RETI
+        emu.mmu().write(0xC012, 0x4D);
+        nr_write(emu, 0xC0, 0x01);               // hardware IM2, vector base 0
+        nr_write(emu, 0xC4, 0x00);               // no ULA, no line interrupt
+        nr_write(emu, 0xC5, 0x03);
+        emu.port().out(0x183B, 0x85);            // CTC0: timer / 16, constant 57
+        emu.port().out(0x183B, 57);
+        emu.port().out(0x193B, 0xA5);            // CTC1: timer / 256, constant 3
+        emu.port().out(0x193B, 3);
+        park_cpu_with_program(emu, 0xC000, {0x3E, 0xC1, 0xED, 0x47,   // LD A,C1h; LD I,A
+                                            0xED, 0x5E, 0xFB,         // IM 2; EI
+                                            0x18, 0xFE});             // JR $
+        const uint32_t before = emu.im2().reti_seen_count();
+        for (int f = 0; f < 4; ++f) emu.run_frame();
+        const uint32_t seen = emu.im2().reti_seen_count() - before;
+        check("IM2C-HU-03",
+              "EI; RETI handlers of CTC0 and CTC1 at every relative phase: no RETI is lost "
+              "[VHDL im2_control.vhd:181-192, im2_device.vhd:123-128]",
+              seen > 5000, "RETIs seen in 4 frames: " + std::to_string(seen));
+    }
+
     // ── NR-C2-01 / NR-C3-01 — NMI return-address shadow latch.
     //    VHDL zxnext.vhd:2050-2085, 6232-6236. At NMIACK_LSB/MSB the
     //    pushed PC is mirrored into NR 0xC2/0xC3. jnext: Z80Cpu fires
