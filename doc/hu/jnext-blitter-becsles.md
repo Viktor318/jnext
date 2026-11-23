@@ -1,6 +1,6 @@
 # JNEXT: hol tart a Next-emulációban, és a blitter (zxnDDMA) becslése (2026-11-19)
 
-Csak felmérés és becslés, kód nem készült. Párja a ZEsarUX-oldalon: a claude.ai-projekt `claude/zesarux-next-2611-terv.md` dokumentuma. (Eredetileg a projekt `claude/jnext-blitter-becsles.md` dokumentuma; 2026-11-21 óta a tárolóban él.)
+Csak felmérés és becslés, kód nem készült. **Döntés (Viktor, 2026-11-21): a 3.03-as core és a blitter egyelőre nem kerül a JNEXT-be** – túl kockázatos a haszonhoz képest; a blitteres programok a ZEsarUX-ban és Viktor KS3-án futnak. Párja a ZEsarUX-oldalon: a claude.ai-projekt `claude/zesarux-next-2611-terv.md` dokumentuma. (Eredetileg a projekt `claude/jnext-blitter-becsles.md` dokumentuma; 2026-11-21 óta a tárolóban él.)
 
 ## Melyik core-t emulálja a JNEXT
 
