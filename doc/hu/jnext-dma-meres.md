@@ -67,4 +67,15 @@ Kész: `6809ec69` (hungarian-ui) – a fenti modell; a ZEsarUX a KS3-hoz 1–3%-
 - **VHDL:** az előosztó várakozása után az állapotgép a WAITING_CYCLES-ből WAITING_ACK-on (folyamatos mód, a sín nála marad), illetve START_DMA + WAITING_ACK-on át (löketes mód, a sínt visszakéri) jut a következő bájt READ_1-éhez (dma.vhd:436-462, :266-300); az időzítő a READ_1-nél indul újra (:309). A KS3 szerint ez bájtonként kb. 3 órajel (B8: 80 sor a 74 helyett); a ZEsarUX-modell is 3-at használ.
 - **Megvalósítás:** `Dma::RESUME_CLOCKS = 3`, a várakozás utáni első bájttal felszámolva (`last_burst_resume_tstates()`, az `emulator.cpp` két helyén, a kazettaport időbélyegében is), de a következő előosztó-ablakba nem számít bele (`uncounted_clocks_`, `tick_burst_wait`). Löketes módban a Z80 a gépi ciklus végén adja át a sínt (legfeljebb kb. 4 órajel), a JNEXT viszont utasításonként lép: ha az utasítás `BURST_GRANT_CLOCKS = 4` órajelnél tovább tartott a lejárat után, a többlettel a következő ablak előbb indul (mint a ZEsarUX-ban).
 - **Tesztek:** DMA-HU-04 (folyamatos, előosztó 8: 32, 35, 35 órajel), DMA-HU-05 (löketes, NOP-ok: 34, 37, 37), DMA-HU-06 (löketes, 19 órajeles utasítás: 44, 28, 47 – átlag 37,5, kiegyenlítés nélkül 47); mindkét rész kivételét elkapják (mutáció). A korábbi 189 DMA-sor és a kazettamentési sorok változatlanul zöldek.
-- **Várható `dmatest`-eredmény:** B8 ≈ 80 / 72, C8 ≈ 88 / 73, D2 ≈ 276 / 159, E ≈ 52 – Viktor próbájára vár.
+- **Várható `dmatest`-eredmény:** B8 ≈ 80 / 72, C8 ≈ 88 / 73, D2 ≈ 276 / 159, E ≈ 52.
+- **Viktor próbája (2026-11-23, `188907b` Windows-build, 50 Hz):**
+
+| (3,5 MHz / 28 MHz, sor; zárójelben körök) | KS3 3.03.03, 50 Hz | JNEXT `6cf89c6` | JNEXT `188907b` |
+|---|---|---|---|
+| A2 / A3 / A4 | 73 / 45, 109 / 54, 145 / 72 | ugyanaz | **ugyanaz** |
+| B8 | 80 / 72 | 74 / 72 | **80 / 72** |
+| C8 | 90 (342) / 74 (2940) | 81 (342) / 72 (2386) | 87 (342) / 73 (2386) |
+| D2 | 280 (513) / 160 (5632) | 222 (586) / 152 (4681) | 262 (513) / 156 (4608) |
+| E (képkocka) | 52 | 51 | **52** |
+
+  A folyamatos mód (A, B) és a hang (E) pontos, a 3,5 MHz-es körszámok (342, 513) is egyeznek. A D2-re jósolt 276 túlbecslés volt. **Ami még eltér:** löketes módban 3,5 MHz-en bájtonként kb. 1 órajel (C8: 3 sor / 512 B ≈ 1,3 T; D2: 18 sor / 4096 B ≈ 1,0 T). Valószínű ok a sín visszaadása: a T80 a BUSRQ-t egy órajellel regisztrálja (`BusReq_s`, t80n.vhd:1663), és csak utána ejti a BusAck-et (:1738-1740), közben nem fut (`ClkEn <= CEN and not BusAck`, :410). Ezt a JNEXT nem számolja. A 28 MHz-es körszám-eltérés (2386 / 2940, 4608 / 5632) a processzor oldaláé: a 3.03-as core-ban 28 MHz-en nincs memória-várakozás, a JNEXT a 3.02.03-at követi.
