@@ -79,3 +79,10 @@ Kész: `6809ec69` (hungarian-ui) – a fenti modell; a ZEsarUX a KS3-hoz 1–3%-
 | E (képkocka) | 52 | 51 | **52** |
 
   A folyamatos mód (A, B) és a hang (E) pontos, a 3,5 MHz-es körszámok (342, 513) is egyeznek. A D2-re jósolt 276 túlbecslés volt. **Ami még eltér:** löketes módban 3,5 MHz-en bájtonként kb. 1 órajel (C8: 3 sor / 512 B ≈ 1,3 T; D2: 18 sor / 4096 B ≈ 1,0 T). Valószínű ok a sín visszaadása: a T80 a BUSRQ-t egy órajellel regisztrálja (`BusReq_s`, t80n.vhd:1663), és csak utána ejti a BusAck-et (:1738-1740), közben nem fut (`ClkEn <= CEN and not BusAck`, :410). Ezt a JNEXT nem számolja. A 28 MHz-es körszám-eltérés (2386 / 2940, 4608 / 5632) a processzor oldaláé: a 3.03-as core-ban 28 MHz-en nincs memória-várakozás, a JNEXT a 3.02.03-at követi.
+
+## Harmadik lépés: a löketes mód sínkérése (2026-11-23, Viktor jóváhagyásával)
+
+- **VHDL:** löketes módban a DMA minden várakozás után újra kéri a sínt; a T80 a BUSRQ_n-t egy órajellel regisztrálja (`BusReq_s`, t80n.vhd:1663), és csak ezután adhatja át a sínt a gépi ciklus végén (:1746-1747). Folyamatos módban a sín a DMA-nál marad, ott ez nem jelentkezik.
+- **Megvalósítás:** `Dma::BURST_REQUEST_CLOCKS = 1`: löketes módban a várakozás utáni bájt `RESUME_CLOCKS + 1` órajelet fizet a READ_1 előtt (ez sem számít bele a következő előosztó-ablakba).
+- **Tesztek:** DMA-HU-05 (NOP-ok: 34, 38, 38 órajel), DMA-HU-06 (19 órajeles utasítás: 44, 29, 48); `BURST_REQUEST_CLOCKS = 0`-val mindkettő bukik, a folyamatos DMA-HU-04 változatlan. A 26.11a-s kártya bootja (meleg indítás felvétele) 780 helyett 782 képkocka lett (`WSCARD-02`, `warm-start-chans-func`).
+- **Várható `dmatest`-eredmény:** C8 ≈ 90 (342) / 74, D2 ≈ 280 (513) / 158, a többi változatlan – Viktor próbájára vár.

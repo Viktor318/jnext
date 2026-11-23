@@ -761,7 +761,7 @@ int Dma::execute_burst(int max_bytes) {
 
     if (state_ != State::TRANSFERRING) return 0;
 
-    bool     resume_pending = false;      // hungarian-ui: see the wait branch below
+    uint32_t resume_clocks = 0;           // hungarian-ui: see the wait branch below
     uint32_t window_head_start = 0;       // master cycles the next window starts early
 
     // VHDL dma.vhd:439-464 — while the state machine is in WAITING_CYCLES
@@ -781,9 +781,12 @@ int Dma::execute_burst(int max_bytes) {
             return 0;
         }
         // hungarian-ui: back to the next byte through WAITING_ACK (and
-        // START_DMA in burst mode), RESUME_CLOCKS before its READ_1.
-        resume_pending = true;
+        // START_DMA in burst mode), RESUME_CLOCKS before its READ_1; in burst
+        // mode the T80 also registers the new bus request for a clock
+        // (BURST_REQUEST_CLOCKS, t80n.vhd:1663).
+        resume_clocks = RESUME_CLOCKS;
         if (mode_ == 2) {
+            resume_clocks += BURST_REQUEST_CLOCKS;
             // The wait ended `late` master cycles ago, while the CPU ran on
             // (a whole instruction here, a machine cycle on the Z80): what
             // ran past BURST_GRANT_CLOCKS starts the next window early.
@@ -826,15 +829,15 @@ int Dma::execute_burst(int max_bytes) {
         // VHDL dma.vhd:309 — entering TRANSFERING_READ_1 clears DMA_timer_s.
         // Reset the timer at the START of each source-byte read so the
         // prescaler comparison measures the post-read elapsed time.
-        // hungarian-ui: the first byte after a wait pays RESUME_CLOCKS before
+        // hungarian-ui: the first byte after a wait pays resume_clocks before
         // its READ_1, which this step's tick_burst_wait() must not count; a
         // late burst grant starts the window by its excess early.
         dma_timer_s_ = static_cast<uint16_t>(window_head_start & 0x3FFF);
         window_head_start = 0;
-        if (resume_pending) {
-            resume_pending = false;
-            last_burst_resume_tstates_ = RESUME_CLOCKS;
-            uncounted_clocks_ = RESUME_CLOCKS;
+        if (resume_clocks != 0) {
+            last_burst_resume_tstates_ = resume_clocks;
+            uncounted_clocks_ = resume_clocks;
+            resume_clocks = 0;
         }
 
         // Read byte from source

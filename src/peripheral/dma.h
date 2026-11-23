@@ -209,7 +209,7 @@ public:
 
     /// hungarian-ui - the CPU clocks the LAST execute_burst() spent getting
     /// back to a byte after a prescaler wait, before its TRANSFERING_READ_1:
-    /// RESUME_CLOCKS, or 0. Charged with the burst like the read waits
+    /// RESUME_CLOCKS (+ BURST_REQUEST_CLOCKS in burst mode), or 0. Charged with the burst like the read waits
     /// (Emulator::step_one_instruction(), port_fe_write_time()); not counted
     /// into the next prescaler window, which dma.vhd starts at READ_1 (:309).
     /// Transient, like the read waits: NOT part of the save state.
@@ -228,6 +228,15 @@ public:
     /// whole instructions, so whatever a long instruction ran past that is
     /// taken off the next window (the byte is timed as if granted on time).
     static constexpr uint32_t BURST_GRANT_CLOCKS = 4;
+
+    /// In burst mode the bus is requested again after every wait, and the T80
+    /// registers BUSRQ_n for one clock (t80n.vhd:1663 BusReq_s) before it can
+    /// grant at the machine cycle's end (:1746-1747): one more clock before
+    /// READ_1 than in continuous mode, where the bus is never given back.
+    /// Measured on Viktor's KS3 (doc/hu/jnext-dma-meres.md): with RESUME_CLOCKS
+    /// alone burst mode ran about 1 clock a byte fast (C8 87 lines for 90, D2
+    /// 262 for 280) while continuous mode matched.
+    static constexpr uint32_t BURST_REQUEST_CLOCKS = 1;
 
     /// The T-states the emulator charges a burst per transferred byte (plus
     /// the read waits above): Emulator::step_one_instruction() advances the

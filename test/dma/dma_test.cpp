@@ -3622,6 +3622,7 @@ void group23_sram_read_wait28() {
     // BURST_GRANT_CLOCKS = 4 into the CPU's instruction starts the next window
     // early by the excess (the Z80 yields at a machine cycle's end). Measured on
     // Viktor's KS3 (doc/hu/jnext-dma-meres.md): B8 80 lines, D2 280, C8 90.
+    // Burst mode pays Dma::BURST_REQUEST_CLOCKS = 1 more (t80n.vhd:1663).
     // g23_prescaled_starts runs `steps` emulator steps of a 4-byte mem->mem
     // block, 3+3 cycles, prescaler 8, at 3.5 MHz, and returns the elapsed
     // T-states at the start of each step that moved a byte.
@@ -3671,30 +3672,31 @@ void group23_sram_read_wait28() {
     }
     // DMA-HU-05 - burst with prescaler, the CPU running NOPs (4 T): the gate
     // opens 2 clocks into the 7th NOP after a byte (within the 4-clock grant),
-    // so a byte step is 6 + 3 clocks and 7 NOPs = 37 clocks apart.
+    // so a byte step is 6 + 3 + 1 clocks (the T80 registers the new bus
+    // request, Dma::BURST_REQUEST_CLOCKS) and 7 NOPs = 38 clocks apart.
     {
         const std::vector<long> s = g23_prescaled_starts(true, 0x00);
-        const bool ok = s.size() == 4 && s[1] - s[0] == 34 && s[2] - s[1] == 37 && s[3] - s[2] == 37;
+        const bool ok = s.size() == 4 && s[1] - s[0] == 34 && s[2] - s[1] == 38 && s[3] - s[2] == 38;
         check("DMA-HU-05",
               "burst, prescaler 8, NOPs at 3.5 MHz: the bus is taken back at the instruction "
-              "end, 3 clocks (START_DMA, WAITING_ACK) before READ_1: bytes 37 clocks apart "
-              "(dma.vhd:436-462,266-300)",
-              ok, fmt("starts=%ld,%ld,%ld,%ld (want 0,34,71,108)",
+              "end, 3 clocks (START_DMA, WAITING_ACK) + 1 (T80 BusReq_s) before READ_1: bytes "
+              "38 clocks apart (dma.vhd:436-462,266-300; t80n.vhd:1663)",
+              ok, fmt("starts=%ld,%ld,%ld,%ld (want 0,34,72,110)",
                       s.size() > 0 ? s[0] : -1, s.size() > 1 ? s[1] : -1,
                       s.size() > 2 ? s[2] : -1, s.size() > 3 ? s[3] : -1));
     }
     // DMA-HU-06 - burst with prescaler, the CPU running EX (SP),HL (19 T): a
     // grant 12 clocks late (8 past the 4-clock machine-cycle bound) starts the
-    // next window 8 clocks early, so the byte steps come 28 and 47 clocks
-    // apart in turn (37.5 on average), not 47 each.
+    // next window 8 clocks early, so the byte steps come 29 and 48 clocks
+    // apart in turn (38.5 on average), not 48 each.
     {
         const std::vector<long> s = g23_prescaled_starts(true, 0xE3);
-        const bool ok = s.size() == 4 && s[1] - s[0] == 44 && s[2] - s[1] == 28 && s[3] - s[2] == 47;
+        const bool ok = s.size() == 4 && s[1] - s[0] == 44 && s[2] - s[1] == 29 && s[3] - s[2] == 48;
         check("DMA-HU-06",
               "burst, prescaler 8, 19-T instructions at 3.5 MHz: what the instruction ran past "
-              "the Z80's 4-clock bus grant starts the next window early (28, 47 clocks apart, "
-              "not 47, 47)",
-              ok, fmt("starts=%ld,%ld,%ld,%ld (want 0,44,72,119)",
+              "the Z80's 4-clock bus grant starts the next window early (29, 48 clocks apart, "
+              "not 48, 48)",
+              ok, fmt("starts=%ld,%ld,%ld,%ld (want 0,44,73,121)",
                       s.size() > 0 ? s[0] : -1, s.size() > 1 ? s[1] : -1,
                       s.size() > 2 ? s[2] : -1, s.size() > 3 ? s[3] : -1));
     }
