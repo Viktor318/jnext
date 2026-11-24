@@ -2144,10 +2144,6 @@ A számítógép nem bírja a tempót. A zárójeles szám azt mutatja, mennyit 
         <translation>A(z) %1 nem játszható le: %2.</translation>
     </message>
     <message>
-        <source>it is not a NEX file (it does not start with the &quot;Next&quot; header)</source>
-        <translation>nem NEX-fájl (nem a „Next” fejléccel kezdődik)</translation>
-    </message>
-    <message>
         <source>it is not a NEX file and its extension is not one JNEXT loads (.nex, .jns, .sna, .szx, .z80, .tap, .tzx, .wav, .rzx, .zip); a .pok trainer file opens from Machine &gt; POK Trainers</source>
         <translation>nem NEX-fájl, és a kiterjesztése sem olyan, amit a JNEXT betölt (.nex, .jns, .sna, .szx, .z80, .tap, .tzx, .wav, .rzx, .zip); a .pok trainerfájl a Gép &gt; POK-trainerek menüből nyitható meg</translation>
     </message>
@@ -2684,6 +2680,74 @@ Restart now?
     <message>
         <source>Bug report saved: %1 (memory: %2)</source>
         <translation>Hibajelentés mentve: %1 (memória: %2)</translation>
+    </message>
+    <message>
+        <source>Upgrade SD Card...</source>
+        <translation>SD-kártya frissítése…</translation>
+    </message>
+    <message>
+        <source>Go Back to the Previous SD Card</source>
+        <translation>Vissza az előző SD-kártyára</translation>
+    </message>
+    <message>
+        <source>Delete the Previous SD Card Backup...</source>
+        <translation>Az előző SD-kártya mentésének törlése…</translation>
+    </message>
+    <message>
+        <source>it is not a NEX file (it has no complete &quot;Next&quot; header)</source>
+        <translation>nem NEX-fájl (nincs teljes „Next” fejléce)</translation>
+    </message>
+    <message>
+        <source>it is NEX version %1, newer than the V1.3 JNEXT loads</source>
+        <translation>%1 verziójú NEX, újabb a JNEXT által betölthető V1.3-nál</translation>
+    </message>
+    <message>
+        <source>Delete the Previous SD Card Backup (%1)...</source>
+        <translation>Az előző SD-kártya mentésének törlése (%1)…</translation>
+    </message>
+    <message>
+        <source>Your files are carried over to a new SD card, and your current card is kept as a backup. The machine restarts when it is done.</source>
+        <translation>A fájljai átkerülnek egy új SD-kártyára, a mostani kártya pedig mentésként megmarad. A végén a gép újraindul.</translation>
+    </message>
+    <message>
+        <source>Your current card cannot be compared with the one it came from (%1), so its files cannot be carried over: a new card is made and your current card, with everything on it, is kept as a backup. The machine restarts when it is done.</source>
+        <translation>A mostani kártya nem hasonlítható össze azzal, amelyikből készült (%1), ezért a fájljai nem vihetők át: új kártya készül, a mostani pedig mindennel együtt mentésként megmarad. A végén a gép újraindul.</translation>
+    </message>
+    <message>
+        <source>Upgrade SD Card</source>
+        <translation>SD-kártya frissítése</translation>
+    </message>
+    <message>
+        <source>The card in use becomes the backup and the previous card is used again, with its own files. The machine restarts when it is done.</source>
+        <translation>A használt kártya lesz a mentés, és újra az előző kártya lesz használatban, a saját fájljaival. A végén a gép újraindul.</translation>
+    </message>
+    <message>
+        <source>Delete the Previous SD Card Backup</source>
+        <translation>Az előző SD-kártya mentésének törlése</translation>
+    </message>
+    <message>
+        <source>Delete the previous SD card (%1)? This cannot be undone.</source>
+        <translation>Törli az előző SD-kártyát (%1)? Ez nem vonható vissza.</translation>
+    </message>
+    <message>
+        <source>The backup could not be deleted: %1.</source>
+        <translation>A mentést nem sikerült törölni: %1.</translation>
+    </message>
+    <message>
+        <source>The upgrade failed: %1</source>
+        <translation>A frissítés sikertelen: %1</translation>
+    </message>
+    <message>
+        <source>The SD card was not upgraded and nothing was changed (another jnext may have a file open that the upgrade must move).</source>
+        <translation>Az SD-kártya nem frissült, és semmi nem változott (lehet, hogy egy másik jnext nyitva tart egy fájlt, amelyet a frissítésnek át kell helyeznie).</translation>
+    </message>
+    <message>
+        <source>Going back failed: %1</source>
+        <translation>A visszatérés sikertelen: %1</translation>
+    </message>
+    <message>
+        <source>SD card changed: the machine restarts</source>
+        <translation>Az SD-kártya megváltozott: a gép újraindul</translation>
     </message>
 </context>
 <context>
@@ -3580,18 +3644,6 @@ Csak a módosított hozzárendelések kerülnek a beállításfájlba.</translat
 <context>
     <name>QObject</name>
     <message>
-        <source>Download and replace</source>
-        <translation>Letöltés és csere</translation>
-    </message>
-    <message>
-        <source>Keep my card</source>
-        <translation>A kártyám marad</translation>
-    </message>
-    <message>
-        <source>Do not ask me again</source>
-        <translation>Ne kérdezze újra</translation>
-    </message>
-    <message>
         <source>Rename Label</source>
         <translation>Címke átnevezése</translation>
     </message>
@@ -4010,6 +4062,30 @@ Csak akkor frissül, amikor az emulátor szünetel.</translation>
     <message>
         <source>Any</source>
         <translation>Bármelyik</translation>
+    </message>
+    <message>
+        <source>SD card upgraded</source>
+        <translation>Az SD-kártya frissült</translation>
+    </message>
+    <message>
+        <source>Your SD card was upgraded. The list of what was carried over, what the new NextZXOS replaced and what was not carried is under Show Details; the old card is kept as a backup.</source>
+        <translation>Az SD-kártya frissült. A részletek között látható, mi került át, mit cserélt le az új NextZXOS, és mi nem került át; a régi kártya mentésként megmaradt.</translation>
+    </message>
+    <message>
+        <source>Upgrade (keep my files)</source>
+        <translation>Frissítés (a fájljaim maradnak)</translation>
+    </message>
+    <message>
+        <source>Fresh start (keep my card as a backup)</source>
+        <translation>Tiszta kezdés (a kártyám mentésként marad)</translation>
+    </message>
+    <message>
+        <source>Keep my card (don&apos;t ask again)</source>
+        <translation>Marad a kártyám (ne kérdezze újra)</translation>
+    </message>
+    <message>
+        <source>Not now</source>
+        <translation>Most nem</translation>
     </message>
 </context>
 <context>

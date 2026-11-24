@@ -39,16 +39,16 @@ Ez a fájl a tároló `CLAUDE.md`-je mellett érvényes, a helyi (WSL, `~/jnext`
 - A GitHub Actions is használható (Viktor engedélyezte): `gh workflow run "Windows Build (manual)" -R Viktor318/jnext --ref hungarian-ui -f qt6=true -f qt5=false -f win32=false`, és a teljes teszt-CI: `gh workflow run CI -R Viktor318/jnext --ref hungarian-ui`.
 - SD-kép: Viktor a 26.11a-t használja (`JNEXT_SDCARD_DISTRO_URL` = `https://www.specnext.com/distro/26.11a/sn-emulator-26.11a.zip`). A jnext írja a képet: kézi próbához másolatot használj. A WSL-es `~/.jnext/sdcard/cspect-next-1gb-fixed.img`-et Viktor kézzel módosította, **ne írd felül**; a helyi tesztekhez az eredeti kártya másolata kell: `JNEXT_TEST_SD_IMAGE=~/.cache/jnext-hu-tools/test-home/copy.img`.
 
-## Ahol tartunk (2026-11-23)
+## Ahol tartunk (2026-11-24)
 
-Alap: upstream 1.3.66 (beolvasztás `b32ebe7`; a teljes CI utána zöld, `45178867667`). Kész a `hungarian-ui`-n:
+Alap: upstream 1.3.72 (2026-11-24). Kész a `hungarian-ui`-n:
 
 - magyar felület: főablak, menük, Beállítások, párbeszédablakok (`1532a59c5`), nyelvválasztás (`17f3d198a`), hibakereső (`77f57b40f`);
 - 1.5x nagyítás (`53dbe28`);
 - Csak a kép / Shift+F11 (`c313eff`);
 - Windows-fordítás WSL-ből: `tools/hu/build-windows-cross.sh` (`a109030f6`);
 - a NextZXOS 26.11a az alapértelmezett letöltés (előbb saját beállítással, `a4ffecba6`; az 1.3.57 óta az upstreamben is);
-- upstream beolvasztva: 1.3.66 (2026-11-23; előtte 1.3.57, 1.3.43);
+- upstream beolvasztva: 1.3.72 (2026-11-24; előtte 1.3.66, 1.3.57, 1.3.43);
 - kézi GitHubos unit-teszt: `hu-tests.yml` (`77a02cb06`);
 - windowsos magyar billentyűzet (karakter szerinti gépelés, bal Alt + számjegy; `1263eb4`, `c743724`, `3f109af`), Viktor Windowson kipróbálta (2026-11-22);
 - a címsorra kattintás nem akasztja az emulációt (Windows, `gui/window_stalls.h`);
@@ -56,6 +56,6 @@ Alap: upstream 1.3.66 (beolvasztás `b32ebe7`; a teljes CI utána zöld, `451788
 - az NXModPlayer recsegése: két IM2 RETI-hiba javítva (`6f4a015`), Viktor kipróbálta: megszűnt;
 - 4×-es túlmintavétel (`audio.oversample`, alapból ki; `doc/hu/jnext-hang-terv.md` vége).
 
-Következik: a **hangterv felülvizsgált sorrendje Viktor döntésére vár** (`doc/hu/jnext-hang-terv.md` vége: előbb mérés az ő gépén, aztán állítható hangpuffer – ez a párbeszédablakok alatti akadásra is –, DAC-keverő, jobb mintavételezés, „tévé” szűrő). Felmérésre vár: az átméretezhető ablak (7.), a virtuális billentyűzet (5.), az állapotmentés kilépéskor (6.). A blitter (3.03-as core) egyelőre nem kell (Viktor, 2026-11-21).
+Következik: a **hangterv felülvizsgált sorrendje Viktor döntésére vár** (`doc/hu/jnext-hang-terv.md` vége: előbb mérés az ő gépén, aztán állítható hangpuffer – ez a párbeszédablakok alatti akadásra is –, DAC-keverő, „tévé” szűrő; a mérés és a jobb mintavételezés kész). Felmérésre vár: az átméretezhető ablak (7.), a virtuális billentyűzet (5.), az állapotmentés kilépéskor (6.). A blitter (3.03-as core) egyelőre nem kell (Viktor, 2026-11-21).
 
 A részletek (döntések, tervek, a további kívánságlista, hang, DMA) a tárolóban vannak: **`doc/hu/jnext-atadas.md`** (és mellette `jnext-magyaritas.md`, `jnext-dma-meres.md`, `jnext-hang-terv.md`, `jnext-blitter-becsles.md`). Ezeket munka közben olvasd és frissítsd; ha új döntés vagy terv születik, oda írd be, ugyanabban a commitban. A ZEsarUX-beszélgetésben készült JNEXT-jegyzetek a claude.ai-projektbe kerülhetnek; ha Viktor ilyet hoz, vezesd át ide.

@@ -207,6 +207,11 @@ The single authoritative protocol for landing any implemented change on `main`:
 > text + phpBB for spectrumcomputing.co.uk and z88dk.org), one line per feature,
 > and the rule that trivia (keyboard changes, bug fixes, internal work) is not
 > advertised.
+>
+> **Its §2.3: every milestone carries two guide audit issues** (`milestone <M>: User Guide
+> audit and review`, `milestone <M>: Developer Guide audit and review`), created when work on
+> the milestone starts if missing, run last, and closed before a public release that closes
+> the milestone (owner, 2026-11-24).
 
 When the user asks to bump the version, follow these steps in order:
 
@@ -753,10 +758,12 @@ patched image; offering to download the canonical distribution image, kept as
 
 **`roms/` holds ONLY `nextboot.rom`.** No SD-card image lives there, and
 nothing links one in — the two 1 GB `.img` fixtures that used to sit there
-were deleted 2026-07-22 (GH #75/#77). The canonical image is the one jnext
-provisions and caches for itself at
-`~/.jnext/sdcard/cspect-next-1gb-fixed.img`; every suite resolves it from
-there, and no test row passes `--sdcard` at all.
+were deleted 2026-07-22 (GH #75/#77). The image jnext provisions and caches
+for itself at `~/.jnext/sdcard/cspect-next-1gb-fixed.img` is the USER'S card (GH #555): no test,
+build step or tool of the suites ever opens it. The suites' own master is
+`~/.jnext/sdcard/test-suite/sdcard/cspect-next-1gb-fixed.img` (`sd_test_state_dir`,
+`test/test_sd_image.h`); every suite resolves it from there, and no test row passes
+`--sdcard` at all (`lint-user-card` guards it).
 
 A cluster-count caveat still applies to any image you supply yourself: a
 1 GB partition with 32 KB clusters yields only 32 758 data clusters, below
