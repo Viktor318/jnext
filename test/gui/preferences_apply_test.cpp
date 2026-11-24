@@ -50,6 +50,7 @@
 #include <QApplication>
 
 #include "debug/debug_keymap.h"
+#include <functional>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
@@ -520,8 +521,8 @@ void test_esp_preference_controls()
                          passthrough = cfg;
                      });
     auto* untouched_buttons = untouched.findChild<QDialogButtonBox*>();
-    if (untouched_buttons && untouched_buttons->button(QDialogButtonBox::Apply))
-        untouched_buttons->button(QDialogButtonBox::Apply)->click();
+    if (untouched_buttons && untouched_buttons->button(QDialogButtonBox::Ok))
+        untouched_buttons->button(QDialogButtonBox::Ok)->click();   // hungarian-ui: Apply is greyed here
     check("PA-12e", "an untouched dialog does NOT wipe the persisted ESP settings",
           passthrough_emitted && passthrough.esp_enabled &&
               passthrough.esp_allowed_hosts == initial.esp_allowed_hosts,
@@ -549,8 +550,8 @@ void test_pentagon_preference()
     QObject::connect(&dlg, &PreferencesDialog::apply_requested,
                      [&](const AppConfigData& cfg) { emitted = true; got = cfg; });
     auto* buttons = dlg.findChild<QDialogButtonBox*>();
-    if (buttons && buttons->button(QDialogButtonBox::Apply))
-        buttons->button(QDialogButtonBox::Apply)->click();
+    if (buttons && buttons->button(QDialogButtonBox::Ok))
+        buttons->button(QDialogButtonBox::Ok)->click();   // hungarian-ui: Apply is greyed here
     check("PENT-28", "the Preferences machine combo lists Pentagon, and an untouched dialog "
                      "on a Pentagon config gives the Pentagon back (not the Next)",
           listed && emitted && got.machine_type == MachineType::PENTAGON,
@@ -611,8 +612,8 @@ void test_nextpi_preference_controls()
     bool passthrough_emitted = false;
     QObject::connect(&untouched, &PreferencesDialog::apply_requested,
                      [&](const AppConfigData& cfg) { passthrough_emitted = true; passthrough = cfg; });
-    if (auto* b = untouched.findChild<QDialogButtonBox*>(); b && b->button(QDialogButtonBox::Apply))
-        b->button(QDialogButtonBox::Apply)->click();
+    if (auto* b = untouched.findChild<QDialogButtonBox*>(); b && b->button(QDialogButtonBox::Ok))
+        b->button(QDialogButtonBox::Ok)->click();   // hungarian-ui: Apply is greyed here
     check("PA-20e", "an untouched dialog does NOT reset the persisted NextPi settings",
           passthrough_emitted && passthrough.nextpi_enabled == initial.nextpi_enabled &&
               passthrough.nextpi_dir == initial.nextpi_dir &&
@@ -656,8 +657,8 @@ void test_nextpi_qemu_args_control()
     bool passthrough_emitted = false;
     QObject::connect(&untouched, &PreferencesDialog::apply_requested,
                      [&](const AppConfigData& cfg) { passthrough_emitted = true; passthrough = cfg; });
-    if (auto* b = untouched.findChild<QDialogButtonBox*>(); b && b->button(QDialogButtonBox::Apply))
-        b->button(QDialogButtonBox::Apply)->click();
+    if (auto* b = untouched.findChild<QDialogButtonBox*>(); b && b->button(QDialogButtonBox::Ok))
+        b->button(QDialogButtonBox::Ok)->click();   // hungarian-ui: Apply is greyed here
     check("PA-28b", "Apply returns the extra QEMU arguments trimmed, with quotes and commas kept and NOT split; "
                     "an untouched dialog hands the saved text back unchanged",
           emitted &&
@@ -785,8 +786,8 @@ void test_when_slow_prefer_control()
                          passthrough = cfg;
                      });
     auto* untouched_buttons = untouched.findChild<QDialogButtonBox*>();
-    if (untouched_buttons && untouched_buttons->button(QDialogButtonBox::Apply))
-        untouched_buttons->button(QDialogButtonBox::Apply)->click();
+    if (untouched_buttons && untouched_buttons->button(QDialogButtonBox::Ok))
+        untouched_buttons->button(QDialogButtonBox::Ok)->click();   // hungarian-ui: Apply is greyed here
     check("PA-15d", "an untouched dialog does NOT wipe the persisted policy",
           passthrough_emitted &&
               passthrough.when_slow_prefer == audio_pacing::WhenSlowPrefer::Video);
@@ -844,8 +845,8 @@ void test_quick_screenshot_controls()
                          passthrough = cfg;
                      });
     auto* untouched_buttons = untouched.findChild<QDialogButtonBox*>();
-    if (untouched_buttons && untouched_buttons->button(QDialogButtonBox::Apply))
-        untouched_buttons->button(QDialogButtonBox::Apply)->click();
+    if (untouched_buttons && untouched_buttons->button(QDialogButtonBox::Ok))
+        untouched_buttons->button(QDialogButtonBox::Ok)->click();   // hungarian-ui: Apply is greyed here
     check("PA-17e", "an untouched dialog does NOT wipe the persisted quick-screenshot settings",
           passthrough_emitted
               && passthrough.quick_screenshot_dir == QStringLiteral("/tmp/jnext-shots")
@@ -1407,8 +1408,8 @@ void test_quick_keep_control()
     QObject::connect(&dlg, &PreferencesDialog::apply_requested,
                      [&](const AppConfigData& cfg) { emitted = true; collected = cfg; });
     auto* buttons = dlg.findChild<QDialogButtonBox*>();
-    if (buttons && buttons->button(QDialogButtonBox::Apply))
-        buttons->button(QDialogButtonBox::Apply)->click();
+    if (buttons && buttons->button(QDialogButtonBox::Ok))
+        buttons->button(QDialogButtonBox::Ok)->click();   // hungarian-ui: Apply is greyed here
     const bool untouched = emitted && collected.quick_snapshot_keep == 7;
     emitted = false;
     spin->setValue(0);
@@ -1433,8 +1434,8 @@ void test_recent_files_carried()
     QObject::connect(&dlg, &PreferencesDialog::apply_requested,
                      [&](const AppConfigData& cfg) { emitted = true; collected = cfg; });
     auto* buttons = dlg.findChild<QDialogButtonBox*>();
-    if (buttons && buttons->button(QDialogButtonBox::Apply))
-        buttons->button(QDialogButtonBox::Apply)->click();
+    if (buttons && buttons->button(QDialogButtonBox::Ok))
+        buttons->button(QDialogButtonBox::Ok)->click();   // hungarian-ui: Apply is greyed here
     check("PA-27", "an untouched Preferences dialog does NOT wipe the recent-files list",
           emitted && collected.recent_files == initial.recent_files,
           collected.recent_files.join('|').toStdString());
@@ -1508,8 +1509,8 @@ void test_debug_keymap_passthrough()
     QObject::connect(&untouched, &PreferencesDialog::apply_requested,
                      [&](const AppConfigData& cfg) { emitted = true; passthrough = cfg; });
     auto* buttons = untouched.findChild<QDialogButtonBox*>();
-    if (buttons && buttons->button(QDialogButtonBox::Apply))
-        buttons->button(QDialogButtonBox::Apply)->click();
+    if (buttons && buttons->button(QDialogButtonBox::Ok))
+        buttons->button(QDialogButtonBox::Ok)->click();   // hungarian-ui: Apply is greyed here
 
     check("PA-19a", "an untouched dialog does NOT wipe a redefined debugger key",
           emitted
@@ -1957,7 +1958,7 @@ void test_fast_boot_hide_control()
         auto* buttons = dlg.findChild<QDialogButtonBox*>();
         auto* apply = buttons ? buttons->button(QDialogButtonBox::Apply) : nullptr;
         if (apply) {
-            apply->click();
+            buttons->button(QDialogButtonBox::Ok)->click();   // hungarian-ui: Apply is greyed here
             kept = emitted && got.fast_boot_hide_screen;
             emitted = false;
             box->setChecked(false);
@@ -1965,10 +1966,88 @@ void test_fast_boot_hide_control()
             cleared = emitted && !got.fast_boot_hide_screen;
         }
     }
-    check("PA-40", "the fast-boot hide check box starts from the saved value, an untouched Apply keeps it, and unchecking it collects false",
+    check("PA-40", "the fast-boot hide check box starts from the saved value, an untouched OK keeps it, and unchecking it collects false",
           filled && kept && cleared,
           std::string("box=") + (box ? "yes" : "no") + " filled=" + std::to_string(filled) +
           " kept=" + std::to_string(kept) + " cleared=" + std::to_string(cleared));
+}
+
+// hungarian-ui: the Apply button is enabled only while something differs from what was
+// last applied (what the dialog opened with, until the first Apply).
+void test_apply_button_state()
+{
+    AppConfigData initial;
+    initial.esp_enabled = true;      // so that every control of the tabs is enabled
+    initial.nextpi_enabled = true;
+
+    // Every control, one at a time: changed -> enabled; put back -> greyed again.
+    PreferencesDialog dlg(initial);
+    auto* buttons = dlg.findChild<QDialogButtonBox*>();
+    QPushButton* apply = buttons ? buttons->button(QDialogButtonBox::Apply) : nullptr;
+    QPushButton* ok = buttons ? buttons->button(QDialogButtonBox::Ok) : nullptr;
+    check("PA-HU-01", "Apply is greyed when Preferences opens; OK and Cancel are not",
+          apply && !apply->isEnabled() && ok->isEnabled() &&
+              buttons->button(QDialogButtonBox::Cancel)->isEnabled());
+    if (!apply) return;
+
+    int tried = 0;
+    std::string bad;
+    auto one = [&](const QWidget* w, const std::function<void()>& change, const std::function<void()>& back) {
+        ++tried;
+        const bool before = apply->isEnabled();
+        change();
+        const bool on = apply->isEnabled();
+        back();
+        const bool off = apply->isEnabled();
+        if (before || !on || off)
+            bad += std::string(w->metaObject()->className()) + "/" + w->objectName().toStdString() + " ";
+    };
+    for (QWidget* w : dlg.findChildren<QWidget*>()) {
+        const bool part = qobject_cast<QSpinBox*>(w->parentWidget()) || qobject_cast<QComboBox*>(w->parentWidget());
+        if (auto* c = qobject_cast<QComboBox*>(w)) {
+            if (c->isEditable()) {
+                const QString t = c->currentText();
+                one(w, [&] { c->setEditText(t + "x"); }, [&] { c->setEditText(t); });
+            } else if (c->count() > 1) {
+                const int i = c->currentIndex();
+                one(w, [&] { c->setCurrentIndex(i == 0 ? 1 : 0); }, [&] { c->setCurrentIndex(i); });
+            }
+        } else if (auto* sp = qobject_cast<QSpinBox*>(w)) {
+            const int v = sp->value();
+            one(w, [&] { sp->setValue(v == sp->maximum() ? v - 1 : v + 1); }, [&] { sp->setValue(v); });
+        } else if (auto* sl = qobject_cast<QSlider*>(w)) {
+            const int v = sl->value();
+            one(w, [&] { sl->setValue(v == sl->maximum() ? v - 1 : v + 1); }, [&] { sl->setValue(v); });
+        } else if (auto* pe = qobject_cast<QPlainTextEdit*>(w)) {
+            const QString t = pe->toPlainText();
+            one(w, [&] { pe->setPlainText(t + "x"); }, [&] { pe->setPlainText(t); });
+        } else if (auto* le = qobject_cast<QLineEdit*>(w); le && !part) {
+            const QString t = le->text();
+            one(w, [&] { le->setText(t + "x"); }, [&] { le->setText(t); });
+        } else if (auto* cb = qobject_cast<QCheckBox*>(w)) {
+            const bool v = cb->isChecked();
+            one(w, [&] { cb->setChecked(!v); }, [&] { cb->setChecked(v); });
+        }
+    }
+    check("PA-HU-02", "changing any control of any tab enables Apply; putting it back greys it again",
+          bad.empty() && tried >= 35, "tried=" + std::to_string(tried) + " bad: " + bad);
+
+    int emits = 0;
+    QObject::connect(&dlg, &PreferencesDialog::apply_requested, [&](const AppConfigData&) { ++emits; });
+    auto* slider = dlg.findChild<QSlider*>(QStringLiteral("audioGainDbSlider"));
+    slider->setValue(6);
+    const bool on1 = apply->isEnabled();
+    apply->click();
+    const bool off1 = !apply->isEnabled() && emits == 1;
+    apply->click();                       // greyed: nothing happens
+    const bool still = emits == 1;
+    slider->setValue(0);                  // the OPENING value is now a change
+    const bool on2 = apply->isEnabled();
+    slider->setValue(6);                  // the applied one is not
+    const bool off2 = !apply->isEnabled();
+    check("PA-HU-03", "Apply sends the change once and greys itself; from then on the applied state is the reference",
+          on1 && off1 && still && on2 && off2,
+          std::to_string(on1) + std::to_string(off1) + std::to_string(still) + std::to_string(on2) + std::to_string(off2));
 }
 
 int main(int argc, char** argv)
@@ -1978,6 +2057,7 @@ int main(int argc, char** argv)
 
     std::printf("preferences_apply_test (Apply must not restart the machine, issue #40)\n");
 
+    test_apply_button_state();
     test_apply_live_only();
     test_defer_machine_type();
     test_reboot_then_apply_live();

@@ -24,6 +24,8 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QTabWidget>
+#include <QAbstractButton>
+#include <QAbstractSpinBox>
 #include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QGridLayout>
@@ -147,10 +149,14 @@ PreferencesDialog::PreferencesDialog(const AppConfigData& current, QWidget* pare
         accept();
     });
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
-    connect(buttons->button(QDialogButtonBox::Apply), &QPushButton::clicked, this, [this]() {
+    apply_button_ = buttons->button(QDialogButtonBox::Apply);
+    connect(apply_button_, &QPushButton::clicked, this, [this]() {
         if (!source_dirs_ok()) return;
         emit apply_requested(collect());
+        mark_applied();
     });
+    watch_controls();
+    mark_applied();
 
     auto* layout = new QVBoxLayout(this);
     layout->addWidget(tabs);
@@ -728,6 +734,65 @@ bool PreferencesDialog::source_dirs_ok() {
     return true;
 }
 
+void PreferencesDialog::watch_controls() {
+    // Spin boxes and editable combo boxes have a QLineEdit inside, which is watched through
+    // its owner: what counts is the value, not a half-typed text.
+    const auto inside = [](const QWidget* w) {
+        return qobject_cast<QAbstractSpinBox*>(w->parentWidget()) || qobject_cast<QComboBox*>(w->parentWidget());
+    };
+    const auto changed = [this]() { update_apply_button(); };
+    for (QWidget* w : findChildren<QWidget*>()) {
+        if (auto* combo = qobject_cast<QComboBox*>(w)) {
+            connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, changed);
+            connect(combo, &QComboBox::editTextChanged, this, changed);
+        } else if (auto* spin = qobject_cast<QSpinBox*>(w)) {
+            connect(spin, QOverload<int>::of(&QSpinBox::valueChanged), this, changed);
+        } else if (auto* slider = qobject_cast<QSlider*>(w)) {
+            connect(slider, &QSlider::valueChanged, this, changed);
+        } else if (auto* edit = qobject_cast<QPlainTextEdit*>(w)) {
+            connect(edit, &QPlainTextEdit::textChanged, this, changed);
+        } else if (auto* line = qobject_cast<QLineEdit*>(w); line && !inside(line)) {
+            connect(line, &QLineEdit::textChanged, this, changed);
+        } else if (auto* button = qobject_cast<QAbstractButton*>(w); button && button->isCheckable()) {
+            connect(button, &QAbstractButton::toggled, this, changed);
+        } else {
+            continue;
+        }
+        control_list_.append(w);
+    }
+}
+
+PreferencesDialog::ControlState PreferencesDialog::control_state() const {
+    ControlState st;
+    for (const QWidget* w : control_list_) {
+        if (auto* combo = qobject_cast<const QComboBox*>(w))
+            st.values.append(combo->isEditable() ? QVariant(combo->currentText()) : QVariant(combo->currentIndex()));
+        else if (auto* spin = qobject_cast<const QSpinBox*>(w))
+            st.values.append(spin->value());
+        else if (auto* slider = qobject_cast<const QSlider*>(w))
+            st.values.append(slider->value());
+        else if (auto* edit = qobject_cast<const QPlainTextEdit*>(w))
+            st.values.append(edit->toPlainText());
+        else if (auto* line = qobject_cast<const QLineEdit*>(w))
+            st.values.append(line->text());
+        else if (auto* button = qobject_cast<const QAbstractButton*>(w))
+            st.values.append(button->isChecked());
+    }
+    st.keys = debug_keys_;
+    return st;
+}
+
+void PreferencesDialog::mark_applied() {
+    applied_ = control_state();
+    update_apply_button();
+}
+
+void PreferencesDialog::update_apply_button() {
+    if (!apply_button_) return;   // the tabs are still being built
+    const ControlState now = control_state();
+    apply_button_->setEnabled(now.values != applied_.values || now.keys != applied_.keys);
+}
+
 AppConfigData PreferencesDialog::collect() const {
     AppConfigData cfg;
     cfg.machine_type = static_cast<MachineType>(machine_combo_->currentData().toInt());
@@ -963,6 +1028,7 @@ void PreferencesDialog::refresh_key_row(int index) {
     using namespace jnext::dbgkeys;
     if (index < 0 || index >= ACTION_COUNT || !key_buttons_[index]) return;
     key_buttons_[index]->set_combo(debug_keys_.combo(static_cast<Action>(index)));
+    update_apply_button();
 }
 
 void PreferencesDialog::on_key_captured(int index, jnext::dbgkeys::Combo combo) {

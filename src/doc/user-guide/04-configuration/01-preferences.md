@@ -104,6 +104,9 @@ nothing from the command line is saved. How the two combine is in
 
 ## Apply, OK and Cancel
 
+**Apply** is greyed until you change something, and again once the change is
+applied: while it is active, the dialog shows something that is not in effect yet.
+
 **Apply** pushes the settings to the *running* machine — change the window
 scale or a joystick source and it happens immediately, with nothing lost.
 **OK** does the same and closes the dialog; **Cancel** discards.

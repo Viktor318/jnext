@@ -157,6 +157,9 @@ A billentyűzet útja: `MainWindow::keyPressEvent` → `handle_key` → `qt_key_
 
 - `MainWindow::toggle_picture_only()` / `apply_picture_only()`, Nézet > Csak a kép (`pictureOnlyAction`). Elrejti a menüsort, az eszköztárakat és az állapotsort; rejtett menüsornál a gyorsbillentyűs menüpontokat az ablakhoz is hozzáadja. Teszt: `window_scale_test` WS-HU-02; MA-05 / MA-HU-05; DKH-01.
 
+- **Beállítások, Alkalmaz gomb (Viktor kérése, 2026-11-24):** szürke, amíg semmi nem tér el az utoljára alkalmazott állapottól; alkalmazás után újra szürke (`PreferencesDialog::watch_controls()` típus szerint minden vezérlőt figyel, új beállításhoz nem kell hozzányúlni; a billentyűkötések külön). Az érintetlen ablakot vizsgáló 18 tesztsor OK-t nyom. Új: PA-HU-01..03, DKP-HU-01.
+- **Helyi teszt 1.3.72 óta:** a `run-unit-tests.sh` törli a `DISPLAY`-t, és `xvfb-run`-t vár, ami a WSL-ben nincs: a `crt_shader_widget_test` emiatt bukik (közvetlenül futtatva 43/43).
+
 ## Upstream beolvasztások
 
 - **1.3.34 (`6ee9600`):** hibakereső Graphics fül, bővített töréspontok, böngészős demóoldal stb. Tanulság: menüpont- vagy gyorsbillentyű-változás után a teljes `run-unit-tests.sh`.

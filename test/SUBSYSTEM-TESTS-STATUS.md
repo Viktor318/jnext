@@ -242,7 +242,7 @@ VHDL-derived compliance test suite for the JNEXT ZX Spectrum Next emulator. All 
 | SD-card/NextPi download dialog (GH #358) |       20 |       20 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Quit runs closeEvent cleanup |       12 |       12 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Toolbar SVG icon set + icon lint |       28 |       28 |      0 |       0 |    100% | 🟢 All tests pass. |
-| GUI Preferences (Apply) |      106 |      106 |      0 |       0 |    100% | 🟢 All tests pass. |
+| GUI Preferences (Apply) |      109 |      109 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Video Panel  |      122 |      122 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Audio Panel  |       60 |       60 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Quit Gate    |       11 |       11 |      0 |       0 |    100% | 🟢 All tests pass. |
@@ -254,13 +254,13 @@ VHDL-derived compliance test suite for the JNEXT ZX Spectrum Next emulator. All 
 | Debugger Window Growing |       14 |       14 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Dockable Panels (GH #377, GUI) |       26 |       26 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Accelerators |       13 |       13 |      0 |       0 |    100% | 🟢 All tests pass. |
-| Debugger Key Bindings |       48 |       48 |      0 |       0 |    100% | 🟢 All tests pass. |
+| Debugger Key Bindings |       49 |       49 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Menus        |       76 |       76 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Disasm Copy  |       44 |       44 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Panels (GH #278) |      230 |      230 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Verbs (GH #278) |      203 |      203 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Source panel |      299 |      299 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Variables panel |       55 |       55 |      0 |       0 |    100% | 🟢 All tests pass. |
-| **Total**             | **18170**| **18170**|  **0** |   **0** | **100%**| 🟢 All tests pass. |
+| **Total**             | **18174**| **18174**|  **0** |   **0** | **100%**| 🟢 All tests pass. |
 
 **SKIP:** A row its suite could not exercise on the host that ran it. A SKIP fails the run (owner, 2026-10-06). A planned row whose feature does not exist yet is PLANNED in its `*-TEST-PLAN-DESIGN.md`, not a SKIP.

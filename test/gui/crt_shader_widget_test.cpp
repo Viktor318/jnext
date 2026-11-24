@@ -122,7 +122,8 @@ AppConfigData apply_and_collect(PreferencesDialog& dlg) {
     bool got = false;
     QObject::connect(&dlg, &PreferencesDialog::apply_requested,
                      [&](const AppConfigData& c) { out = c; got = true; });
-    dlg.findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Apply)->click();
+    // OK: Apply is greyed while nothing differs (hungarian-ui).
+    dlg.findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click();
     return got ? out : AppConfigData{};
 }
 

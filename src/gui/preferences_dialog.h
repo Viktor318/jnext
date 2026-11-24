@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QDialog>
+#include <QList>
+#include <QVariant>
 
 #include <vector>
 
@@ -14,6 +16,7 @@ class QSlider;
 class QCheckBox;
 class QLineEdit;
 class QPlainTextEdit;
+class QPushButton;
 class QLabel;
 class ShortcutCaptureButton;
 
@@ -75,9 +78,26 @@ private:
     void refresh_key_row(int index);
 #endif
     AppConfigData collect() const;
+
+    // hungarian-ui - Apply is enabled only while something differs from what was last
+    // applied (or from what the dialog opened with). It looks at the CONTROLS, all of them,
+    // found by type: a setting added to any tab is covered with no edit here. The key
+    // bindings have no such control and are compared as a whole.
+    struct ControlState {
+        QList<QVariant>         values;   ///< in control_list_ order
+        jnext::dbgkeys::Keymap  keys;
+    };
+    ControlState control_state() const;
+    void watch_controls();       ///< once, when every control exists and is filled
+    void mark_applied();         ///< the present state is the applied one
+    void update_apply_button();
     bool source_dirs_ok();   // GH #420 - refuses a directory holding the list separator
     void browse_directory(QLineEdit* target);
     void browse_sd_image(QLineEdit* target);
+
+    QPushButton*    apply_button_ = nullptr;
+    QList<QWidget*> control_list_;
+    ControlState    applied_;
 
     QComboBox* machine_combo_    = nullptr;
     QComboBox* cpu_speed_combo_  = nullptr;

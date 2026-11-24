@@ -216,7 +216,8 @@ AppConfigData apply_dialog(PreferencesDialog& d) {
     AppConfigData got;
     QObject::connect(&d, &PreferencesDialog::apply_requested,
                      [&got](const AppConfigData& cfg) { got = cfg; });
-    d.findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Apply)->click();
+    // OK: Apply is greyed while nothing differs (hungarian-ui).
+    d.findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click();
     return got;
 }
 
@@ -368,7 +369,7 @@ void run(const QString& confdir) {
         auto combos = joy_combos(dlg);
         const bool shape = combos.size() == 2 && combos[0]->currentText() == "Gone Pad (not connected)";
         const AppConfigData got = apply_dialog(dlg);
-        check("JMN-08", "an absent assigned controller is shown '(not connected)' and survives Apply unchanged",
+        check("JMN-08", "an absent assigned controller is shown '(not connected)' and survives OK unchanged",
               shape && got.joy_device[0] == initial.joy_device[0] &&
               got.joy_device_name[0] == "Gone Pad" && got.joy_source[0] == JoySource::Sdl,
               got.joy_device[0].toStdString());

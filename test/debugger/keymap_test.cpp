@@ -47,6 +47,7 @@
 #include <QKeySequence>
 #include <QMenu>
 #include <QLabel>
+#include <QDialogButtonBox>
 #include <QPushButton>
 #include <QString>
 #include <QStringList>
@@ -425,7 +426,7 @@ void test_preferences_tab() {
     const auto buttons = dlg.findChildren<ShortcutCaptureButton*>();
 
     if (buttons.size() != ACTION_COUNT) {
-        for (const char* id : {"DKP-01", "DKP-02", "DKP-03", "DKP-04", "DKP-05"})
+        for (const char* id : {"DKP-01", "DKP-02", "DKP-03", "DKP-04", "DKP-05", "DKP-HU-01"})
             check(id, "the Debugger Keys tab", false,
                   "found " + std::to_string(buttons.size()) + " capture buttons");
         return;
@@ -452,14 +453,23 @@ void test_preferences_tab() {
     // AppConfigData, so a field it forgets is silently reset the moment the
     // user presses OK — which is exactly what happened to the ESP settings
     // (GH #25) before they had a page.
-    press_apply();
+    // hungarian-ui: OK, for Apply is greyed while nothing differs.
+    dlg.findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click();
     check("DKP-05", "an untouched dialog hands the bindings back unchanged",
           emits == 1 && emitted.debug_keys == before.debug_keys,
           "emits=" + std::to_string(emits));
 
+    // hungarian-ui (DKP-HU-01): the bindings are no ordinary control, so the Apply button
+    // is checked along the way: a capture enables it, a refused one does not.
+    QPushButton* apply = nullptr;
+    if (auto* bb = dlg.findChild<QDialogButtonBox*>()) apply = bb->button(QDialogButtonBox::Apply);
+    const bool greyed = apply && !apply->isEnabled();
+
     const int over = static_cast<int>(Action::StepOver);
     capture_into(buttons[over], parsed("F10"));
+    const bool captured_on = apply && apply->isEnabled();
     press_apply();
+    const bool applied_off = apply && !apply->isEnabled();
     check("DKP-01", "a legal capture reaches the collected settings",
           render_combo(emitted.debug_keys.combo(Action::StepOver)) == "F10",
           render_combo(emitted.debug_keys.combo(Action::StepOver)));
@@ -467,6 +477,7 @@ void test_preferences_tab() {
     // F5 belongs to Run. Refused, not taken over: Qt fires two identical
     // sequences round-robin and breaks both (GH #124).
     capture_into(buttons[over], parsed("F5"));
+    const bool refused_off = apply && !apply->isEnabled();
     press_apply();
     check("DKP-02", "a capture another action already holds is refused",
           render_combo(emitted.debug_keys.combo(Action::StepOver)) == "F10"
@@ -485,10 +496,15 @@ void test_preferences_tab() {
         if (b->text().remove(QLatin1Char('&'))
                 == QStringLiteral("Reset All to Defaults"))
             b->click();
+    const bool reset_on = apply && apply->isEnabled();
     press_apply();
     check("DKP-04", "Reset All to Defaults restores every binding",
           emitted.debug_keys == before.debug_keys,
           render_combo(emitted.debug_keys.combo(Action::StepOver)));
+    check("DKP-HU-01", "a captured or reset key enables Apply, applying or a refused capture leaves it greyed",
+          greyed && captured_on && applied_off && refused_off && reset_on,
+          std::to_string(greyed) + std::to_string(captured_on) + std::to_string(applied_off) +
+              std::to_string(refused_off) + std::to_string(reset_on));
 }
 
 // ── DKH: colliding with a chord a host window already owns ────────────────

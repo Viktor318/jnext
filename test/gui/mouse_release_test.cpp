@@ -265,7 +265,7 @@ int main(int argc, char** argv)
         QObject::connect(&dlg, &PreferencesDialog::apply_requested,
                          [&](const AppConfigData& c) { collected = c; emitted = true; });
         auto* buttons = dlg.findChild<QDialogButtonBox*>();
-        buttons->button(QDialogButtonBox::Apply)->click();
+        buttons->button(QDialogButtonBox::Ok)->click();   // hungarian-ui: Apply is greyed here
         check("MRQ-12d", "with no change, collect() keeps Esc",
               emitted && collected.mouse_release == RM::Esc);
         emitted = false;
