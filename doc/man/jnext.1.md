@@ -872,6 +872,21 @@ naming the option and the value, and exits with status 1.
 :   Record the mixed stereo output to a 44.1 kHz, 16-bit PCM WAV. Works
     headless and requires neither an audio device nor ffmpeg.
 
+**\--wav-record-stems** *DIR*
+:   Record the mix as seven 44.1 kHz, 16-bit stereo WAV files in *DIR*, one per
+    source: `ay0.wav`, `ay1.wav`, `ay2.wav` (each AY chip after its mode and
+    pan, silent while the chip is not in the mix), `dac.wav` (left is A+B,
+    right is C+D), `beeper.wav` (EAR and MIC; a playing tape and Pi audio sent
+    to EAR are inside it, as the Next mixes them as one term), `pi.wav` (the Pi
+    I2S audio) and `mix.wav`. The stems are taken before the host gains and
+    the debugger mutes, so `mix.wav` equals **\--wav-record** at 0 dB, and the
+    six source files add up to `mix.wav` exactly while every source is steady
+    within an output sample and otherwise within 3 counts per sample (the
+    rounding of the seven files). *DIR* is created if missing and files of
+    those names in it are overwritten. If *DIR* or a file cannot be created,
+    **jnext** exits non-zero without running the emulation; a write error
+    that shows later exits non-zero too. Cannot be combined with **\--silent**.
+
 **\--dac-trace** *FILE*
 :   Record `segment,tstate,channel,value` rows for physical DAC writes. A cold
     boot starts a new segment.
@@ -898,6 +913,22 @@ naming the option and the value, and exits with status 1.
     An unwritable *FILE* is refused before the machine starts. A write error, or
     writes lost because more than 65536 arrived between two services of the loop,
     makes the run exit non-zero.
+
+**\--psg-record** *FILE*
+:   Record each AY chip's register stream as `.psg`, in the layout Fuse writes
+    for its AY log: a 16-byte header, then for every frame in which a register
+    from R0 to R13 was written the register/value pairs in register order, with
+    frame separators between the frames. *FILE* takes AY#0; AY#1 and AY#2 go to
+    *FILE* with `-ay1` or `-ay2` before the extension (`tune.psg` gives
+    `tune-ay1.psg`), created at that chip's first write and aligned to the start
+    of the recording. When a register is written more than once in a frame the
+    last value is kept. R14 and R15 are not recorded. A reset or a state load
+    keeps the elapsed time, and a rewind keeps what was written and carries on
+    after it. It
+    works in every frontend, headless, with **\--silent** and in a browser page.
+    An unwritable *FILE* is refused before the machine starts. A write error
+    makes the run exit non-zero. The same recording starts from the Chips tab of
+    the debugger's Audio panel.
 
 **\--audio-gain-db** *DB*
 :   Set master host audio gain from -24 dB to +24 dB (default 0 dB). The gain is
@@ -1593,6 +1624,22 @@ The entries say which frontends use the key: the Qt window, the SDL-only build
     that run. A relative directory is taken from the working directory. The Qt
     window with the debugger.
 
+`sdcard_manager.card` *FILE*
+:   The SD card image the SD card file manager last showed. On opening, the
+    window shows that card if it is in a slot, and otherwise the first card
+    that is. The Qt window.
+
+`sdcard_manager.card_dir` *PATH*
+:   The folder of that card the manager last showed, with every byte outside
+    printable ASCII and every `%` written as `%XX`. The window opens in it only
+    on the remembered card and only if it exists on the card now; otherwise it
+    opens at the card's root. The Qt window.
+
+`sdcard_manager.host_dir` *PATH*
+:   The host folder the manager's right-hand pane last showed. If it no longer
+    exists, the nearest existing parent is used, then the Load directory, then
+    the home directory. The Qt window.
+
 `screenshot.quick_dir` *PATH*
 :   The Quick Screenshot directory; empty means `~/.jnext/screenshots`. The Qt
     window.
@@ -1881,7 +1928,9 @@ A directory is copied recursively, in name order:
   directory that cannot be read; a file of 4 GiB or more; a name FAT cannot
   hold (non-ASCII, or one of `" * : < > ? \ |`, or ending in a dot or a space);
   and two names in one directory that differ only in case, which FAT would make
-  one file. Nothing is renamed or silently skipped — hidden files included.
+  one file; and a destination that is another entry's 8.3 alias (`/LONGFI~1.TXT`
+  for a file stored as `Long File Name.txt`), which would write into that entry.
+  Nothing is renamed or silently skipped — hidden files included.
 
 A file or a directory, the copy is **all or nothing**. Every refusal is decided
 before the first byte is written, so a refused copy — including one that does
@@ -1981,8 +2030,9 @@ each byte outside printable ASCII, each `%`, each of `<>:"/\|?*`, a trailing dot
 or space, and a Windows device name's first letter (`CON.TXT` becomes
 `%43ON.TXT`), on every system, as **\--sdcard-export-changes** writes them; each
 such name is listed on standard output. A `.` or `..` component, a trailing dot or
-space and a character outside printable ASCII in the card path are refused (give
-the 8.3 name, or extract the parent directory). A file or directory of that name
+space and a character outside printable ASCII in the card path are refused: give
+the 8.3 name, or extract the parent directory (the only way left when the 8.3 name
+itself holds such a character). A file or directory of that name
 that already exists in the current directory, a symbolic link included, is
 refused and never touched: nothing is overwritten, and nothing is merged into an
 existing directory. It is all or nothing: every problem is found before anything
@@ -2466,11 +2516,18 @@ Notes worth knowing:
   **\--silent**, which disables mixer synthesis. If the emulator exits
   abnormally, the file may retain its initial zero-length data header even
   though PCM follows it.
+- WAV stems (**\--wav-record-stems** *DIR*) write one file per source (each AY
+  chip, the DAC, the beeper, the Pi and the mix) that add up to the mix. They
+  follow the same rules as **\--wav-record**: headless works, cold boots
+  continue the files, **\--silent** is refused, and SIGTERM or SIGINT finalise
+  them. While they record, HALT-idle programs run without the HALT batching.
 - DAC tracing (**\--dac-trace** *FILE*) records guest DAC writes before mixing.
   Channels are numbered 0-3 (A-D) and timestamps are CPU T-states.
 - The audio write log (**\--audio-log** *FILE*) records the decoded AY, DAC and
   beeper writes with their timestamps, the same rows the debugger's Audio panel
   shows on its Log tab.
+- The `.psg` recording (**\--psg-record** *FILE*) saves each AY chip's register
+  writes, one file per chip in use, in the layout Fuse writes for its AY log.
 - Master and per-subsystem host gains are available under **Settings >
   Preferences > Audio**, or for one run with the **\--audio-gain-** family.
   Beeper, each TurboSound AY chip and the DAC family can be balanced
@@ -3913,7 +3970,8 @@ failure happened rather than a single non-zero status. **\--sdcard-writes-flatte
     forbids, a component that already exists as a file, or a destination that
     already exists as a directory (for a file) or as a file (for a directory).
     For a directory this includes a host name inside it that FAT cannot hold,
-    and two names that differ only in case.
+    and two names that differ only in case. A destination that is the 8.3 alias
+    of a different entry on the card is refused the same way.
     For **\--sdcard-writes-flatten** and **\--sdcard-export-changes** it also
     covers: nothing to compare against (the card was not made by jnext in a way
     that can be rebuilt and no **\--sdcard-export-base** or **\--sdcard-writes**

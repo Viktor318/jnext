@@ -75,6 +75,22 @@
         <source>Recording</source>
         <translation>Felvétel</translation>
     </message>
+    <message>
+        <source>Target</source>
+        <translation>Cél</translation>
+    </message>
+    <message>
+        <source>AY chip</source>
+        <translation>AY-csip</translation>
+    </message>
+    <message>
+        <source>Reg</source>
+        <translation>Reg.</translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation>Forrás</translation>
+    </message>
 </context>
 <context>
     <name>AudioPanel</name>
@@ -257,10 +273,6 @@
     <message>
         <source>Scopes</source>
         <translation>Hullámformák</translation>
-    </message>
-    <message>
-        <source>Not available yet.</source>
-        <translation>Még nem érhető el.</translation>
     </message>
     <message>
         <source>DAC channels</source>
@@ -457,6 +469,243 @@
     <message>
         <source>Synthesis: off (--silent)</source>
         <translation>Hangelőállítás: ki (--silent)</translation>
+    </message>
+    <message>
+        <source>Record PSG...</source>
+        <translation>PSG felvétele…</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation>Leállítás</translation>
+    </message>
+    <message>
+        <source>Not recording PSG</source>
+        <translation>Nincs PSG-felvétel</translation>
+    </message>
+    <message>
+        <source>Record PSG</source>
+        <translation>PSG felvétele</translation>
+    </message>
+    <message>
+        <source>PSG (*.psg)</source>
+        <translation>PSG (*.psg)</translation>
+    </message>
+    <message>
+        <source>Cannot write %1</source>
+        <translation>Nem írható: %1</translation>
+    </message>
+    <message>
+        <source>Write error on the PSG files</source>
+        <translation>Írási hiba a PSG-fájloknál</translation>
+    </message>
+    <message>
+        <source>Write error on %1 or its -ay1/-ay2 files</source>
+        <translation>Írási hiba: %1 vagy a hozzá tartozó -ay1/-ay2 fájl</translation>
+    </message>
+    <message>
+        <source>Recording PSG</source>
+        <translation>PSG-felvétel folyik</translation>
+    </message>
+    <message>
+        <source>Output</source>
+        <translation>Kimenet</translation>
+    </message>
+</context>
+<context>
+    <name>AudioScopeView</name>
+    <message>
+        <source>Audio synthesis is off (--silent): the scopes need it.</source>
+        <translation>A hangszintézis ki van kapcsolva (--silent): az oszcilloszkópokhoz szükséges.</translation>
+    </message>
+    <message>
+        <source>Record stems...</source>
+        <translation>Sávok felvétele…</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation>Leállítás</translation>
+    </message>
+    <message>
+        <source>Not recording stems</source>
+        <translation>Nincs sávfelvétel</translation>
+    </message>
+    <message>
+        <source>Record stems</source>
+        <translation>Sávok felvétele</translation>
+    </message>
+    <message>
+        <source>free</source>
+        <translation>szabad</translation>
+    </message>
+    <message>
+        <source>pk 0  rms 0</source>
+        <translation>cs 0  rms 0</translation>
+    </message>
+    <message>
+        <source>Cannot write %1</source>
+        <translation>Nem írható: %1</translation>
+    </message>
+    <message>
+        <source>Write error in %1</source>
+        <translation>Írási hiba: %1</translation>
+    </message>
+    <message>
+        <source>the stems directory</source>
+        <translation>a sávok mappája</translation>
+    </message>
+    <message>
+        <source>Recording stems</source>
+        <translation>Sávfelvétel folyik</translation>
+    </message>
+    <message>
+        <source>trig</source>
+        <translation>indít</translation>
+    </message>
+    <message>
+        <source>Beeper</source>
+        <translation>Beeper</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Bal</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Jobb</translation>
+    </message>
+</context>
+<context>
+    <name>AudioStreamView</name>
+    <message>
+        <source>Pacing (CTC, DMA)</source>
+        <translation>Ütemezés (CTC, DMA)</translation>
+    </message>
+    <message>
+        <source>Engine</source>
+        <translation>Egység</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>Mód</translation>
+    </message>
+    <message>
+        <source>Prescaler</source>
+        <translation>Előosztó</translation>
+    </message>
+    <message>
+        <source>TC</source>
+        <translation>TC</translation>
+    </message>
+    <message>
+        <source>Count</source>
+        <translation>Számláló</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>Állapot</translation>
+    </message>
+    <message>
+        <source>Int</source>
+        <translation>Megsz.</translation>
+    </message>
+    <message>
+        <source>Rate</source>
+        <translation>Frekvencia</translation>
+    </message>
+    <message>
+        <source>Sample stream</source>
+        <translation>Mintafolyam</translation>
+    </message>
+    <message>
+        <source>Not recording</source>
+        <translation>Nincs felvétel</translation>
+    </message>
+    <message>
+        <source>Window: 1.000 s (covered 0.000 s); a gap is an interval above %1 x the median</source>
+        <translation>Ablak: 1.000 s (lefedve 0.000 s); kihagyás: a medián %1-szeresénél hosszabb köz</translation>
+    </message>
+    <message>
+        <source>Writer</source>
+        <translation>Író</translation>
+    </message>
+    <message>
+        <source>Channels</source>
+        <translation>Csatornák</translation>
+    </message>
+    <message>
+        <source>Samples</source>
+        <translation>Minták</translation>
+    </message>
+    <message>
+        <source>Min (us)</source>
+        <translation>Min. (µs)</translation>
+    </message>
+    <message>
+        <source>Avg (us)</source>
+        <translation>Átl. (µs)</translation>
+    </message>
+    <message>
+        <source>Max (us)</source>
+        <translation>Max. (µs)</translation>
+    </message>
+    <message>
+        <source>Jitter (us)</source>
+        <translation>Szórás (µs)</translation>
+    </message>
+    <message>
+        <source>Gaps</source>
+        <translation>Kihagyások</translation>
+    </message>
+    <message>
+        <source>Pacing</source>
+        <translation>Ütemezés</translation>
+    </message>
+    <message>
+        <source>Recording</source>
+        <translation>Felvétel</translation>
+    </message>
+    <message>
+        <source>Window: 1.000 s (covered %1 s); a gap is an interval above %2 x the median</source>
+        <translation>Ablak: 1.000 s (lefedve %1 s); kihagyás: a medián %2-szeresénél hosszabb köz</translation>
+    </message>
+</context>
+<context>
+    <name>AudioTrackerView</name>
+    <message>
+        <source>Not recording</source>
+        <translation>Nincs felvétel</translation>
+    </message>
+    <message>
+        <source>Window:</source>
+        <translation>Ablak:</translation>
+    </message>
+    <message>
+        <source> frames</source>
+        <translation> képkocka</translation>
+    </message>
+    <message>
+        <source>Exact routine cost: the CPU panel&apos;s T-states since the last stop, or --profile.</source>
+        <translation>A rutin pontos ideje: a CPU panel órajelszáma az utolsó megállás óta, vagy a --profile.</translation>
+    </message>
+    <message>
+        <source>Recording</source>
+        <translation>Felvétel</translation>
+    </message>
+    <message>
+        <source>Last %1 %6: %2 to %3, %4 with AY writes, %5 without</source>
+        <translation>Utolsó %1 %6: %2–%3, AY-írással %4, anélkül %5</translation>
+    </message>
+    <message>
+        <source>frame</source>
+        <translation>képkocka</translation>
+    </message>
+    <message>
+        <source>frames</source>
+        <translation>képkocka</translation>
+    </message>
+    <message>
+        <source>No AY writes in the last %1 %2</source>
+        <translation>Nincs AY-írás az utolsó %1 %2 alatt</translation>
     </message>
 </context>
 <context>
@@ -2749,6 +2998,30 @@ Restart now?
         <source>SD card changed: the machine restarts</source>
         <translation>Az SD-kártya megváltozott: a gép újraindul</translation>
     </message>
+    <message>
+        <source>SD Card File Manager...</source>
+        <translation>SD-kártya fájlkezelő…</translation>
+    </message>
+    <message>
+        <source>SD Card File Manager</source>
+        <translation>SD-kártya fájlkezelő</translation>
+    </message>
+    <message>
+        <source>The SD card is being changed by another action. Try again when it is done.</source>
+        <translation>Az SD-kártyát éppen egy másik művelet módosítja. Próbálja újra, ha befejeződött.</translation>
+    </message>
+    <message>
+        <source>The SD card file manager is not available: the machine cannot be paused.</source>
+        <translation>Az SD-kártya fájlkezelő nem érhető el: a gép nem szüneteltethető.</translation>
+    </message>
+    <message>
+        <source>The SD card file manager cannot open: %1</source>
+        <translation>Az SD-kártya fájlkezelő nem nyitható meg: %1</translation>
+    </message>
+    <message>
+        <source>SD card changed: the machine restarts paused, resume it afterwards</source>
+        <translation>Az SD-kártya megváltozott: a gép szüneteltetve indul újra, utána folytassa</translation>
+    </message>
 </context>
 <context>
     <name>MemoryPanel</name>
@@ -4087,6 +4360,38 @@ Csak akkor frissül, amikor az emulátor szünetel.</translation>
         <source>Not now</source>
         <translation>Most nem</translation>
     </message>
+    <message>
+        <source>SD card</source>
+        <translation>SD-kártya</translation>
+    </message>
+    <message>
+        <source>Second SD card (D:)</source>
+        <translation>Második SD-kártya (D:)</translation>
+    </message>
+    <message>
+        <source>Pause the machine to rewind to a frame</source>
+        <translation>Szüneteltesse a gépet egy képkockára való visszatekeréshez</translation>
+    </message>
+    <message>
+        <source>Rewind is not available while an RZX is recording or playing</source>
+        <translation>RZX felvétele vagy lejátszása közben nincs visszatekerés</translation>
+    </message>
+    <message>
+        <source>The rewind buffer is empty</source>
+        <translation>A visszatekerési puffer üres</translation>
+    </message>
+    <message>
+        <source>This frame is from before a reset or a state load</source>
+        <translation>Ez a képkocka egy újraindítás vagy állapotbetöltés előtti</translation>
+    </message>
+    <message>
+        <source>Frame %1 is outside the rewind buffer (frames %2 to %3)</source>
+        <translation>A(z) %1. képkocka kívül esik a visszatekerési pufferen (%2–%3. képkocka)</translation>
+    </message>
+    <message>
+        <source>Double-click to rewind to the start of frame %1</source>
+        <translation>Dupla kattintás: visszatekerés a(z) %1. képkocka elejére</translation>
+    </message>
 </context>
 <context>
     <name>ScriptPanel</name>
@@ -4281,6 +4586,206 @@ Csak akkor frissül, amikor az emulátor szünetel.</translation>
     <message>
         <source>Last recording: %1.</source>
         <translation>Utolsó felvétel: %1.</translation>
+    </message>
+</context>
+<context>
+    <name>SdCardModel</name>
+    <message>
+        <source>this entry cannot be addressed: it is not acted on</source>
+        <translation>ez a bejegyzés nem címezhető meg, ezért a műveletek kihagyják</translation>
+    </message>
+</context>
+<context>
+    <name>SdManagerDialog</name>
+    <message>
+        <source>SD Card File Manager</source>
+        <translation>SD-kártya fájlkezelő</translation>
+    </message>
+    <message>
+        <source>Read-only</source>
+        <translation>Csak olvasható</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>Fel</translation>
+    </message>
+    <message>
+        <source>Icons</source>
+        <translation>Ikonok</translation>
+    </message>
+    <message>
+        <source>Copy &gt;</source>
+        <translation>Másolás &gt;</translation>
+    </message>
+    <message>
+        <source>&lt; Copy</source>
+        <translation>&lt; Másolás</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Bezárás</translation>
+    </message>
+    <message>
+        <source>Copy to the host folder</source>
+        <translation>Másolás a gazdagép mappájába</translation>
+    </message>
+    <message>
+        <source>Copy to the card</source>
+        <translation>Másolás a kártyára</translation>
+    </message>
+    <message>
+        <source>Rename</source>
+        <translation>Átnevezés</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Törlés</translation>
+    </message>
+    <message>
+        <source>New Folder</source>
+        <translation>Új mappa</translation>
+    </message>
+    <message>
+        <source>empty</source>
+        <translation>üres</translation>
+    </message>
+    <message>
+        <source>No SD card in this slot.</source>
+        <translation>Ebben a foglalatban nincs SD-kártya.</translation>
+    </message>
+    <message>
+        <source>The card cannot be read: %1</source>
+        <translation>A kártya nem olvasható: %1</translation>
+    </message>
+    <message>
+        <source>Done (%1):
+  %2
+</source>
+        <translation>Kész (%1):
+  %2
+</translation>
+    </message>
+    <message>
+        <source>Failed: %1
+  %2
+</source>
+        <translation>Sikertelen: %1
+  %2
+</translation>
+    </message>
+    <message>
+        <source>Stopped.
+</source>
+        <translation>Leállítva.
+</translation>
+    </message>
+    <message>
+        <source>Skipped (%1):
+  %2
+</source>
+        <translation>Kihagyva (%1):
+  %2
+</translation>
+    </message>
+    <message>
+        <source>Not attempted (%1):
+  %2
+</source>
+        <translation>Nem került sorra (%1):
+  %2
+</translation>
+    </message>
+    <message>
+        <source>Change the SD card?</source>
+        <translation>Módosítja az SD-kártyát?</translation>
+    </message>
+    <message>
+        <source>Changing the card restarts the machine (a hard reset) when this window closes, so that it sees the new contents. Make the change?</source>
+        <translation>A kártya módosítása után az ablak bezárásakor a gép újraindul (hidegindítás), hogy az új tartalmat lássa. Végrehajtja a módosítást?</translation>
+    </message>
+    <message>
+        <source>the system trash did not take it</source>
+        <translation>a rendszer lomtára nem fogadta be</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; already exists. Merge into it, replacing the files with the same names?</source>
+        <translation>„%1” már létezik. Összevonja vele, az azonos nevű fájlokat lecserélve?</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; already exists. Replace it?</source>
+        <translation>„%1” már létezik. Lecseréli?</translation>
+    </message>
+    <message>
+        <source>Already exists</source>
+        <translation>Már létezik</translation>
+    </message>
+    <message>
+        <source>The SD card in this slot has changed; the view was reset to the card the machine has now.</source>
+        <translation>A foglalatban lévő SD-kártya megváltozott; a nézet a gép mostani kártyájára váltott.</translation>
+    </message>
+    <message>
+        <source>the Read-only box is ticked</source>
+        <translation>a „Csak olvasható” jelölőnégyzet be van jelölve</translation>
+    </message>
+    <message>
+        <source>The card is read-only: %1</source>
+        <translation>A kártya csak olvasható: %1</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>Másolás</translation>
+    </message>
+    <message>
+        <source>That drop does not come from the card shown here.</source>
+        <translation>Az idehúzott elem nem az itt látható kártyáról való.</translation>
+    </message>
+    <message>
+        <source>Select one item to rename.</source>
+        <translation>Jelöljön ki egy elemet az átnevezéshez.</translation>
+    </message>
+    <message>
+        <source>New name:</source>
+        <translation>Új név:</translation>
+    </message>
+    <message>
+        <source>Cannot rename: %1</source>
+        <translation>Nem nevezhető át: %1</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is not a usable name</source>
+        <translation>„%1” nem használható név</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; already exists</source>
+        <translation>„%1” már létezik</translation>
+    </message>
+    <message>
+        <source>it is a file the emulator is using (a card image, an SD-writes file, a recording...)</source>
+        <translation>az emulátor által használt fájl (kártyakép, SD-írásfájl, felvétel…)</translation>
+    </message>
+    <message>
+        <source>the system refused the new name</source>
+        <translation>a rendszer nem fogadta el az új nevet</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos;</source>
+        <translation>„%1”</translation>
+    </message>
+    <message>
+        <source>%1 items</source>
+        <translation>%1 elem</translation>
+    </message>
+    <message>
+        <source>Delete %1 from the card? This cannot be undone.</source>
+        <translation>Törlés a kártyáról: %1? Ez nem vonható vissza.</translation>
+    </message>
+    <message>
+        <source>Move %1 to the trash?</source>
+        <translation>Áthelyezés a lomtárba: %1?</translation>
+    </message>
+    <message>
+        <source>Name of the new folder:</source>
+        <translation>Az új mappa neve:</translation>
     </message>
 </context>
 <context>

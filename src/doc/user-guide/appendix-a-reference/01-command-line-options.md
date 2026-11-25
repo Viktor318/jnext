@@ -941,6 +941,23 @@ with status 1.
 :   Record the mixed stereo output to a 44.1 kHz, 16-bit PCM WAV. Works
     headless and requires neither an audio device nor ffmpeg.
 
+**--wav-record-stems** *DIR*
+:   Record the mix as seven 44.1 kHz, 16-bit stereo WAV files in *DIR*,
+    one per source: `ay0.wav`, `ay1.wav`, `ay2.wav` (each AY chip after
+    its mode and pan, silent while the chip is not in the mix),
+    `dac.wav` (left is A+B, right is C+D), `beeper.wav` (EAR and MIC; a
+    playing tape and Pi audio sent to EAR are inside it, as the Next
+    mixes them as one term), `pi.wav` (the Pi I2S audio) and `mix.wav`.
+    The stems are taken before the host gains and the debugger mutes, so
+    `mix.wav` equals **--wav-record** at 0 dB, and the six source files
+    add up to `mix.wav` exactly while every source is steady within an
+    output sample and otherwise within 3 counts per sample (the rounding
+    of the seven files). *DIR* is created if missing and files of those
+    names in it are overwritten. If *DIR* or a file cannot be created,
+    **jnext** exits non-zero without running the emulation; a write
+    error that shows later exits non-zero too. Cannot be combined with
+    **--silent**.
+
 **--dac-trace** *FILE*
 :   Record `segment,tstate,channel,value` rows for physical DAC writes.
     A cold boot starts a new segment.
@@ -970,6 +987,22 @@ with status 1.
     *FILE* is refused before the machine starts. A write error, or
     writes lost because more than 65536 arrived between two services of
     the loop, makes the run exit non-zero.
+
+**--psg-record** *FILE*
+:   Record each AY chip’s register stream as `.psg`, in the layout Fuse
+    writes for its AY log: a 16-byte header, then for every frame in
+    which a register from R0 to R13 was written the register/value pairs
+    in register order, with frame separators between the frames. *FILE*
+    takes AY#0; AY#1 and AY#2 go to *FILE* with `-ay1` or `-ay2` before
+    the extension (`tune.psg` gives `tune-ay1.psg`), created at that
+    chip’s first write and aligned to the start of the recording. When a
+    register is written more than once in a frame the last value is
+    kept. R14 and R15 are not recorded. A reset or a state load keeps
+    the elapsed time, and a rewind keeps what was written and carries on
+    after it. It works in every frontend, headless, with **--silent**
+    and in a browser page. An unwritable *FILE* is refused before the
+    machine starts. A write error makes the run exit non-zero. The same
+    recording starts from the Chips tab of the debugger’s Audio panel.
 
 **--audio-gain-db** *DB*
 :   Set master host audio gain from -24 dB to +24 dB (default 0 dB). The
@@ -1726,6 +1759,22 @@ use the key: the Qt window, the SDL-only build (both interactive) or
     one. Empty means none. Given on the command line, the list REPLACES
     the saved one for that run. A relative directory is taken from the
     working directory. The Qt window with the debugger.
+
+`sdcard_manager.card` *FILE*
+:   The SD card image the SD card file manager last showed. On opening,
+    the window shows that card if it is in a slot, and otherwise the
+    first card that is. The Qt window.
+
+`sdcard_manager.card_dir` *PATH*
+:   The folder of that card the manager last showed, with every byte
+    outside printable ASCII and every `%` written as `%XX`. The window
+    opens in it only on the remembered card and only if it exists on the
+    card now; otherwise it opens at the card’s root. The Qt window.
+
+`sdcard_manager.host_dir` *PATH*
+:   The host folder the manager’s right-hand pane last showed. If it no
+    longer exists, the nearest existing parent is used, then the Load
+    directory, then the home directory. The Qt window.
 
 `screenshot.quick_dir` *PATH*
 :   The Quick Screenshot directory; empty means `~/.jnext/screenshots`.

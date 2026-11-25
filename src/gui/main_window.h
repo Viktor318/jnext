@@ -19,6 +19,7 @@
 #include "gui/window_stalls.h"           // hungarian-ui
 #include "platform/pointer_capture.h"
 #include "platform/quick_snapshot_chord.h"   // jnext::QuickAction (GH #386)
+#include "platform/sdcard_manager.h"        // GH #558: the file manager's session
 #include "debug/events.h"        // ClientId — GH #306 pause client
 
 class Emulator;
@@ -357,6 +358,7 @@ public:
     QAction* upgrade_sd_action()      const { return upgrade_sd_action_; }
     QAction* go_back_sd_action()      const { return go_back_sd_action_; }
     QAction* delete_backup_action()   const { return delete_backup_action_; }
+    QAction* sd_manager_action()      const { return sd_manager_action_; }   // GH #558
     /// Test seams of the live card-set flow (sdcard_menu_test): called just before the work (the card is out
     /// of the machine), and standing in for provision_sd_card in an upgrade. Empty in production.
     std::function<void()>                    card_op_before_work_for_test;
@@ -525,6 +527,9 @@ private:
     void on_insert_sd();
     void on_insert_sd2();
     void on_upgrade_sd();            // GH #555 S6
+    void on_sd_manager();            // GH #558
+    void finish_sd_manager();
+    void remember_sd_manager(const sdmanager::Remembered& r);
     void on_go_back_sd();
     void on_delete_backup();
     void run_card_op();              // after the eject: the upgrade or the go-back itself
@@ -790,6 +795,10 @@ private:
     QAction* upgrade_sd_action_    = nullptr;   // GH #555 S6
     QAction* go_back_sd_action_    = nullptr;
     QAction* delete_backup_action_ = nullptr;
+    QAction* sd_manager_action_    = nullptr;   // GH #558: File > SD Card File Manager...
+    // The file manager's pause/reset session (it holds an observer client on the Debugger this window was given, which
+    // outlives it, and detaches it on destruction).
+    sdmanager::SdManagerSession sd_session_;
     enum class CardOp { None, Upgrade, GoBack };
     CardOp   card_op_ = CardOp::None;           // set while the card is out for one of them
     bool     card_op_inserting_ = false;        // the card is being put back
@@ -869,6 +878,9 @@ private:
         std::optional<QString>          screenshot_dir;
         std::optional<QString>          quick_dir;
         std::optional<ScreenshotFormat> quick_format;
+        std::optional<QString>          sd_card;        // GH #558: the file manager's remembered card,
+        std::optional<QString>          sd_card_dir;    // its folder (stored form) and the host folder
+        std::optional<QString>          sd_host_dir;
     } session_;
 
     void remember_load_dir(const QString& dir);

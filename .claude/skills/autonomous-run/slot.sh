@@ -89,8 +89,9 @@ LOGDIR=${JNEXT_SLOT_REMOTE_LOG_DIR:-$HOME/tmp/remote-run}
 LIMIT=${JNEXT_SLOT_LOAD_LIMIT:-$(nproc 2>/dev/null || echo 12)}
 DIR=${JNEXT_SLOT_DIR:-}
 
-# Targets worth sending (the remote-run skill's D14 list, plus the full regression, regression-rows and test-affected).
-HEAVY_TARGETS=" unit-test unit-test-sdl unit-test-win unit-test-wasm wasm-browser-test regression regression-win regression-wasm regression-rows test-affected "
+# Targets worth sending (the remote-run skill's D14 list, plus the full regression, regression-rows and test-affected,
+# plus every target whose prerequisites include the PGO build gui-release: SLOT-68 derives that set from the Makefile).
+HEAVY_TARGETS=" unit-test unit-test-sdl unit-test-win unit-test-wasm wasm-browser-test regression regression-win regression-wasm regression-rows test-affected harness-selftest regression-confirm fuse-pgo gui-release gui-release-run "
 
 usage() { echo "usage: slot.sh --dir <slots dir> [--limit N] <command> [args...]" >&2; exit 2; }
 while [[ $# -gt 0 ]]; do
@@ -231,7 +232,7 @@ go_remote() {
         fb=(); [[ $i -ne $((n - 1)) ]] || fb=(--fallback-local "$OV_WT")
         admit_log "remote $h"
         echo "[slot.sh] sending to the remote host ($h), run id $id, log $LOGDIR/$id.log: ${OV_TARGETS[*]}" >&2
-        env JNEXT_REMOTE_RUN_HOST="$h" JNEXT_SLOT_NO_OVERFLOW=1 REMOTE_RUN_LOCAL_WRAP="$SELF --dir $DIR" \
+        env JNEXT_REMOTE_RUN_HOST="$h" JNEXT_SLOT_NO_OVERFLOW=1 REMOTE_RUN_LOCAL_WRAP="$SELF --dir $DIR" REMOTE_RUN_BASE_REPO="$OV_WT" \
             "$RR" --stream "${fb[@]}" --keep-going --id "$id" --log-dir "$LOGDIR" \
             "$OV_BRANCH" "$sha" "${OV_TARGETS[@]}" &
         pid=$!

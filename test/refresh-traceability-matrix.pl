@@ -130,6 +130,7 @@
 #     perl test/refresh-traceability-matrix.pl --planned-ids      # for the dup-ID gate
 #     perl test/refresh-traceability-matrix.pl --fails-from-logs=build/test-logs
 #                       # statuses from `make unit-test`'s own run (GH #547), no suite re-run
+#     perl test/refresh-traceability-matrix.pl --no-fails         # every suite taken as passing (GH #564)
 #
 # Exit status:
 #     0  clean
@@ -213,6 +214,11 @@ my $FPGA_SRC_OPT;
 # every traced suite itself, in parallel, and then asks this script for the
 # matrix; re-running them here one at a time was a second copy of the same run.
 my $FAILS_LOG_DIR;
+# --no-fails (GH #564). Every suite's FAIL set is empty: the matrix is generated as if every
+# suite passed, with no log and no run. `make test-affected` checks a changed matrix, generator or
+# manifest this way, because a subset run keeps no logs; whether a suite FAILS is the suite run's
+# verdict, and the full `make unit-test` still generates the matrix from the real logs.
+my $NO_FAILS;
 sub parse_args {
     for my $arg (@_) {
         if ($arg eq '--check-accounting') { $CHECK_ONLY = 1; next; }
@@ -241,6 +247,7 @@ sub parse_args {
         # Refused up front when it is not a directory: a typo'd path would
         # otherwise degrade silently into the unvalidated mode this exists to
         # make impossible.
+        if ($arg eq '--no-fails') { $NO_FAILS = 1; next; }
         if ($arg =~ /^--fails-from-logs=(.+)$/) {
             $FAILS_LOG_DIR = $1;
             fatal("--fails-from-logs='$1' is not a directory") unless -d $FAILS_LOG_DIR;
@@ -253,7 +260,7 @@ sub parse_args {
         }
         fatal("unknown option '$arg'\n"
             . "usage: refresh-traceability-matrix.pl [--check-accounting] "
-            . "[--planned-ids] [--dump-descriptions] [--fails-from-logs=DIR] "
+            . "[--planned-ids] [--dump-descriptions] [--fails-from-logs=DIR] [--no-fails] "
             . "[--fpga-src=PATH]");
     }
 }
@@ -1042,6 +1049,9 @@ my %NO_MATRIX_SECTION = (
     'sdcard_carry_test'      => 'SD card comparison / carry-over engine and rescue verbs (GH #555): the design in the issue and its plan as oracle, the hand-rolled FAT32 reader as the foreign reader (host feature, no core counterpart)',
     'sdcard_file_extract_test' => 'FatFs R0.15b and the FAT specification as oracle, with the issue and its plan (GH #557): host copy OUT of an SD card image, a host feature with no core counterpart; the core never reads a filesystem, only SPI blocks, which `## SD Card` traces',
     'sdcard_file_extract_posix_test' => 'SDFX-P01 moved out of sdcard_file_extract_test (a symbolic link needs POSIX, GH #557); same oracle',
+    'sdcard_card_ops_test' => 'FatFs R0.15b and the FAT specification as oracle, with the issue and its plan (GH #558): host-side file operations on an SD card image for the SD card file manager, a host feature with no core counterpart; the core never reads a filesystem, only SPI blocks, which `## SD Card` traces',
+    'sdcard_manager_test' => 'the issue and its decision comments (GH #558) and the debugger backend contract (CTL-01/02/12, SES-01) as oracle: the SD card file manager\'s host-side logic (the pause and reset session, the copy, move and delete runs, what the window opens on), a host feature with no core counterpart',
+    'sdcard_manager_window_test' => 'the issue and its decision comments (GH #558) as oracle: the SD card file manager window (two panes, read-only forcing, copy, move, rename, delete, New Folder, drops, the first-change warning, what it opens on and the emulator winning), a host GUI feature with no core counterpart',
     'sdcard_swap_lock_test'  => 'the live SD card change takes and drops the image lock (GH #555): the design in the issue as oracle (host feature, no core counterpart)',
     'sdcard_upgrade_test'    => 'SD card upgrade flow (GH #555): the design in the issue and its plan as oracle, the hand-rolled FAT32 reader as the foreign reader (host feature, no core counterpart)',
     'sdcard_backup_test'     => 'SD card backup, go back, delete and the File-menu state (GH #555): the design in the issue as oracle (host feature, no core counterpart)',
@@ -1354,6 +1364,7 @@ sub fails_from_log {
 sub run_fails {
     my ($binary) = @_;
     return $FAILS_CACHE{$binary} if exists $FAILS_CACHE{$binary};
+    return $FAILS_CACHE{$binary} = {} if $NO_FAILS;
     return $FAILS_CACHE{$binary} = fails_from_log($binary) if defined $FAILS_LOG_DIR;
     my $abs = "$ROOT/$binary";
 
