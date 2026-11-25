@@ -605,6 +605,22 @@ and brought back to 44.1 kHz by a 256-tap linear-phase FIR (`src/audio/oversampl
 SG-HU-01 (`subsystem_gain_test`: init and cold boot), SGC-HU-01/02 (`audio_gain_config_test`: jnext.conf) and
 SGP-HU-01..03 (`audio_gain_preferences_test`: the checkbox, live apply) cover the setting.
 
+### 5.6 DAC channel mixer (hungarian-ui)
+
+`audio/dac_mixer.h`: a volume and a place (left / centre / right) per Soundrive channel, the machine's routing
+(`soundrive.vhd:112-113`) by default. A host feature: it changes only the audible mix.
+
+| ID       | Test                                                   | Verification                                              |
+|----------|--------------------------------------------------------|-----------------------------------------------------------|
+| DM-HU-01 | Defaults, and back at the defaults                     | Bit-identical to the machine's A + B / C + D              |
+| DM-HU-02 | Every place of every channel                           | Whole on one side; centre: half on each                   |
+| DM-HU-03 | Mono write (A and D), every channel centred            | Same level as on the machine                              |
+| DM-HU-04 | A left, B and C centre, D right                        | The four channels add up as placed                        |
+| DM-HU-05 | One channel's volume                                   | Scales that channel alone                                 |
+| DM-HU-06 | DAC group volume, master volume, debugger mutes        | The volumes multiply; both mutes silence                  |
+| DM-HU-07 | Idle DAC at loud settings, overload                    | Exact 0 (oversampled too); clips, never wraps             |
+| DM-HU-08 | `Mixer::reset()`, bad channel numbers, oversampling    | Setting kept, ignored, same level                         |
+
 ## 6. NextREG Configuration
 
 ### 6.1 PSG Mode (NextREG 0x06)

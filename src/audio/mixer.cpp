@@ -111,12 +111,19 @@ void Mixer::reset()
     // DAC is unsigned around a physical midpoint. Scale only its signed
     // excursion, then restore the midpoint so every gain leaves silence at
     // exactly DAC_REST_LEVEL and cannot introduce a DC offset.
-    int32_t dac_L = DAC_REST_LEVEL +
-        scale((static_cast<int32_t>(dac.pcm_left()) << 2) - DAC_REST_LEVEL,
-              dac_gain_);
-    int32_t dac_R = DAC_REST_LEVEL +
-        scale((static_cast<int32_t>(dac.pcm_right()) << 2) - DAC_REST_LEVEL,
-              dac_gain_);
+    int32_t dac_L, dac_R;
+    if (dac_mixer_.active()) [[unlikely]] {
+        const DacMixer::Excursion e = dac_mixer_.excursion(dac, dac_gain_);
+        dac_L = DAC_REST_LEVEL + e.left;
+        dac_R = DAC_REST_LEVEL + e.right;
+    } else {
+        dac_L = DAC_REST_LEVEL +
+            scale((static_cast<int32_t>(dac.pcm_left()) << 2) - DAC_REST_LEVEL,
+                  dac_gain_);
+        dac_R = DAC_REST_LEVEL +
+            scale((static_cast<int32_t>(dac.pcm_right()) << 2) - DAC_REST_LEVEL,
+                  dac_gain_);
+    }
 
     // Pi I2S term: mirrors audio_mixer.vhd:89-90 (10-bit zero-extended
     // to 13-bit). Mixer does not own the I2s; Emulator wires it via

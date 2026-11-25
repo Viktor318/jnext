@@ -6,6 +6,7 @@
 #include "audio/beeper.h"
 #include "audio/turbosound.h"
 #include "audio/dac.h"
+#include "audio/dac_mixer.h"
 #include "audio/audio_mute.h"
 #include "audio/oversampler.h"
 #include "audio/audio_source_tap.h"
@@ -146,6 +147,11 @@ public:
     void set_dac_gain_db(float db);
     float dac_gain_db() const { return dac_gain_db_; }
 
+    /// hungarian-ui - volume and place of each DAC channel (audio/dac_mixer.h); a
+    /// host setting like the gains. dac_gain_db() stays the four channels' common volume.
+    DacMixer& dac_mixer() { return dac_mixer_; }
+    const DacMixer& dac_mixer() const { return dac_mixer_; }
+
     /// hungarian-ui - 4x oversampled output (audio.oversample; oversampler.h). A
     /// host setting like the gains: reset() keeps it. Turning it on starts the
     /// filter from silence.
@@ -214,6 +220,7 @@ private:
     float ay_gain_[3]{1.0f, 1.0f, 1.0f};
     float dac_gain_db_{0.0f};
     float dac_gain_{1.0f};
+    DacMixer    dac_mixer_;
     bool        oversample_{false};
     Oversampler oversampler_;
 };

@@ -4138,6 +4138,179 @@ void g_oversample()
     }
 }
 
+// ---- 5.6 DAC channel mixer (hungarian-ui, audio/dac_mixer.h) --------
+//
+// A host feature: the machine's routing (soundrive.vhd:112-113, A + B left,
+// C + D right) is the default and must stay bit-identical.
+
+struct Stereo { int l, r; };
+
+// One output sample of a steady DAC (A, B, C, D) through `mixer`.
+Stereo dm_sample(Mixer& mixer, const Dac& dac)
+{
+    Beeper beeper; TurboSound ts;
+    mixer.accumulate(beeper, ts, dac, 635);
+    mixer.emit_sample();
+    int16_t p[2] = {0, 0};
+    mixer.read_samples(p, 1);
+    return {p[0], p[1]};
+}
+
+Dac dm_dac(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
+{
+    Dac dac;
+    dac.write_channel(0, a); dac.write_channel(1, b); dac.write_channel(2, c); dac.write_channel(3, d);
+    return dac;
+}
+
+void dm_place(Mixer& m, DacMixer::Pan a, DacMixer::Pan b, DacMixer::Pan c, DacMixer::Pan d)
+{
+    const DacMixer::Pan p[4] = {a, b, c, d};
+    for (int ch = 0; ch < 4; ++ch) m.dac_mixer().set_pan(ch, p[ch]);
+}
+
+void g_dac_mixer()
+{
+    set_group("5.6 DAC mixer");
+    const std::string no_vhdl = "host feature, no VHDL";
+    using Pan = DacMixer::Pan;
+    constexpr int FULL = 127 * 4 * 4;   // one channel at 0xFF: (0xFF - 0x80) << 2, x4 to 16 bits
+
+    {
+        // Defaults, and back at the defaults after every control was moved.
+        Mixer never, back;
+        bool same = !never.dac_mixer().active();
+        for (int ch = 0; ch < 4; ++ch) {
+            same = same && never.dac_mixer().gain_db(ch) == 0.0f &&
+                   never.dac_mixer().pan(ch) == (ch < 2 ? Pan::Left : Pan::Right);
+            back.dac_mixer().set_gain_db(ch, -7.0f);
+            back.dac_mixer().set_pan(ch, Pan::Centre);
+        }
+        same = same && back.dac_mixer().active();
+        for (int ch = 0; ch < 4; ++ch) {
+            back.dac_mixer().set_gain_db(ch, 0.0f);
+            back.dac_mixer().set_pan(ch, ch < 2 ? Pan::Left : Pan::Right);
+        }
+        same = same && !back.dac_mixer().active();
+        Dac dac;
+        for (int i = 0; i < 500; ++i) {
+            dac.write_channel(i & 3, static_cast<uint8_t>(i * 37));
+            const Stereo x = dm_sample(never, dac), y = dm_sample(back, dac);
+            same = same && x.l == y.l && x.r == y.r &&
+                   x.l == ((dac.pcm_left() - 0x100) << 4) && x.r == ((dac.pcm_right() - 0x100) << 4);
+        }
+        check("DM-HU-01", "the defaults are the machine's routing, bit for bit, also after the controls were moved and put back",
+              same, "soundrive.vhd:112-113");
+    }
+    {
+        // Every place of every channel, one channel at 0xFF at a time.
+        bool ok = true;
+        for (int ch = 0; ch < 4; ++ch) {
+            uint8_t v[4] = {0x80, 0x80, 0x80, 0x80};
+            v[ch] = 0xFF;
+            const Dac dac = dm_dac(v[0], v[1], v[2], v[3]);
+            Mixer m;
+            m.dac_mixer().set_pan(ch, Pan::Left);
+            const Stereo l = dm_sample(m, dac);
+            m.dac_mixer().set_pan(ch, Pan::Right);
+            const Stereo r = dm_sample(m, dac);
+            m.dac_mixer().set_pan(ch, Pan::Centre);
+            const Stereo c = dm_sample(m, dac);
+            ok = ok && l.l == FULL && l.r == 0 && r.l == 0 && r.r == FULL && c.l == FULL / 2 && c.r == FULL / 2;
+        }
+        check("DM-HU-02", "left and right give the whole channel to one side, centre half to each", ok, no_vhdl);
+    }
+    {
+        // Port 0xDF (Specdrum) writes A and D (soundrive.vhd mono write): centred or not, the same level.
+        Dac dac;
+        dac.write_mono(0xFF);
+        Mixer machine, centred;
+        dm_place(centred, Pan::Centre, Pan::Centre, Pan::Centre, Pan::Centre);
+        const Stereo a = dm_sample(machine, dac), b = dm_sample(centred, dac);
+        check("DM-HU-03", "a mono write to A and D is as loud with every channel centred as on the machine",
+              a.l == FULL && a.r == FULL && b.l == FULL && b.r == FULL, "soundrive.vhd:85-109");
+    }
+    {
+        // Left-centre-right: A left, B and C centre, D right.
+        Mixer m;
+        dm_place(m, Pan::Left, Pan::Centre, Pan::Centre, Pan::Right);
+        const Stereo s = dm_sample(m, dm_dac(0x90, 0xA0, 0x60, 0x40));
+        // A +16, B +32, C -32, D -64 (x16): L = 16 + 16 - 16, R = 16 - 16 - 64.
+        check("DM-HU-04", "left-centre-right mixes the four channels as placed", s.l == 16 * 16 && s.r == -64 * 16, no_vhdl);
+    }
+    {
+        // Each volume moves its own channel only; -20 dB is a tenth.
+        bool ok = true;
+        for (int ch = 0; ch < 4; ++ch) {
+            Mixer m;
+            m.dac_mixer().set_gain_db(ch, -20.0f);
+            const Stereo s = dm_sample(m, dm_dac(0x8A, 0x9E, 0x8A, 0x9E));   // +10, +30, +10, +30
+            const int unit[4] = {10, 30, 10, 30};
+            int want[2] = {0, 0};
+            for (int k = 0; k < 4; ++k) want[k / 2] += (k == ch ? unit[k] / 10 : unit[k]) * 16;
+            ok = ok && s.l == want[0] && s.r == want[1] && m.dac_mixer().active();
+        }
+        check("DM-HU-05", "a channel's volume scales that channel alone", ok, no_vhdl);
+    }
+    {
+        // The DAC group volume and the master apply on top, the group mute and the channel mute silence.
+        const Dac dac = dm_dac(0x8A, 0x80, 0x80, 0x8A);
+        Mixer m;
+        m.dac_mixer().set_gain_db(0, 20.0f);   // A x10
+        m.set_dac_gain_db(-20.0f);             // the group / 10
+        const Stereo g = dm_sample(m, dac);
+        m.set_output_gain_db(20.0f);
+        const Stereo o = dm_sample(m, dac);
+        m.set_mute_mask(AudioMute::DAC);
+        const Stereo muted = dm_sample(m, dac);
+        m.set_mute_mask(AudioMute::NONE);
+        Dac ch_muted = dac;
+        ch_muted.set_channel_mute(0x01);
+        const Stereo a_muted = dm_sample(m, ch_muted);
+        check("DM-HU-06", "the DAC and master volumes multiply with it; the debugger's DAC and channel mutes still silence",
+              g.l == 160 && g.r == 16 && o.l == 1600 && o.r == 160 && muted.l == 0 && muted.r == 0 &&
+              a_muted.l == 0 && a_muted.r == 160, no_vhdl);
+    }
+    {
+        // Silence at any setting, oversampled or not; a loud setting clips at the rails, it does not wrap.
+        Mixer m;
+        dm_place(m, Pan::Left, Pan::Left, Pan::Left, Pan::Left);
+        for (int ch = 0; ch < 4; ++ch) m.dac_mixer().set_gain_db(ch, 24.0f);
+        const Stereo quiet = dm_sample(m, Dac{});
+        const Stereo high = dm_sample(m, dm_dac(0xFF, 0xFF, 0xFF, 0xFF)), low = dm_sample(m, dm_dac(0, 0, 0, 0));
+        Mixer os;
+        os.set_oversample(true);
+        os.dac_mixer().set_gain_db(1, 5.0f);
+        os.dac_mixer().set_pan(2, Pan::Centre);
+        bool zero = true;
+        for (int i = 0; i < 300; ++i) { const Stereo z = dm_sample(os, Dac()); zero = zero && z.l == 0 && z.r == 0; }
+        check("DM-HU-07", "an idle DAC is exact digital zero at any setting, and overload clips",
+              quiet.l == 0 && quiet.r == 0 && high.l == 32767 && high.r == 0 && low.l == -32768 && low.r == 0 && zero, no_vhdl);
+    }
+    {
+        // A host setting: Mixer::reset() keeps it; out-of-range channels are ignored; the
+        // oversampled path settles at the same level as the plain one.
+        Mixer plain, os;
+        for (Mixer* m : {&plain, &os}) {
+            m->dac_mixer().set_gain_db(0, -6.0f);
+            m->dac_mixer().set_pan(3, Pan::Left);
+            m->dac_mixer().set_gain_db(4, 24.0f);
+            m->dac_mixer().set_gain_db(-1, 24.0f);
+            m->dac_mixer().set_pan(4, Pan::Left);
+            m->dac_mixer().set_pan(-1, Pan::Right);
+            m->reset();
+        }
+        os.set_oversample(true);
+        const Dac dac = dm_dac(0xF0, 0x80, 0x70, 0xC0);
+        Stereo a{}, b{};
+        for (int i = 0; i < 400; ++i) { a = dm_sample(plain, dac); b = dm_sample(os, dac); }
+        check("DM-HU-08", "Mixer::reset() keeps the setting, other channel numbers are ignored, and oversampling mixes the same level",
+              plain.dac_mixer().gain_db(0) == -6.0f && plain.dac_mixer().pan(3) == Pan::Left &&
+              plain.dac_mixer().gain_db(1) == 0.0f && plain.dac_mixer().pan(0) == Pan::Left &&
+              a.l == b.l && a.r == b.r && a.r == -16 * 16 && a.l > 64 * 16 + 800 && a.l < 64 * 16 + 950, no_vhdl);
+    }
+}
+
 }  // namespace
 
 int main() {
@@ -4166,6 +4339,7 @@ int main() {
     g_beeper();        std::printf("  4   Beeper -- done\n");
     g_mixer();         std::printf("  5   Mixer -- done\n");
     g_oversample();    std::printf("  5.5 Oversampling -- done\n");
+    g_dac_mixer();     std::printf("  5.6 DAC mixer -- done\n");
     g_nextreg();       std::printf("  6   NextREG -- done\n");
     g_io();            std::printf("  7   IO -- done\n");
 

@@ -44,6 +44,9 @@ public:
     uint16_t pcm_left() const  { return static_cast<uint16_t>(aud_[0]) + aud_[1]; }
     uint16_t pcm_right() const { return static_cast<uint16_t>(aud_[2]) + aud_[3]; }
 
+    /// One channel's audible byte, for the host's DAC channel mixer (audio/dac_mixer.h).
+    uint8_t audible_channel(int ch) const { return aud_[ch & 3]; }
+
     /// Debugger-only per-channel mute (bit k = channel k, A=0; AudioChannelMute::DAC_A..D >> 9).
     /// It changes only the audible copy `aud_`, kept up to date on each write and on a
     /// mute change, so the mixer's read costs the same muted or not. The registers
