@@ -1604,6 +1604,22 @@ The entries say which frontends use the key: the Qt window, the SDL-only build
     for a few per cent more CPU. WAV and video recordings include it. Default
     false. All frontends.
 
+`audio.dac_a_gain_db`, `audio.dac_b_gain_db`, `audio.dac_c_gain_db`, `audio.dac_d_gain_db` *-24..24*
+:   The gain of each Soundrive DAC channel in dB, on top of `audio.gain_dac_db`.
+    Default 0. All frontends.
+
+`audio.dac_a_pan`, `audio.dac_b_pan`, `audio.dac_c_pan`, `audio.dac_d_pan` *left|centre|right*
+:   Where each DAC channel is heard; *centre* gives half of it to each side. The
+    default is the machine's own: A and B left, C and D right. All frontends.
+
+`audio.ay_stereo` *machine|abc|acb*
+:   The stereo layout of the three AY chips. Default *machine*: as the program
+    set it. Only the sound changes, never what a program reads. All frontends.
+
+`audio.ay0_mono`, `audio.ay1_mono`, `audio.ay2_mono` *true|false*
+:   Hear that AY chip in mono. A chip the program set to mono is mono without it.
+    Default false. All frontends.
+
 `paths.last_load_dir` *PATH*
 :   The directory the Load dialogs open in. The Qt window.
 
@@ -3778,6 +3794,8 @@ Capture Layer 2 on its own, then the ULA and sprites together:
     Host gains are stored under `[audio]` as `gain_db` (master),
     `gain_beeper_db`, `gain_ay0_db`, `gain_ay1_db`, `gain_ay2_db`, and
     `gain_dac_db`; `oversample` (`true`/`false`) is the 4x oversampled sound.
+    `dac_a_gain_db` to `dac_d_gain_db` and `dac_a_pan` to `dac_d_pan` are the DAC
+    channel mixer, `ay_stereo` and `ay0_mono` to `ay2_mono` the AY stereo layout.
     The degradation policy is stored under `[startup]` as `when_slow_prefer`
     (`audio` or `video`, the persistent form of **\--when-slow-prefer**); an
     unrecognised value keeps the default rather than changing how the emulator

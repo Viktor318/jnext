@@ -416,6 +416,7 @@ bool Emulator::init(const EmulatorConfig& cfg, bool preserve_memory)
         mixer_.set_ay_gain_db(chip, cfg.audio_gain_ay_db[chip]);
     mixer_.set_dac_gain_db(cfg.audio_gain_dac_db);
     mixer_.set_oversample(cfg.audio_oversample);
+    set_audio_channels(cfg.audio_channels);
     mixer_.set_capture_callback(cfg.audio_capture_callback);
     ctc_.reset();
     dma_.reset();
@@ -16525,4 +16526,47 @@ EmulatorConfig Emulator::warm_start_boot_config(const EmulatorConfig& live)
     boot_cfg.rtc_fixed_tm.tm_min  = 55;
     boot_cfg.rtc_fixed_tm.tm_wday = 5;
     return boot_cfg;
+}
+
+// hungarian-ui - the host's channel settings (audio/audio_channels.h).
+void Emulator::set_audio_channels(const AudioChannels& c)
+{
+    for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
+        mixer_.dac_mixer().set_gain_db(ch, c.dac_gain_db[ch]);
+        mixer_.dac_mixer().set_pan(ch, c.dac_pan[ch]);
+    }
+    uint8_t mono = 0;
+    for (int chip = 0; chip < 3; ++chip)
+        if (c.ay_mono[chip]) mono |= static_cast<uint8_t>(1u << chip);
+    turbosound_.set_stereo_override(c.ay_stereo, mono);
+}
+
+AudioChannels Emulator::audio_channels() const
+{
+    AudioChannels c;
+    for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
+        c.dac_gain_db[ch] = mixer_.dac_mixer().gain_db(ch);
+        c.dac_pan[ch]     = mixer_.dac_mixer().pan(ch);
+    }
+    c.ay_stereo = turbosound_.stereo_order();
+    for (int chip = 0; chip < 3; ++chip) c.ay_mono[chip] = (turbosound_.mono_force() >> chip) & 1;
+    return c;
+}
+
+AyLayouts Emulator::ay_layouts() const
+{
+    AyLayouts out;
+    for (int chip = 0; chip < 3; ++chip) {
+        AyChipLayout& m = out.machine[chip];
+        const uint8_t pan = turbosound_.pan(chip);
+        m.left   = (pan & 0x02) != 0;   // turbosound.vhd:323-330
+        m.right  = (pan & 0x01) != 0;
+        m.sounds = (turbosound_.enabled() || turbosound_.selected_index() == chip) && !turbosound_.reset_held() && pan != 0;
+        m.acb    = turbosound_.stereo_mode();
+        m.mono   = (turbosound_.mono_mode() >> chip) & 1;
+        out.heard[chip]      = m;
+        out.heard[chip].acb  = turbosound_.audible_acb();
+        out.heard[chip].mono = turbosound_.audible_mono(chip);
+    }
+    return out;
 }

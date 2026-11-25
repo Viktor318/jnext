@@ -1739,6 +1739,24 @@ use the key: the Qt window, the SDL-only build (both interactive) or
     the DACs, for a few per cent more CPU. WAV and video recordings
     include it. Default false. All frontends.
 
+`audio.dac_a_gain_db`, `audio.dac_b_gain_db`, `audio.dac_c_gain_db`, `audio.dac_d_gain_db` *-24..24*
+:   The gain of each Soundrive DAC channel in dB, on top of
+    `audio.gain_dac_db`. Default 0. All frontends.
+
+`audio.dac_a_pan`, `audio.dac_b_pan`, `audio.dac_c_pan`, `audio.dac_d_pan` *left\|centre\|right*
+:   Where each DAC channel is heard; *centre* gives half of it to each
+    side. The default is the machine’s own: A and B left, C and D right.
+    All frontends.
+
+`audio.ay_stereo` *machine\|abc\|acb*
+:   The stereo layout of the three AY chips. Default *machine*: as the
+    program set it. Only the sound changes, never what a program reads.
+    All frontends.
+
+`audio.ay0_mono`, `audio.ay1_mono`, `audio.ay2_mono` *true\|false*
+:   Hear that AY chip in mono. A chip the program set to mono is mono
+    without it. Default false. All frontends.
+
 `paths.last_load_dir` *PATH*
 :   The directory the Load dialogs open in. The Qt window.
 

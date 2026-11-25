@@ -49,7 +49,11 @@ with `gain_beeper_db`, `gain_ay0_db`, `gain_ay1_db`, `gain_ay2_db`, and
 invalid value falls back to 0 dB. An explicit matching `--audio-gain-...-db`
 value overrides the saved setting for that run. `oversample` (`true` or `false`,
 default `false`) is the 4x oversampled sound of the Preferences **Audio** tab;
-`--set audio.oversample=true` turns it on for one run.
+`--set audio.oversample=true` turns it on for one run. `dac_a_gain_db` to
+`dac_d_gain_db` (-24 to +24) and `dac_a_pan` to `dac_d_pan` (`left`, `centre` or
+`right`) are the DAC channels of that tab, `ay_stereo` (`machine`, `abc` or `acb`)
+and `ay0_mono` to `ay2_mono` (`true` or `false`) its AY channels; each has a
+`--set` form too.
 
 The Source tab's colour scheme is stored in the `[source]` section as `colour_scheme`: `auto`, `light`,
 `dark` or `borland`. Anything else in that key keeps `auto`. It is the persistent form of the

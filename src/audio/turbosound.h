@@ -5,6 +5,7 @@
 #include "audio/ay_chip.h"
 
 namespace jnext { namespace save { class StateDesc; } }
+#include "audio/audio_channels.h"
 #include "audio/audio_mute.h"
 
 /// What an AY port write did, for the debugger's dropped-write counters (GH #530).
@@ -151,7 +152,7 @@ public:
     /// the machine made mono stays mono. Pan and TurboSound enable are never overridden. Like the
     /// debugger's mutes it changes only the AUDIBLE sum, on the same cold path; the hardware sum,
     /// the NextREGs and every saved state never see it, and reset() / load_state() leave it alone.
-    enum class StereoOrder : uint8_t { Machine, Abc, Acb };
+    using StereoOrder = AyStereoOrder;
     void set_stereo_override(StereoOrder order, uint8_t mono) {
         stereo_order_ = order;
         mono_force_ = mono & 0x07;

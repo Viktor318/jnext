@@ -52,6 +52,23 @@ WAV/video recording; large positive boosts can clip.
 176.4 kHz and filters down to 44.1 kHz, which gives clearer high notes, above all
 from the DACs, for a few per cent more CPU.
 
+**AY channels** overrides how the three AY chips are heard. **AY stereo**
+(`audio.ay_stereo`) chooses ABC or ACB for all of them instead of what the
+program set, as the machine's one switch does; **As the machine** is the
+default. A **Mono** box (`audio.ay0_mono` to `audio.ay2_mono`) puts that chip in
+mono; a chip the program put in mono stays mono without it. **Machine now** shows
+what the running program has set for each chip (and *silent* for one that is not
+in the mix), **As heard** the same with your settings applied.
+
+**DAC channels** gives each of the four Soundrive DAC channels its own gain
+(`audio.dac_a_gain_db` and so on, on top of the DAC slider) and its own place:
+left, centre or right (`audio.dac_a_pan` and so on). Centre gives half of the
+channel to each side. **Layout** sets the four places at once; the default is the
+machine's own, A and B left, C and D right.
+
+Both groups change only what you hear and what a recording of it holds: programs,
+snapshots and the debugger's scopes and stems see the machine as it is.
+
 **Network** holds the emulated ESP-01 WiFi module: an **Enable** checkbox and
 an **Allowed hosts** box, one host name per line — a comma separates entries
 too, so a line copied out of the config file works. This is the permanent form of

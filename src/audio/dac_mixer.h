@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include "audio/audio_channels.h"
 #include "audio/dac.h"
 
 /// hungarian-ui - the DAC channel mixer: a volume and a place (left, centre or
@@ -12,11 +13,9 @@
 /// snapshots and the debugger's source tap and stems never see it.
 class DacMixer {
 public:
-    enum class Pan : uint8_t { Left, Centre, Right };
-    static constexpr int CHANNELS = 4;   // A, B, C, D
-
-    /// The machine's own routing (soundrive.vhd:112-113).
-    static constexpr Pan machine_pan(int ch) { return ch < 2 ? Pan::Left : Pan::Right; }
+    using Pan = DacPan;
+    static constexpr int CHANNELS = DAC_MIX_CHANNELS;
+    static constexpr Pan machine_pan(int ch) { return dac_machine_pan(ch); }
 
     DacMixer() { for (int ch = 0; ch < CHANNELS; ++ch) pan_[ch] = machine_pan(ch); refresh_(); }
 

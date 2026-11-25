@@ -376,6 +376,11 @@ averages over four parts of each output sample (176.4 kHz) and low-passes them w
 single average in `emit_sample()`. It removes the images of stepped DAC signals that the box filter lets fold back, and the
 box filter's roll-off. Like the gains it is a host setting.
 
+`AudioChannels` (`src/audio/audio_channels.h`) holds two more host settings. `DacMixer` (`src/audio/dac_mixer.h`) gives each
+DAC channel a gain and a place; at its defaults, the machine's routing, `mix()` takes its integer path and never calls it.
+`TurboSound::set_stereo_override()` replaces ABC/ACB and forces mono per chip in the audible sum only, on the cold path of
+the debugger's channel mutes (one more bit of the same test). The hardware sum, the source tap and the stems see neither.
+
 Output is stereo `int16_t` at 44 100 Hz into a 4096-pair ring buffer, about four
 frames' worth, which drops the oldest sample on overrun. Two optional callbacks
 tap the same samples, one for `--record` video muxing and one for `--wav-record`

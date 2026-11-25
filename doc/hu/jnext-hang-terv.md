@@ -77,7 +77,7 @@ A DAC-írások szórásának csökkentése (a hang szempontjából a lejárat pi
 - **Mérés** (26.11a-s kártya, `dune_ecolove`, 30 különböző indítási képkocka): javítás előtt 6 hibás indítás, javítva 0; 21 szakasz a 0-s leállítás és újraindítás után: előtte 2 rossz fázisú, javítva 0. Csak a második javítással a zene elnémul (a kettős feloldás eltakarta az elveszett RETI-t), ezért a kettő együtt kellett.
 - **Tesztek:** IM2C-08 és IM2C-09 a VHDL-hez igazítva (a régi, lehívásonkénti modellt rögzítették); új IM2C-HU-01..03, IM2P-HU-01..02. Mutációval mindegyik ellenőrizve.
 - **Viktor próbája (2026-11-23, `6f4a015` Windows-build): a recsegés megszűnt.**
-- **Ami a tervből marad** (mind Viktor döntésére vár): állítható hangpuffer (a párbeszédablakok alatti akadásra, kívánságlista 3.), DAC-keverő, „tévé” szűrő. A jobb mintavételezés kész (lent).
+- **Ami a tervből marad** (mind Viktor döntésére vár): állítható hangpuffer (a párbeszédablakok alatti akadásra, kívánságlista 3.), „tévé” szűrő. A jobb mintavételezés és a DAC-keverő kész (lent).
 
 ## 4×-es túlmintavétel (2026-11-23, Viktor jóváhagyásával)
 
@@ -88,3 +88,14 @@ Viktor két WAV-ot hasonlított össze (Jarresque, a mostani és a 4×-es módsz
 - **Mérés:** 3 kHz-es, 31,25 kHz-en lépcsőzött hang visszahajló összetevői legalább 30 dB-lel kisebbek (OS-HU-04); 16 kHz-en a mai −2 dB helyett 0,3 dB-en belül. A Jarresque-on a program kimenete a meghallgatott WAV-val 0,37 egységen belül egyezik; kikapcsolva bitre a korábbi. Sebesség (NXModPlayer, Release, SDL-build): kikapcsolva nem lassabb, bekapcsolva 4–6%. Késleltetés 0,7 ms; átkapcsoláskor apró pattanás lehet.
 - **Tesztek:** OS-HU-01..07, SG-HU-01, SGC-HU-01..02, SGP-HU-01..03, mutációval ellenőrizve.
 - **ZEsarUX:** nem kell, a DAC ott a jó minőségű hangnál már sávkorlátozott (Blip_Buffer, `audio_hq_dac`, 48 kHz).
+
+## DAC-keverő és AY sztereó (2026-11-25, Viktor jóváhagyott terve szerint)
+
+A felület Viktorral rajzról rajzra készült (hat vázlat); a döntései: csatornánként hangerő és háromállású hely; az AY-nál a gép felépítése (egy közös ABC/ACB, csipenként mono pipa), „A gép most” és „Ahogy szól” sor; keretek, keskeny listák, üres sor a keretek fölött; a címek kötőjellel.
+
+- **DAC-keverő:** `src/audio/dac_mixer.h`, csatornánként −24…+24 dB és bal / közép / jobb; alapból a gép szerint (A, B bal; C, D jobb), akkor a `mix()` egész számos útja fut (bitre a mai, +0,1 ns a 4,7-ből). A közép fele-fele arányban adja a jelet a két oldalra: a `$DF` (A+D) középre téve ugyanolyan hangos, egy csatorna viszont oldalanként halkabb. A meglévő DAC csúszka a négy közös hangereje.
+- **AY:** `TurboSound::set_stereo_override()`; ABC vagy ACB mindhárom csipre a NextReg 0x08 helyett, mono csipenként. A mono csak hozzáad: a program által monóra állított csip mono marad, a program bal/jobb kapcsolása is. A hibakereső némításának mellékútján fut, kikapcsolva a sebesség a régi.
+- **Csak a hallható hang változik:** a NextReg-ek, a pillanatkép, a visszatekerés, az oszcilloszkóp és a sávfelvétel a gép szerinti jelet látja; a WAV- és videófelvétel a hallhatót.
+- **Beállítások > Hang:** „AY-csatornák” és „DAC-csatornák” keret; az „Elrendezés” lista a négy helyből számolt (kézi eltérésnél „Egyéni”), nem külön beállítás. „A gép most” a program beállítása, „Ahogy szól” a felülírással együtt, fél másodpercenként frissül; a hangerőt és a némítást nem mutatja.
+- **12 kulcs:** `audio.dac_a_gain_db`…`dac_d_gain_db`, `audio.dac_a_pan`…`dac_d_pan`, `audio.ay_stereo`, `audio.ay0_mono`…`ay2_mono` (`src/audio/audio_channels.h` egyben viszi végig; a KeyId-k sorrendje számít).
+- **Tesztek:** DM-HU-01..08, AS-HU-01..08 (az AY-é kimerítő: 16 gépállás × 24 felülírás, ikerpárhoz mérve), SG-HU-02..03, SGC-HU-03..05, SGP-HU-04..09, SETK-HU-01; a DM és AS sorok mutációval ellenőrizve.

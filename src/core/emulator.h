@@ -1073,6 +1073,13 @@ public:
     }
     uint8_t audio_mute_mask() const { return audio_mute_mask_; }
 
+    /// hungarian-ui - the host's DAC channel mixer and AY stereo override (audio/audio_channels.h).
+    /// Host settings like the gains: only the audible mix changes, and a reset keeps them.
+    void set_audio_channels(const AudioChannels& c);
+    AudioChannels audio_channels() const;
+    /// The AY chips' layouts, as the machine has them and as they are heard (Preferences).
+    AyLayouts ay_layouts() const;
+
     /// Debugger-only per-channel mute (AudioChannelMute bits: 9 AY, 4 DAC). Same
     /// rules as the source mute above; composes with it. The AY bits go to
     /// TurboSound, the DAC bits to the Dac (its audible copy).

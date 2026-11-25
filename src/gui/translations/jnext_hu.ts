@@ -3600,10 +3600,6 @@ amíg ez él, a nyilak és a Szóköz nem ZX-billentyűként működnek.</transl
         <translation>A Specdrum, Soundrive és Covox DAC hangjának erősítése.</translation>
     </message>
     <message>
-        <source>0 dB preserves each source. Subsystem gains are applied before the master gain; large boosts may clip.</source>
-        <translation>A 0 dB minden forrást változatlanul hagy. A részegységek erősítése a fő erősítés előtt hat; a nagy emelés torzíthat.</translation>
-    </message>
-    <message>
         <source>Enable the emulated ESP-01 WiFi module</source>
         <translation>Az emulált ESP-01 WiFi-modul bekapcsolása</translation>
     </message>
@@ -3912,6 +3908,114 @@ Csak a módosított hozzárendelések kerülnek a beállításfájlba.</translat
     <message>
         <source>Mixes at 176.4 kHz and filters down to 44.1 kHz: clearer high notes for a few per cent more CPU. Takes effect at once; recordings include it.</source>
         <translation>176,4 kHz-en kever, majd 44,1 kHz-re szűr: tisztább magas hangok, néhány százalékkal több processzoridőért. Azonnal életbe lép; a felvételekben is benne van.</translation>
+    </message>
+    <message>
+        <source>0 dB preserves each source. Subsystem gains are applied before the master gain; large boosts may clip. The DAC channel gains multiply with the DAC gain.</source>
+        <translation>A 0 dB minden forrást változatlanul hagy. A részegységek erősítése a fő erősítés előtt hat; a nagy emelés torzíthat. A DAC-csatornák hangereje a DAC csúszkával együtt érvényes.</translation>
+    </message>
+    <message>
+        <source>AY channels</source>
+        <translation>AY-csatornák</translation>
+    </message>
+    <message>
+        <source>As the machine</source>
+        <translation>Gép szerint</translation>
+    </message>
+    <message>
+        <source>The channel order of all three AY chips. ABC: A left, B centre, C right. ACB: A left, C centre, B right. Programs still read what they set.</source>
+        <translation>A három AY-csip csatornáinak elrendezése. ABC: A bal, B közép, C jobb. ACB: A bal, C közép, B jobb. A programok továbbra is azt olvassák vissza, amit beállítottak.</translation>
+    </message>
+    <message>
+        <source>Mono:</source>
+        <translation>Mono:</translation>
+    </message>
+    <message>
+        <source>Hear this chip in mono. A chip the program itself set to mono stays mono without it.</source>
+        <translation>Ez a csip monóban szól. Amelyiket maga a program állította monóra, az e nélkül is mono marad.</translation>
+    </message>
+    <message>
+        <source>AY stereo:</source>
+        <translation>AY sztereó:</translation>
+    </message>
+    <message>
+        <source>Machine now:</source>
+        <translation>A gép most:</translation>
+    </message>
+    <message>
+        <source>What the running program (or config.ini) has set.</source>
+        <translation>Amit a futó program (vagy a config.ini) beállított.</translation>
+    </message>
+    <message>
+        <source>As heard:</source>
+        <translation>Ahogy szól:</translation>
+    </message>
+    <message>
+        <source>The same with the settings above applied.</source>
+        <translation>Ugyanez a fenti beállításokkal együtt.</translation>
+    </message>
+    <message>
+        <source>silent</source>
+        <translation>nem szól</translation>
+    </message>
+    <message>
+        <source>mono</source>
+        <translation>mono</translation>
+    </message>
+    <message>
+        <source>%1, left only</source>
+        <translation>%1, csak bal</translation>
+    </message>
+    <message>
+        <source>%1, right only</source>
+        <translation>%1, csak jobb</translation>
+    </message>
+    <message>
+        <source>DAC channels</source>
+        <translation>DAC-csatornák</translation>
+    </message>
+    <message>
+        <source>As the machine (A, B left; C, D right)</source>
+        <translation>Gép szerint (A, B bal; C, D jobb)</translation>
+    </message>
+    <message>
+        <source>Left, centre, right (A left; B, C centre; D right)</source>
+        <translation>Bal–közép–jobb (A bal; B, C közép; D jobb)</translation>
+    </message>
+    <message>
+        <source>Mono</source>
+        <translation>Mono</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <translation>Egyéni</translation>
+    </message>
+    <message>
+        <source>Sets the places of the four channels below. Their gains are not changed.</source>
+        <translation>Beállítja az alábbi négy csatorna helyét. A hangerejük nem változik.</translation>
+    </message>
+    <message>
+        <source>Layout:</source>
+        <translation>Elrendezés:</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Bal</translation>
+    </message>
+    <message>
+        <source>Centre</source>
+        <translation>Közép</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Jobb</translation>
+    </message>
+    <message>
+        <source>Host gain of DAC channel %1, on top of the DAC gain.</source>
+        <translation>A(z) %1 DAC-csatorna hangereje, a DAC csúszkán felül.</translation>
+    </message>
+    <message>
+        <source>Where DAC channel %1 is heard. Centre gives half of it to each side.</source>
+        <translation>Hol szól a(z) %1 DAC-csatorna. Középen a jel fele-fele arányban jut a két oldalra.</translation>
     </message>
 </context>
 <context>

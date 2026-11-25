@@ -11,6 +11,11 @@
 #include <QPushButton>
 #include <QSlider>
 #include <QCheckBox>
+#include <QComboBox>
+#include <QElapsedTimer>
+#include <QLabel>
+#include <QRadioButton>
+#include <QTextDocument>
 
 #include <cstdio>
 #include "../row_id.h"
@@ -132,6 +137,107 @@ int main(int argc, char** argv)
     collected.audio_oversample = false;
     window.apply_startup_config(collected);
     check("SGP-HU-03", live_on && !emulator.mixer().oversample());
+
+    // hungarian-ui: Audio > DAC channels and AY channels.
+    {
+        AppConfigData cfg;
+        PreferencesDialog dlg(cfg);
+        auto* layout = dlg.findChild<QComboBox*>(QStringLiteral("dacLayoutCombo"));
+        auto* order = dlg.findChild<QComboBox*>(QStringLiteral("ayStereoCombo"));
+        auto* apply = dlg.findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Apply);
+        const auto radio = [&dlg](const char* name) { return dlg.findChild<QRadioButton*>(QString::fromLatin1(name)); };
+        const auto places = [&radio]() {
+            QString s;
+            for (const char* ch : {"A", "B", "C", "D"})
+                for (const char* p : {"Left", "Centre", "Right"}) {
+                    auto* b = radio((std::string("dac") + ch + p + "Radio").c_str());
+                    if (b && b->isChecked()) s += QLatin1Char(p[0]);
+                }
+            return s;
+        };
+        const auto pick = [layout](int i) { layout->setCurrentIndex(i); };
+        bool sliders = true;
+        for (const char* n : {"audioDacAGainDbSlider", "audioDacBGainDbSlider", "audioDacCGainDbSlider", "audioDacDGainDbSlider"}) {
+            QSlider* s = slider(dlg, n);
+            sliders = sliders && s && s->minimum() == -24 && s->maximum() == 24 && s->value() == 0;
+        }
+        check("SGP-HU-04", sliders && layout && order && layout->currentIndex() == 0 && order->currentIndex() == 0 &&
+                               places() == QStringLiteral("LLRR") && !apply->isEnabled());
+
+        // The list sets the four places and follows them; "Custom" is not a layout to pick.
+        pick(1);
+        const bool lcr = places() == QStringLiteral("LCCR") && layout->currentIndex() == 1 && apply->isEnabled();
+        pick(2);
+        const bool mono = places() == QStringLiteral("CCCC") && layout->currentIndex() == 2;
+        pick(0);
+        const bool machine = places() == QStringLiteral("LLRR") && !apply->isEnabled();
+        pick(3);
+        const bool snap = places() == QStringLiteral("LLRR") && layout->currentIndex() == 0 && !apply->isEnabled();
+        radio("dacBRightRadio")->setChecked(true);
+        const bool custom = places() == QStringLiteral("LRRR") && layout->currentIndex() == 3 && apply->isEnabled();
+        radio("dacBLeftRadio")->setChecked(true);
+        check("SGP-HU-05", lcr && mono && machine && snap && custom && layout->currentIndex() == 0 && !apply->isEnabled());
+
+        // Everything is collected, shown again and applied live; Apply greys out again.
+        AppConfigData got;
+        QObject::connect(&dlg, &PreferencesDialog::apply_requested, [&got](const AppConfigData& c) { got = c; });
+        pick(1);
+        slider(dlg, "audioDacAGainDbSlider")->setValue(-3);
+        slider(dlg, "audioDacDGainDbSlider")->setValue(4);
+        order->setCurrentIndex(2);
+        dlg.findChild<QCheckBox*>(QStringLiteral("ay1MonoCheck"))->setChecked(true);
+        apply->click();
+        AudioChannels want;
+        want.dac_gain_db[0] = -3.0f;
+        want.dac_gain_db[3] = 4.0f;
+        want.dac_pan[1] = want.dac_pan[2] = DacPan::Centre;
+        want.ay_stereo = AyStereoOrder::Acb;
+        want.ay_mono[1] = true;
+        const bool collected_ok = got.audio_channels == want && !apply->isEnabled();
+        PreferencesDialog again(got);
+        AppConfigData got2;
+        QObject::connect(&again, &PreferencesDialog::apply_requested, [&got2](const AppConfigData& c) { got2 = c; });
+        again.findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click();
+        check("SGP-HU-06", collected_ok && got2.audio_channels == want &&
+                               again.findChild<QComboBox*>(QStringLiteral("dacLayoutCombo"))->currentIndex() == 1);
+        window.apply_startup_config(got);
+        check("SGP-HU-07", emulator.audio_channels() == want);
+
+        // The two rows: what the machine has, and what is heard.
+        const auto text = [&dlg](const char* name) {
+            QTextDocument doc;
+            auto* l = dlg.findChild<QLabel*>(QString::fromLatin1(name));
+            doc.setHtml(l ? l->text() : QString());
+            return doc.toPlainText();
+        };
+        const bool dash = text("ayMachine0Label") == QStringLiteral("AY #0: -") && text("ayHeard2Label") == QStringLiteral("AY #2: -");
+        TurboSound& ts = emulator.turbosound();
+        ts.set_enabled(true);
+        ts.set_stereo_mode(false);
+        ts.set_mono_mode(0x04);
+        ts.reg_addr(0xDE);   // chip 1: left only
+        dlg.set_ay_layout_source([&emulator]() { return emulator.ay_layouts(); });
+        const bool rows = text("ayMachine0Label") == QStringLiteral("AY #0: ABC") &&
+                          text("ayMachine1Label") == QStringLiteral("AY #1: ABC, left only") &&
+                          text("ayMachine2Label") == QStringLiteral("AY #2: mono") &&
+                          text("ayHeard0Label") == QStringLiteral("AY #0: ACB") &&
+                          text("ayHeard1Label") == QStringLiteral("AY #1: mono, left only") &&
+                          text("ayHeard2Label") == QStringLiteral("AY #2: mono");
+        ts.reg_addr(0xBE);   // chip 1: right only; the timer brings it
+        ts.set_enabled(false);
+        QElapsedTimer clock;
+        clock.start();
+        while (clock.elapsed() < 5000 && text("ayMachine0Label") != QStringLiteral("AY #0: silent"))
+            QApplication::processEvents(QEventLoop::AllEvents, 50);
+        check("SGP-HU-08", dash && rows && text("ayMachine0Label") == QStringLiteral("AY #0: silent") &&
+                               text("ayHeard1Label") == QStringLiteral("AY #1: mono, right only") && !apply->isEnabled());
+
+        // The lists are no wider than their text needs.
+        dlg.resize(1400, dlg.height());
+        dlg.show();
+        QApplication::processEvents();
+        check("SGP-HU-09", layout->width() <= layout->sizeHint().width() && order->width() <= order->sizeHint().width());
+    }
 
     std::printf("Total: %d Passed: %d Failed: %d Skipped: 0\n",
                 passed + failed, passed, failed);

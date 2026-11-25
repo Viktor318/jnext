@@ -55,8 +55,9 @@ Alap: upstream 1.3.78 (2026-11-25). Kész a `hungarian-ui`-n:
 - DMA-időzítés a KS3 mérése szerint (`6cf89c6`, `188907b`, `e5b2fef`): 3,5 MHz-en pontosan a KS3-é, 28 MHz-en 1 soron belül;
 - az NXModPlayer recsegése: két IM2 RETI-hiba javítva (`6f4a015`), Viktor kipróbálta: megszűnt;
 - 4×-es túlmintavétel (`audio.oversample`, alapból ki; `doc/hu/jnext-hang-terv.md` vége);
-- a Beállítások Alkalmaz gombja csak változás után aktív (`1c2ad00`).
+- a Beállítások Alkalmaz gombja csak változás után aktív (`1c2ad00`);
+- DAC-keverő és AY sztereó felülírása (Beállítások > Hang; `doc/hu/jnext-hang-terv.md` vége).
 
-Következik: a **hangterv felülvizsgált sorrendje Viktor döntésére vár** (`doc/hu/jnext-hang-terv.md` vége: előbb mérés az ő gépén, aztán állítható hangpuffer – ez a párbeszédablakok alatti akadásra is –, DAC-keverő, „tévé” szűrő; a mérés és a jobb mintavételezés kész). Felmérésre vár: az átméretezhető ablak (7.), a virtuális billentyűzet (5.), az állapotmentés kilépéskor (6.). A blitter (3.03-as core) egyelőre nem kell (Viktor, 2026-11-21).
+Következik: a **hangterv felülvizsgált sorrendje Viktor döntésére vár** (`doc/hu/jnext-hang-terv.md` vége: előbb mérés az ő gépén, aztán állítható hangpuffer – ez a párbeszédablakok alatti akadásra is –, „tévé” szűrő; a mérés és a jobb mintavételezés kész). Felmérésre vár: az átméretezhető ablak (7.), a virtuális billentyűzet (5.), az állapotmentés kilépéskor (6.). A blitter (3.03-as core) egyelőre nem kell (Viktor, 2026-11-21).
 
 A részletek (döntések, tervek, a további kívánságlista, hang, DMA) a tárolóban vannak: **`doc/hu/jnext-atadas.md`** (és mellette `jnext-magyaritas.md`, `jnext-dma-meres.md`, `jnext-hang-terv.md`, `jnext-blitter-becsles.md`). Ezeket munka közben olvasd és frissítsd; ha új döntés vagy terv születik, oda írd be, ugyanabban a commitban. A ZEsarUX-beszélgetésben készült JNEXT-jegyzetek a claude.ai-projektbe kerülhetnek; ha Viktor ilyet hoz, vezesd át ide.

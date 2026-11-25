@@ -28,6 +28,7 @@
 // included unconditionally because the parsed value is declared alongside the
 // other options, before the frontend type is known.
 #include "platform/audio_pacing.h"
+#include "platform/audio_channel_keys.h"
 #include "platform/config_keys.h"       // GH #417 --set
 #include "platform/fast_boot.h"        // GH #499 --fast-boot
 #include "platform/pointer_capture.h"   // GH #365 --mouse-release
@@ -540,6 +541,7 @@ static int run_main(int argc, char* argv[]) {
     std::string psg_record_file;
     cli::AudioGainArgs audio_gain;
     bool        audio_oversample = false, audio_oversample_set = false;   // hungarian-ui --set audio.oversample
+    std::vector<config_keys::Assignment> audio_channel_sets;   // hungarian-ui --set audio.dac_* / ay_*
     std::string rzx_play_file;
     std::string rzx_record_file;
     int         speed_percent = 100;
@@ -700,6 +702,20 @@ static int run_main(int argc, char* argv[]) {
         case KeyId::AudioOversample:
             audio_oversample = on;
             audio_oversample_set = true;
+            break;
+        case KeyId::AudioDacAGainDb:
+        case KeyId::AudioDacBGainDb:
+        case KeyId::AudioDacCGainDb:
+        case KeyId::AudioDacDGainDb:
+        case KeyId::AudioDacAPan:
+        case KeyId::AudioDacBPan:
+        case KeyId::AudioDacCPan:
+        case KeyId::AudioDacDPan:
+        case KeyId::AudioAyStereo:
+        case KeyId::AudioAy0Mono:
+        case KeyId::AudioAy1Mono:
+        case KeyId::AudioAy2Mono:
+            audio_channel_sets.push_back(a);
             break;
         case KeyId::PathsSdCardPath:
             sd_card_image = t;
@@ -3061,6 +3077,7 @@ static int run_main(int argc, char* argv[]) {
             cfg.audio_gain_ay_db[chip] = audio_gain.ay[chip];
         cfg.audio_gain_dac_db      = audio_gain.dac;
         cfg.audio_oversample       = audio_oversample;
+        apply_audio_channel_keys(cfg.audio_channels, audio_channel_sets);
         cfg.joy_source[0]          = joy_source[0];   // Task 79 (CLI value)
         cfg.joy_source[1]          = joy_source[1];
         cfg.joy_device[0].id       = joy_device_id[0];   // GH #311 (CLI value; SDL-only has no config)
@@ -3118,6 +3135,8 @@ static int run_main(int argc, char* argv[]) {
             cfg.audio_oversample = merge_cli_precedence(
                 audio_oversample_set, audio_oversample,
                 gui_app_config.data().audio_oversample);
+            cfg.audio_channels = gui_app_config.data().audio_channels;
+            apply_audio_channel_keys(cfg.audio_channels, audio_channel_sets);   // the command line wins
             // Task 79 — per-connector input source: CLI wins, else saved config.
             cfg.joy_source[0] = merge_cli_precedence(joy_source_set[0], joy_source[0],
                                                      gui_app_config.data().joy_source[0]);
@@ -3440,6 +3459,7 @@ static int run_main(int argc, char* argv[]) {
                     cfg.audio_gain_ay_db[chip];
             gui_app_config.data().audio_gain_dac_db = cfg.audio_gain_dac_db;
             gui_app_config.data().audio_oversample = cfg.audio_oversample;
+            gui_app_config.data().audio_channels = cfg.audio_channels;
             // Issue #35 — the degradation policy has a CLI competitor too, and
             // is resolved the same way. It is NOT carried in EmulatorConfig:
             // the emulated machine has no opinion about which of picture and

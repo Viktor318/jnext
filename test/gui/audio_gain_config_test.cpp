@@ -134,6 +134,53 @@ int main(int argc, char** argv)
                            r.data().audio_oversample);
     }
 
+    // hungarian-ui: the DAC channel mixer and the AY stereo override.
+    check("SGC-HU-03", d.audio_channels == AudioChannels() && valid.data().audio_channels == AudioChannels());
+    {
+        const QString ch_path = dir.filePath(QStringLiteral("channels.conf"));
+        AudioChannels c;
+        const DacPan pans[4] = {DacPan::Right, DacPan::Centre, DacPan::Left, DacPan::Centre};
+        for (int ch = 0; ch < 4; ++ch) {
+            c.dac_gain_db[ch] = static_cast<float>(ch + 1) * -2.0f;
+            c.dac_pan[ch] = pans[ch];
+        }
+        c.ay_stereo = AyStereoOrder::Acb;
+        c.ay_mono[1] = true;
+        AppConfig w(ch_path);
+        w.data().audio_channels = c;
+        w.save();
+        QSettings raw(ch_path, QSettings::IniFormat);
+        raw.beginGroup(QStringLiteral("audio"));
+        const auto is = [&raw](const char* key, const char* text) {
+            return raw.value(QString::fromLatin1(key)).toString() == QString::fromLatin1(text);
+        };
+        const bool spelled =
+            is("dac_a_gain_db", "-2") && is("dac_b_gain_db", "-4") && is("dac_c_gain_db", "-6") && is("dac_d_gain_db", "-8") &&
+            is("dac_a_pan", "right") && is("dac_b_pan", "centre") && is("dac_c_pan", "left") && is("dac_d_pan", "centre") &&
+            is("ay_stereo", "acb") && is("ay0_mono", "false") && is("ay1_mono", "true") && is("ay2_mono", "false");
+        AppConfig r(ch_path);
+        r.load();
+        check("SGC-HU-04", spelled && r.data().audio_channels == c);
+    }
+    {
+        const QString bad_path = dir.filePath(QStringLiteral("channels-bad.conf"));
+        {
+            QSettings raw(bad_path, QSettings::IniFormat);
+            raw.beginGroup(QStringLiteral("audio"));
+            raw.setValue(QStringLiteral("dac_a_gain_db"), 25.0);
+            raw.setValue(QStringLiteral("dac_d_gain_db"), QStringLiteral("loud"));
+            raw.setValue(QStringLiteral("dac_b_pan"), QStringLiteral("middle"));
+            raw.setValue(QStringLiteral("dac_c_pan"), QStringLiteral(" Centre "));
+            raw.setValue(QStringLiteral("ay_stereo"), QStringLiteral("bca"));
+            raw.endGroup();
+        }
+        AppConfig r(bad_path);
+        r.load();
+        AudioChannels want;
+        want.dac_pan[2] = DacPan::Centre;
+        check("SGC-HU-05", r.data().audio_channels == want);
+    }
+
     std::printf("Total: %d Passed: %d Failed: %d Skipped: 0\n",
                 passed + failed, passed, failed);
     return failed == 0 ? 0 : 1;

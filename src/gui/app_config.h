@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "audio/audio_channels.h"
 #include "core/emulator_config.h"
 #include "debug/debug_keymap.h"
 #include "platform/audio_pacing.h"
@@ -66,6 +67,7 @@ struct AppConfigData {
     float       audio_gain_ay_db[3]    = {0.0f, 0.0f, 0.0f};
     float       audio_gain_dac_db      = 0.0f;
     bool        audio_oversample       = false;   // hungarian-ui
+    AudioChannels audio_channels;                 // hungarian-ui: DAC channel mixer, AY stereo override
 
     // Task 79 — per-connector host input source (index 0 = Joy 1, 1 = Joy 2).
     // Default Sdl/Sdl reproduces the historical behaviour. Persisted as the

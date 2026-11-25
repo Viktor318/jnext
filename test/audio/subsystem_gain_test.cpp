@@ -17,6 +17,19 @@
 
 namespace {
 
+AudioChannels odd_channels()
+{
+    AudioChannels c;
+    const DacPan pans[4] = {DacPan::Right, DacPan::Centre, DacPan::Left, DacPan::Centre};
+    for (int ch = 0; ch < 4; ++ch) {
+        c.dac_gain_db[ch] = static_cast<float>(ch + 1) * -2.0f;
+        c.dac_pan[ch] = pans[ch];
+    }
+    c.ay_stereo = AyStereoOrder::Acb;
+    c.ay_mono[1] = true;
+    return c;
+}
+
 int passed = 0;
 int failed = 0;
 
@@ -251,6 +264,55 @@ void lifecycle_tests()
     os_emu.mixer().set_oversample(true);
     emulator_frontend_cold_boot(os_emu, EmulatorConfig(), "", os_hooks);
     check("SG-HU-01", os_init && os_off && os_seen.audio_oversample && os_emu.mixer().oversample());
+
+    // hungarian-ui: the DAC channel mixer and the AY stereo override (audio/audio_channels.h).
+    EmulatorConfig ch_cfg;
+    ch_cfg.audio_channels = odd_channels();
+    Emulator ch_emu;
+    const bool ch_init = ch_emu.init(ch_cfg) && ch_emu.audio_channels() == odd_channels() &&
+                         ch_emu.mixer().dac_mixer().gain_db(2) == -6.0f &&
+                         ch_emu.mixer().dac_mixer().pan(0) == DacPan::Right &&
+                         ch_emu.turbosound().stereo_order() == AyStereoOrder::Acb &&
+                         ch_emu.turbosound().mono_force() == 0x02;
+    ch_emu.soft_reset();
+    const bool ch_reset = ch_emu.audio_channels() == odd_channels();
+    ch_emu.set_audio_channels(AudioChannels());
+    EmulatorConfig ch_seen;
+    ColdBootHooks ch_hooks;
+    ch_hooks.rewire_host = [&ch_seen](const EmulatorConfig& used) { ch_seen = used; };
+    emulator_frontend_cold_boot(ch_emu, ch_cfg, "", ch_hooks);
+    const bool ch_plain = ch_seen.audio_channels == AudioChannels() && ch_emu.audio_channels() == AudioChannels() &&
+                          !ch_emu.mixer().dac_mixer().active();
+    ch_emu.set_audio_channels(odd_channels());
+    emulator_frontend_cold_boot(ch_emu, EmulatorConfig(), "", ch_hooks);
+    check("SG-HU-02", ch_init && ch_reset && ch_plain && ch_seen.audio_channels == odd_channels() &&
+                          ch_emu.audio_channels() == odd_channels());
+
+    // What Preferences shows: the machine's layouts beside the heard ones.
+    Emulator ay_emu;
+    ay_emu.init(EmulatorConfig());
+    TurboSound& ts = ay_emu.turbosound();
+    AyLayouts a = ay_emu.ay_layouts();
+    const bool single = a.machine[0].sounds && !a.machine[1].sounds && !a.machine[2].sounds && !a.machine[0].acb &&
+                        !a.machine[0].mono && a.machine[0].left && a.machine[0].right;
+    ts.set_enabled(true);
+    ts.set_stereo_mode(false);
+    ts.set_mono_mode(0x04);
+    ts.reg_addr(0xDE);   // chip 1: left only
+    AudioChannels c;
+    c.ay_stereo = AyStereoOrder::Acb;
+    c.ay_mono[1] = true;
+    ay_emu.set_audio_channels(c);
+    a = ay_emu.ay_layouts();
+    const bool machine = a.machine[0].sounds && !a.machine[0].acb && !a.machine[0].mono && a.machine[1].sounds &&
+                         a.machine[1].left && !a.machine[1].right && !a.machine[1].mono && a.machine[2].mono;
+    const bool heard = a.heard[0].acb && !a.heard[0].mono && a.heard[1].mono && a.heard[1].left && !a.heard[1].right &&
+                       a.heard[2].mono && a.heard[0].sounds;
+    ts.reg_addr(0x9D);   // chip 2: both sides off
+    const bool off = !ay_emu.ay_layouts().machine[2].sounds && !ay_emu.ay_layouts().heard[2].sounds;
+    ts.set_reset_held(true);
+    const bool held = !ay_emu.ay_layouts().machine[0].sounds;
+    check("SG-HU-03", single && machine && heard && off && held);
 }
 
 void cli_assignment_tests()

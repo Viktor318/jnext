@@ -11,6 +11,7 @@
 
 // MachineType is the canonical shared enum; defined once in contention.h.
 // All emulator modules that need the machine type include this header.
+#include "audio/audio_channels.h"
 #include "core/cli_options.h"   // GH #317 — cli::parse_int
 #include "memory/contention.h"
 #include "input/joy_source.h"   // Task 79 — per-connector host input source
@@ -436,6 +437,7 @@ struct EmulatorConfig {
     float audio_gain_ay_db[3] = {0.0f, 0.0f, 0.0f};
     float audio_gain_dac_db = 0.0f;
     bool  audio_oversample = false;   // hungarian-ui: 4x oversampled mix (audio/oversampler.h)
+    AudioChannels audio_channels;     // hungarian-ui: DAC channel mixer, AY stereo override
 
     // GH #25 — the emulated ESP-01 WiFi module on UART 0.
     //

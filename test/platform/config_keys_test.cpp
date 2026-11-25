@@ -11,6 +11,7 @@
 // Standalone runner, no GoogleTest, no Qt: the table is Qt-free so the SDL-only
 // and headless builds can use it.
 
+#include "platform/audio_channel_keys.h"
 #include "platform/config_keys.h"
 
 #include "core/cli_options.h"
@@ -239,7 +240,7 @@ int main() {
             config_keys::word_index("audio|video", "vide") != -1 || config_keys::word_index("audio|video", "") != -1)
             bad += "word_index ";
         check("SETK-10", "for every Word and Machine key each listed word is accepted in upper case and canonicalises to itself; nonsense is refused",
-              bad.empty() && n == 10, bad + " keys=" + std::to_string(n));   // hungarian-ui: + input.windows_layout
+              bad.empty() && n == 15, bad + " keys=" + std::to_string(n));   // hungarian-ui: + input.windows_layout
     }
 
     // SETK-11
@@ -570,6 +571,37 @@ int main() {
         }
         if (got != want) bad += "WEB set differs";
         check("SETK-CRT-01", "exactly startup.crt_filter, crt_shader and crt_shader_style have the WEB bit, each as QT|WEB (no SDL)",
+              bad.empty(), bad);
+    }
+
+    // hungarian-ui - SETK-HU-01: the audio.dac_* / audio.ay_* keys reach the field they name, in order,
+    // and a bad value is refused.
+    {
+        std::string bad, why;
+        std::vector<config_keys::Assignment> list;
+        for (const char* arg : {"audio.dac_a_gain_db=1", "audio.dac_b_gain_db=2", "audio.dac_c_gain_db=3",
+                                "audio.dac_d_gain_db=-4.5", "audio.dac_a_pan=right", "audio.dac_b_pan=CENTRE",
+                                "audio.dac_c_pan=left", "audio.dac_d_pan=left", "audio.dac_d_pan=centre",
+                                "audio.ay_stereo=acb", "audio.ay0_mono=true", "audio.ay2_mono=true", "audio.ay0_mono=false"}) {
+            config_keys::Assignment a;
+            if (!config_keys::parse_assignment(arg, a, why)) bad += std::string(arg) + " ";
+            list.push_back(a);
+        }
+        AudioChannels c, want;
+        c.ay_mono[1] = true;
+        apply_audio_channel_keys(c, list);
+        const float gains[4] = {1.0f, 2.0f, 3.0f, -4.5f};
+        const DacPan pans[4] = {DacPan::Right, DacPan::Centre, DacPan::Left, DacPan::Centre};
+        for (int ch = 0; ch < 4; ++ch) { want.dac_gain_db[ch] = gains[ch]; want.dac_pan[ch] = pans[ch]; }
+        want.ay_stereo = AyStereoOrder::Acb;
+        want.ay_mono[1] = want.ay_mono[2] = true;
+        if (c != want) bad += "values ";
+        for (const char* arg : {"audio.dac_a_pan=middle", "audio.dac_a_gain_db=25", "audio.ay_stereo=bca", "audio.ay0_mono=2",
+                                "audio.dac_e_pan=left", "audio.ay3_mono=true"}) {
+            config_keys::Assignment a;
+            if (config_keys::parse_assignment(arg, a, why)) bad += std::string("accepts ") + arg + " ";
+        }
+        check("SETK-HU-01", "the audio.dac_* and audio.ay_* keys set the field they name, a later one wins, a bad value is refused",
               bad.empty(), bad);
     }
 

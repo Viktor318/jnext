@@ -4,6 +4,7 @@
 #include <QList>
 #include <QVariant>
 
+#include <functional>
 #include <vector>
 
 #include "gui/app_config.h"
@@ -18,6 +19,9 @@ class QLineEdit;
 class QPlainTextEdit;
 class QPushButton;
 class QLabel;
+class QButtonGroup;
+class QFormLayout;
+class QTimer;
 class ShortcutCaptureButton;
 
 /// Preferences dialog (Task 66 — Configurability).
@@ -55,6 +59,10 @@ public:
                                const std::vector<HostChord>& host_chords = {},
                                const std::vector<JoyDeviceInfo>& joy_devices = {});
 
+    /// hungarian-ui - where Audio > AY channels reads the running machine's layouts from;
+    /// refreshed twice a second while the dialog is open. Without it the two rows show a dash.
+    void set_ay_layout_source(std::function<AyLayouts()> source);
+
 signals:
     /// Emitted on OK (then the dialog closes) and on Apply (dialog stays open).
     void apply_requested(const AppConfigData& cfg);
@@ -63,6 +71,13 @@ private:
     QWidget* build_startup_tab();
     QWidget* build_input_tab();
     QWidget* build_audio_tab();
+    QWidget* build_ay_channels_group(QWidget* parent);    // hungarian-ui
+    QWidget* build_dac_channels_group(QWidget* parent);
+    QWidget* make_gain_slider(QWidget* parent, const QString& object_name, const QString& tooltip, QSlider*& slider);
+    void set_dac_layout(const DacPan (&pans)[DAC_MIX_CHANNELS]);
+    void sync_dac_layout_combo();   ///< the list names the places the buttons show
+    void refresh_ay_layouts();
+    static QString ay_layout_text(const AyChipLayout& chip);
     QWidget* build_network_tab();
     QWidget* build_nextpi_tab();
     QWidget* build_paths_tab();
@@ -131,6 +146,15 @@ private:
     QSlider* audio_ay_gain_slider_[3] = {nullptr, nullptr, nullptr};
     QSlider* audio_dac_gain_slider_ = nullptr;
     QCheckBox* audio_oversample_check_ = nullptr;   // hungarian-ui
+    QComboBox* ay_stereo_combo_ = nullptr;
+    QCheckBox* ay_mono_check_[3] = {nullptr, nullptr, nullptr};
+    QLabel*    ay_machine_label_[3] = {nullptr, nullptr, nullptr};
+    QLabel*    ay_heard_label_[3] = {nullptr, nullptr, nullptr};
+    QComboBox*    dac_layout_combo_ = nullptr;
+    QSlider*      dac_channel_slider_[DAC_MIX_CHANNELS] = {};
+    QButtonGroup* dac_pan_group_[DAC_MIX_CHANNELS] = {};   // ids are DacPan
+    std::function<AyLayouts()> ay_layout_source_;
+    QTimer*    ay_layout_timer_ = nullptr;
 
     QCheckBox*      esp_enabled_check_ = nullptr;   // GH #25
     QPlainTextEdit* esp_hosts_edit_    = nullptr;

@@ -4569,7 +4569,11 @@ with <code>gain_beeper_db</code>, <code>gain_ay0_db</code>, <code>gain_ay1_db</c
 invalid value falls back to 0 dB. An explicit matching <code>--audio-gain-...-db</code>
 value overrides the saved setting for that run. <code>oversample</code> (<code>true</code> or <code>false</code>,
 default <code>false</code>) is the 4x oversampled sound of the Preferences <strong>Audio</strong> tab;
-<code>--set audio.oversample=true</code> turns it on for one run.</p>
+<code>--set audio.oversample=true</code> turns it on for one run. <code>dac_a_gain_db</code> to
+<code>dac_d_gain_db</code> (-24 to +24) and <code>dac_a_pan</code> to <code>dac_d_pan</code> (<code>left</code>, <code>centre</code> or
+<code>right</code>) are the DAC channels of that tab, <code>ay_stereo</code> (<code>machine</code>, <code>abc</code> or <code>acb</code>)
+and <code>ay0_mono</code> to <code>ay2_mono</code> (<code>true</code> or <code>false</code>) its AY channels; each has a
+<code>--set</code> form too.</p>
 <p>The Source tab's colour scheme is stored in the <code>[source]</code> section as <code>colour_scheme</code>: <code>auto</code>, <code>light</code>,
 <code>dark</code> or <code>borland</code>. Anything else in that key keeps <code>auto</code>. It is the persistent form of the
 Preferences <strong>Debugger</strong> setting and of <code>--set source.colour_scheme</code>.</p>

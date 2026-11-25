@@ -491,6 +491,7 @@ inline void emulator_frontend_cold_boot(Emulator& emu, EmulatorConfig base_cfg,
         cfg.audio_gain_ay_db[chip] = emu.mixer().ay_gain_db(chip);
     cfg.audio_gain_dac_db = emu.mixer().dac_gain_db();
     cfg.audio_oversample  = emu.mixer().oversample();
+    cfg.audio_channels    = emu.audio_channels();
     cfg.magic_breakpoint  = emu.config().magic_breakpoint;
     cfg.rewind_buffer_frames = emu.config().rewind_buffer_frames;   // GH #400
     cfg.rewind_paused        = emu.config().rewind_paused;

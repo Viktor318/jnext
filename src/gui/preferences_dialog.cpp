@@ -25,6 +25,12 @@
 #include <QHBoxLayout>
 #include <QTabWidget>
 #include <QAbstractButton>
+#include <QButtonGroup>
+#include <QGroupBox>
+#include <QRadioButton>
+#include <QSignalBlocker>
+#include <QSpacerItem>
+#include <QTimer>
 #include <QAbstractSpinBox>
 #include <QDialogButtonBox>
 #include <QFileDialog>
@@ -113,6 +119,12 @@ PreferencesDialog::PreferencesDialog(const AppConfigData& current, QWidget* pare
     audio_dac_gain_slider_->setValue(
         static_cast<int>(std::lround(current.audio_gain_dac_db)));
     audio_oversample_check_->setChecked(current.audio_oversample);
+    ay_stereo_combo_->setCurrentIndex(
+        ay_stereo_combo_->findData(static_cast<int>(current.audio_channels.ay_stereo)));
+    for (int chip = 0; chip < 3; ++chip) ay_mono_check_[chip]->setChecked(current.audio_channels.ay_mono[chip]);
+    for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch)
+        dac_channel_slider_[ch]->setValue(static_cast<int>(std::lround(current.audio_channels.dac_gain_db[ch])));
+    set_dac_layout(current.audio_channels.dac_pan);
     esp_enabled_check_->setChecked(current.esp_enabled);
     {
         QStringList hosts;
@@ -388,34 +400,9 @@ QWidget* PreferencesDialog::build_audio_tab() {
     auto* tab = new QWidget(this);
     auto* form = new QFormLayout(tab);
 
-    auto add_gain = [tab, form](const QString& label, const QString& object_name,
-                                const QString& tooltip, QSlider*& slider) {
-        auto* row = new QWidget(tab);
-        auto* h = new QHBoxLayout(row);
-        h->setContentsMargins(0, 0, 0, 0);
-        slider = new QSlider(Qt::Horizontal, row);
-        slider->setObjectName(object_name);
-        slider->setRange(-24, 24);
-        slider->setSingleStep(1);
-        slider->setPageStep(6);
-        slider->setTickPosition(QSlider::TicksBelow);
-        slider->setTickInterval(6);
-        slider->setToolTip(tooltip);
-        auto* value = new QLabel(row);
-        value->setObjectName(object_name + QStringLiteral("Value"));
-        value->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        value->setMinimumWidth(
-            value->fontMetrics().horizontalAdvance(QStringLiteral("-24 dB")));
-        auto update_value = [value](int db) {
-            value->setText(QStringLiteral("%1%2 dB")
-                               .arg(db > 0 ? QStringLiteral("+") : QString())
-                               .arg(db));
-        };
-        connect(slider, &QSlider::valueChanged, value, update_value);
-        update_value(slider->value());
-        h->addWidget(slider, 1);
-        h->addWidget(value);
-        form->addRow(label, row);
+    auto add_gain = [&](const QString& label, const QString& object_name,
+                        const QString& tooltip, QSlider*& slider) {
+        form->addRow(label, make_gain_slider(tab, object_name, tooltip, slider));
     };
 
     add_gain(tr("Master:"), QStringLiteral("audioGainDbSlider"),
@@ -434,9 +421,15 @@ QWidget* PreferencesDialog::build_audio_tab() {
              tr("Host gain for Specdrum, Soundrive and Covox DAC audio."),
              audio_dac_gain_slider_);
 
+    const int line = tab->fontMetrics().height();
+    form->addItem(new QSpacerItem(0, line, QSizePolicy::Minimum, QSizePolicy::Fixed));
+    form->addRow(build_ay_channels_group(tab));
+    form->addItem(new QSpacerItem(0, line, QSizePolicy::Minimum, QSizePolicy::Fixed));
+    form->addRow(build_dac_channels_group(tab));
+
     auto* note = new QLabel(
         tr("0 dB preserves each source. Subsystem gains are applied before the "
-           "master gain; large boosts may clip."), tab);
+           "master gain; large boosts may clip. The DAC channel gains multiply with the DAC gain."), tab);
     note->setWordWrap(true);
     form->addRow(QString(), note);
 
@@ -448,6 +441,208 @@ QWidget* PreferencesDialog::build_audio_tab() {
     form->addRow(QString(), audio_oversample_check_);
 
     return tab;
+}
+
+QWidget* PreferencesDialog::make_gain_slider(QWidget* parent, const QString& object_name, const QString& tooltip,
+                                             QSlider*& slider) {
+    auto* row = new QWidget(parent);
+    auto* h = new QHBoxLayout(row);
+    h->setContentsMargins(0, 0, 0, 0);
+    slider = new QSlider(Qt::Horizontal, row);
+    slider->setObjectName(object_name);
+    slider->setRange(-24, 24);
+    slider->setSingleStep(1);
+    slider->setPageStep(6);
+    slider->setTickPosition(QSlider::TicksBelow);
+    slider->setTickInterval(6);
+    slider->setToolTip(tooltip);
+    auto* value = new QLabel(row);
+    value->setObjectName(object_name + QStringLiteral("Value"));
+    value->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    value->setMinimumWidth(
+        value->fontMetrics().horizontalAdvance(QStringLiteral("-24 dB")));
+    auto update_value = [value](int db) {
+        value->setText(QStringLiteral("%1%2 dB")
+                           .arg(db > 0 ? QStringLiteral("+") : QString())
+                           .arg(db));
+    };
+    connect(slider, &QSlider::valueChanged, value, update_value);
+    update_value(slider->value());
+    h->addWidget(slider, 1);
+    h->addWidget(value);
+    return row;
+}
+
+// hungarian-ui - Audio > AY channels: the stereo override, and what the machine has
+// now beside what is heard with it.
+QWidget* PreferencesDialog::build_ay_channels_group(QWidget* parent) {
+    auto* group = new QGroupBox(tr("AY channels"), parent);
+    auto* grid = new QGridLayout(group);
+
+    auto* row = new QWidget(group);
+    auto* h = new QHBoxLayout(row);
+    h->setContentsMargins(0, 0, 0, 0);
+    ay_stereo_combo_ = new QComboBox(row);
+    ay_stereo_combo_->setObjectName(QStringLiteral("ayStereoCombo"));
+    ay_stereo_combo_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    ay_stereo_combo_->addItem(tr("As the machine"), static_cast<int>(AyStereoOrder::Machine));
+    ay_stereo_combo_->addItem(QStringLiteral("ABC"), static_cast<int>(AyStereoOrder::Abc));
+    ay_stereo_combo_->addItem(QStringLiteral("ACB"), static_cast<int>(AyStereoOrder::Acb));
+    ay_stereo_combo_->setToolTip(
+        tr("The channel order of all three AY chips. ABC: A left, B centre, C right. ACB: A left, "
+           "C centre, B right. Programs still read what they set."));
+    h->addWidget(ay_stereo_combo_);
+    h->addSpacing(row->fontMetrics().height());
+    h->addWidget(new QLabel(tr("Mono:"), row));
+    for (int chip = 0; chip < 3; ++chip) {
+        ay_mono_check_[chip] = new QCheckBox(QStringLiteral("AY #%1").arg(chip), row);
+        ay_mono_check_[chip]->setObjectName(QStringLiteral("ay%1MonoCheck").arg(chip));
+        ay_mono_check_[chip]->setToolTip(
+            tr("Hear this chip in mono. A chip the program itself set to mono stays mono without it."));
+        h->addWidget(ay_mono_check_[chip]);
+    }
+    h->addStretch(1);
+    grid->addWidget(new QLabel(tr("AY stereo:"), group), 0, 0);
+    grid->addWidget(row, 0, 1, 1, 4);
+
+    // One grid for both rows, so a chip's two texts stand under each other.
+    auto add_row = [&](int line, const QString& title, const QString& tooltip, const QString& name, QLabel* (&labels)[3]) {
+        auto* head = new QLabel(title, group);
+        head->setToolTip(tooltip);
+        grid->addWidget(head, line, 0);
+        for (int chip = 0; chip < 3; ++chip) {
+            labels[chip] = new QLabel(group);
+            labels[chip]->setObjectName(name.arg(chip));
+            labels[chip]->setTextFormat(Qt::RichText);
+            labels[chip]->setToolTip(tooltip);
+            grid->addWidget(labels[chip], line, 1 + chip);
+        }
+    };
+    add_row(1, tr("Machine now:"), tr("What the running program (or config.ini) has set."),
+            QStringLiteral("ayMachine%1Label"), ay_machine_label_);
+    add_row(2, tr("As heard:"), tr("The same with the settings above applied."),
+            QStringLiteral("ayHeard%1Label"), ay_heard_label_);
+    // Wide enough for the longest text, so nothing jumps when a program changes it.
+    AyChipLayout longest[4];
+    for (int i = 0; i < 4; ++i) {
+        longest[i].sounds = i != 0;
+        longest[i].left = i != 1;
+        longest[i].right = i != 2;
+        longest[i].mono = i != 3;
+    }
+    int width = 0;
+    QLabel probe;
+    probe.setTextFormat(Qt::RichText);
+    for (const AyChipLayout& l : longest) {
+        for (int mono = 0; mono < 2; ++mono) {
+            AyChipLayout v = l;
+            v.mono = mono != 0;
+            probe.setText(QStringLiteral("AY #0: %1").arg(ay_layout_text(v)));
+            width = qMax(width, probe.sizeHint().width());
+        }
+    }
+    for (int chip = 0; chip < 3; ++chip) grid->setColumnMinimumWidth(1 + chip, width + parent->fontMetrics().height());
+    grid->setColumnStretch(4, 1);
+
+    ay_layout_timer_ = new QTimer(this);
+    ay_layout_timer_->setInterval(500);
+    connect(ay_layout_timer_, &QTimer::timeout, this, &PreferencesDialog::refresh_ay_layouts);
+    refresh_ay_layouts();
+    return group;
+}
+
+QString PreferencesDialog::ay_layout_text(const AyChipLayout& chip) {
+    if (!chip.sounds) return tr("silent");
+    const QString order = QStringLiteral("<b>%1</b>").arg(chip.mono ? tr("mono") : chip.acb ? QStringLiteral("ACB") : QStringLiteral("ABC"));
+    if (chip.left && chip.right) return order;
+    return chip.left ? tr("%1, left only").arg(order) : tr("%1, right only").arg(order);
+}
+
+void PreferencesDialog::set_ay_layout_source(std::function<AyLayouts()> source) {
+    ay_layout_source_ = std::move(source);
+    if (ay_layout_source_) ay_layout_timer_->start(); else ay_layout_timer_->stop();
+    refresh_ay_layouts();
+}
+
+void PreferencesDialog::refresh_ay_layouts() {
+    const AyLayouts now = ay_layout_source_ ? ay_layout_source_() : AyLayouts{};
+    for (int chip = 0; chip < 3; ++chip) {
+        const auto text = [&](const AyChipLayout& l) {
+            return QStringLiteral("AY #%1: %2").arg(chip).arg(ay_layout_source_ ? ay_layout_text(l) : QStringLiteral("-"));
+        };
+        ay_machine_label_[chip]->setText(text(now.machine[chip]));
+        ay_heard_label_[chip]->setText(text(now.heard[chip]));
+    }
+}
+
+// hungarian-ui - Audio > DAC channels: volume and place of each Soundrive channel.
+QWidget* PreferencesDialog::build_dac_channels_group(QWidget* parent) {
+    auto* group = new QGroupBox(tr("DAC channels"), parent);
+    auto* grid = new QGridLayout(group);
+
+    dac_layout_combo_ = new QComboBox(group);
+    dac_layout_combo_->setObjectName(QStringLiteral("dacLayoutCombo"));
+    dac_layout_combo_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    dac_layout_combo_->setProperty("derived", true);   // the buttons below are the setting
+    dac_layout_combo_->addItem(tr("As the machine (A, B left; C, D right)"));
+    dac_layout_combo_->addItem(tr("Left, centre, right (A left; B, C centre; D right)"));
+    dac_layout_combo_->addItem(tr("Mono"));
+    dac_layout_combo_->addItem(tr("Custom"));
+    dac_layout_combo_->setToolTip(tr("Sets the places of the four channels below. Their gains are not changed."));
+    grid->addWidget(new QLabel(tr("Layout:"), group), 0, 0);
+    grid->addWidget(dac_layout_combo_, 0, 1, 1, 2, Qt::AlignLeft);
+
+    const QString places[3] = {tr("Left"), tr("Centre"), tr("Right")};
+    const char* const place_names[3] = {"Left", "Centre", "Right"};
+    for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
+        const QChar letter = QLatin1Char(static_cast<char>('A' + ch));
+        grid->addWidget(new QLabel(QStringLiteral("%1:").arg(letter), group), 1 + ch, 0);
+        grid->addWidget(make_gain_slider(group, QStringLiteral("audioDac%1GainDbSlider").arg(letter),
+                                         tr("Host gain of DAC channel %1, on top of the DAC gain.").arg(letter),
+                                         dac_channel_slider_[ch]), 1 + ch, 1);
+        auto* row = new QWidget(group);
+        auto* h = new QHBoxLayout(row);
+        h->setContentsMargins(row->fontMetrics().height() / 2, 0, 0, 0);
+        dac_pan_group_[ch] = new QButtonGroup(row);
+        for (int place = 0; place < 3; ++place) {
+            auto* button = new QRadioButton(places[place], row);
+            button->setObjectName(QStringLiteral("dac%1%2Radio").arg(letter).arg(QLatin1String(place_names[place])));
+            button->setToolTip(tr("Where DAC channel %1 is heard. Centre gives half of it to each side.").arg(letter));
+            dac_pan_group_[ch]->addButton(button, place);
+            h->addWidget(button);
+            connect(button, &QRadioButton::toggled, this, &PreferencesDialog::sync_dac_layout_combo);
+        }
+        grid->addWidget(row, 1 + ch, 2);
+    }
+    grid->setColumnStretch(1, 1);
+
+    connect(dac_layout_combo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int index) {
+        using P = DacPan;
+        static constexpr DacPan presets[3][DAC_MIX_CHANNELS] = {
+            {dac_machine_pan(0), dac_machine_pan(1), dac_machine_pan(2), dac_machine_pan(3)},
+            {P::Left, P::Centre, P::Centre, P::Right},
+            {P::Centre, P::Centre, P::Centre, P::Centre},
+        };
+        if (index >= 0 && index < 3) set_dac_layout(presets[index]);
+        sync_dac_layout_combo();   // "Custom" is no layout to pick: the list goes back to what the buttons show
+    });
+    return group;
+}
+
+void PreferencesDialog::set_dac_layout(const DacPan (&pans)[DAC_MIX_CHANNELS]) {
+    for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch)
+        dac_pan_group_[ch]->button(static_cast<int>(pans[ch]))->setChecked(true);
+}
+
+void PreferencesDialog::sync_dac_layout_combo() {
+    int code = 0;   // the four places as a base-3 number, A first
+    for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
+        const int id = dac_pan_group_[ch] ? dac_pan_group_[ch]->checkedId() : -1;
+        if (id < 0) return;   // still being filled
+        code = code * 3 + id;
+    }
+    const QSignalBlocker block(dac_layout_combo_);   // it follows the buttons here, it does not set them
+    dac_layout_combo_->setCurrentIndex(code == 8 ? 0 : code == 14 ? 1 : code == 40 ? 2 : 3);
 }
 
 QWidget* PreferencesDialog::build_network_tab() {
@@ -742,6 +937,7 @@ void PreferencesDialog::watch_controls() {
     };
     const auto changed = [this]() { update_apply_button(); };
     for (QWidget* w : findChildren<QWidget*>()) {
+        if (w->property("derived").toBool()) continue;   // shows other controls' state
         if (auto* combo = qobject_cast<QComboBox*>(w)) {
             connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, changed);
             connect(combo, &QComboBox::editTextChanged, this, changed);
@@ -840,6 +1036,12 @@ AppConfigData PreferencesDialog::collect() const {
             static_cast<float>(audio_ay_gain_slider_[chip]->value());
     cfg.audio_gain_dac_db = static_cast<float>(audio_dac_gain_slider_->value());
     cfg.audio_oversample = audio_oversample_check_->isChecked();
+    cfg.audio_channels.ay_stereo = static_cast<AyStereoOrder>(ay_stereo_combo_->currentData().toInt());
+    for (int chip = 0; chip < 3; ++chip) cfg.audio_channels.ay_mono[chip] = ay_mono_check_[chip]->isChecked();
+    for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
+        cfg.audio_channels.dac_gain_db[ch] = static_cast<float>(dac_channel_slider_[ch]->value());
+        cfg.audio_channels.dac_pan[ch] = static_cast<DacPan>(dac_pan_group_[ch]->checkedId());
+    }
     QComboBox* const joy_combo[2] = { joy1_source_combo_, joy2_source_combo_ };
     for (int i = 0; i < 2; ++i) {
         const QString key = joy_combo[i]->currentData().toString();

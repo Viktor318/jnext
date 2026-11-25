@@ -136,6 +136,50 @@ QString gain_text(float db) {
     return QString::number(static_cast<double>(db), 'g', 6);
 }
 
+// hungarian-ui - the audio.dac_* / audio.ay_* keys, inside the [audio] group.
+KeyId nth(KeyId first, int i) { return static_cast<KeyId>(static_cast<int>(first) + i); }
+
+// The index of a Word key's saved value in its list; `fallback` when absent or not a word of it.
+int load_word(QSettings& settings, KeyId id, int fallback)
+{
+    const config_keys::Key& k = config_keys::info(id);
+    const int i = config_keys::word_index(
+        k.values, settings.value(k.name).toString().trimmed().toLower().toStdString());
+    return i >= 0 ? i : fallback;
+}
+
+QString word_text(KeyId id, int index)
+{
+    const std::string_view w = config_keys::word_at(config_keys::info(id).values, index);
+    return QString::fromLatin1(w.data(), static_cast<qsizetype>(w.size()));
+}
+
+void load_audio_channels(QSettings& settings, AudioChannels& c)
+{
+    for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
+        load_gain(settings, nth(KeyId::AudioDacAGainDb, ch), c.dac_gain_db[ch]);
+        c.dac_pan[ch] = static_cast<DacPan>(
+            load_word(settings, nth(KeyId::AudioDacAPan, ch), static_cast<int>(c.dac_pan[ch])));
+    }
+    c.ay_stereo = static_cast<AyStereoOrder>(
+        load_word(settings, KeyId::AudioAyStereo, static_cast<int>(c.ay_stereo)));
+    for (int chip = 0; chip < 3; ++chip)
+        c.ay_mono[chip] = settings.value(config_keys::info(nth(KeyId::AudioAy0Mono, chip)).name, c.ay_mono[chip]).toBool();
+}
+
+void save_audio_channels(QSettings& settings, const AudioChannels& c)
+{
+    for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
+        const KeyId gain = nth(KeyId::AudioDacAGainDb, ch), pan = nth(KeyId::AudioDacAPan, ch);
+        settings.setValue(config_keys::info(gain).name, gain_text(c.dac_gain_db[ch]));
+        settings.setValue(config_keys::info(pan).name, word_text(pan, static_cast<int>(c.dac_pan[ch])));
+    }
+    settings.setValue(config_keys::info(KeyId::AudioAyStereo).name,
+                      word_text(KeyId::AudioAyStereo, static_cast<int>(c.ay_stereo)));
+    for (int chip = 0; chip < 3; ++chip)
+        settings.setValue(config_keys::info(nth(KeyId::AudioAy0Mono, chip)).name, c.ay_mono[chip]);
+}
+
 // GH #420 - the one-string spelling of paths.source_dirs and the list it stands for.
 QStringList source_dirs_from_text(const QString& text)
 {
@@ -357,6 +401,7 @@ void AppConfig::load() {
         load_gain(settings_, KeyId::AudioGainDacDb, data_.audio_gain_dac_db);
         data_.audio_oversample = settings_.value(
             N(KeyId::AudioOversample), data_.audio_oversample).toBool();
+        load_audio_channels(settings_, data_.audio_channels);
     }
     settings_.endGroup();
 
@@ -551,6 +596,7 @@ void AppConfig::save() const {
     settings_.setValue(N(KeyId::AudioGainAy2Db), gain_text(data_.audio_gain_ay_db[2]));
     settings_.setValue(N(KeyId::AudioGainDacDb), gain_text(data_.audio_gain_dac_db));
     settings_.setValue(N(KeyId::AudioOversample), data_.audio_oversample);
+    save_audio_channels(settings_, data_.audio_channels);
     settings_.endGroup();
 
     settings_.beginGroup(S(KeyId::PathsLastLoadDir));

@@ -365,6 +365,18 @@ ValueRule config_value_rule(config_keys::KeyId id)
         case K::AudioGainAy2Db:
         case K::AudioGainDacDb:
         case K::AudioOversample:
+        case K::AudioDacAGainDb:
+        case K::AudioDacBGainDb:
+        case K::AudioDacCGainDb:
+        case K::AudioDacDGainDb:
+        case K::AudioDacAPan:
+        case K::AudioDacBPan:
+        case K::AudioDacCPan:
+        case K::AudioDacDPan:
+        case K::AudioAyStereo:
+        case K::AudioAy0Mono:
+        case K::AudioAy1Mono:
+        case K::AudioAy2Mono:
         case K::ScreenshotQuickFormat:
         case K::SnapshotQuickKeep:
         case K::InputJoy1Source:

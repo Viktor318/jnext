@@ -3430,6 +3430,7 @@ void MainWindow::apply_startup_config(const AppConfigData& cfg, bool program_cpu
             emulator_->mixer().set_ay_gain_db(chip, cfg.audio_gain_ay_db[chip]);
         emulator_->mixer().set_dac_gain_db(cfg.audio_gain_dac_db);
         emulator_->mixer().set_oversample(cfg.audio_oversample);
+        emulator_->set_audio_channels(cfg.audio_channels);
     }
     if (tape_fast_action_) tape_fast_action_->setChecked(cfg.tape_fast_load);
     if (tape_auto_action_) tape_auto_action_->setChecked(cfg.tape_auto_play);
@@ -3680,6 +3681,7 @@ void MainWindow::on_open_preferences() {
         app_config_.save();
         apply_preferences(merged);
     });
+    dlg.set_ay_layout_source([this]() { return emulator_ ? emulator_->ay_layouts() : AyLayouts{}; });
     dlg.exec();
 }
 

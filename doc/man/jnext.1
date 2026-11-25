@@ -2040,6 +2040,30 @@ WAV and video recordings include it.
 Default false.
 All frontends.
 .TP
+\f[CR]audio.dac_a_gain_db\f[R], \f[CR]audio.dac_b_gain_db\f[R], \f[CR]audio.dac_c_gain_db\f[R], \f[CR]audio.dac_d_gain_db\f[R] \f[I]\-24..24\f[R]
+The gain of each Soundrive DAC channel in dB, on top of
+\f[CR]audio.gain_dac_db\f[R].
+Default 0.
+All frontends.
+.TP
+\f[CR]audio.dac_a_pan\f[R], \f[CR]audio.dac_b_pan\f[R], \f[CR]audio.dac_c_pan\f[R], \f[CR]audio.dac_d_pan\f[R] \f[I]left|centre|right\f[R]
+Where each DAC channel is heard; \f[I]centre\f[R] gives half of it to
+each side.
+The default is the machine\(cqs own: A and B left, C and D right.
+All frontends.
+.TP
+\f[CR]audio.ay_stereo\f[R] \f[I]machine|abc|acb\f[R]
+The stereo layout of the three AY chips.
+Default \f[I]machine\f[R]: as the program set it.
+Only the sound changes, never what a program reads.
+All frontends.
+.TP
+\f[CR]audio.ay0_mono\f[R], \f[CR]audio.ay1_mono\f[R], \f[CR]audio.ay2_mono\f[R] \f[I]true|false\f[R]
+Hear that AY chip in mono.
+A chip the program set to mono is mono without it.
+Default false.
+All frontends.
+.TP
 \f[CR]paths.last_load_dir\f[R] \f[I]PATH\f[R]
 The directory the Load dialogs open in.
 The Qt window.
@@ -5124,6 +5148,10 @@ Host gains are stored under \f[CR][audio]\f[R] as \f[CR]gain_db\f[R]
 \f[CR]gain_ay1_db\f[R], \f[CR]gain_ay2_db\f[R], and
 \f[CR]gain_dac_db\f[R]; \f[CR]oversample\f[R]
 (\f[CR]true\f[R]/\f[CR]false\f[R]) is the 4x oversampled sound.
+\f[CR]dac_a_gain_db\f[R] to \f[CR]dac_d_gain_db\f[R] and
+\f[CR]dac_a_pan\f[R] to \f[CR]dac_d_pan\f[R] are the DAC channel mixer,
+\f[CR]ay_stereo\f[R] and \f[CR]ay0_mono\f[R] to \f[CR]ay2_mono\f[R] the
+AY stereo layout.
 The degradation policy is stored under \f[CR][startup]\f[R] as
 \f[CR]when_slow_prefer\f[R] (\f[CR]audio\f[R] or \f[CR]video\f[R], the
 persistent form of \f[B]\-\-when\-slow\-prefer\f[R]); an unrecognised
