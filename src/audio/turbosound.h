@@ -125,7 +125,7 @@ public:
     /// never the hardware one, and is not touched by reset() / save_state() /
     /// load_state() (audio/audio_mute.h).
     void set_channel_mute_mask(uint16_t m) {
-        channel_mute_mask_ = static_cast<uint16_t>((m & AudioChannelMute::AY_ALL) | (channel_mute_mask_ & LATCH_BIT));
+        channel_mute_mask_ = static_cast<uint16_t>((m & AudioChannelMute::AY_ALL) | (channel_mute_mask_ & HOST_BITS));
         mix_dirty_ = true;
     }
     uint16_t channel_mute_mask() const { return channel_mute_mask_ & AudioChannelMute::AY_ALL; }
@@ -144,6 +144,28 @@ public:
     /// the value compute_chip_stereo() gives for the current inputs (exact unless an input change is
     /// pending, i.e. for at most one PSG tick).
     void hw_chip_pcm(int idx, uint16_t& left, uint16_t& right) const;
+
+    /// hungarian-ui - host override of the chips' A/B/C layout (audio.ay_stereo, audio.ayN_mono).
+    /// `order` replaces the machine's one ABC/ACB switch (NR 0x08 bit 5) for all three chips; a set
+    /// bit i of `mono` makes chip i mono on top of what the machine asks for (NR 0x09), and a chip
+    /// the machine made mono stays mono. Pan and TurboSound enable are never overridden. Like the
+    /// debugger's mutes it changes only the AUDIBLE sum, on the same cold path; the hardware sum,
+    /// the NextREGs and every saved state never see it, and reset() / load_state() leave it alone.
+    enum class StereoOrder : uint8_t { Machine, Abc, Acb };
+    void set_stereo_override(StereoOrder order, uint8_t mono) {
+        stereo_order_ = order;
+        mono_force_ = mono & 0x07;
+        const bool on = order != StereoOrder::Machine || mono_force_ != 0;
+        channel_mute_mask_ = static_cast<uint16_t>(on ? (channel_mute_mask_ | OVERRIDE_BIT) : (channel_mute_mask_ & ~OVERRIDE_BIT));
+        mix_dirty_ = true;
+    }
+    StereoOrder stereo_order() const { return stereo_order_; }
+    uint8_t mono_force() const { return mono_force_; }
+    /// The layout that is heard: the machine's with the override applied.
+    bool audible_acb() const {
+        return stereo_order_ == StereoOrder::Machine ? stereo_mode_ : stereo_order_ == StereoOrder::Acb;
+    }
+    bool audible_mono(int idx) const { return (((mono_mode_ | mono_force_) >> idx) & 1) != 0; }
 
     /// Get the audible mixed stereo output (12-bit per channel): the hardware sum
     /// less the chips the debugger muted.
@@ -228,11 +250,18 @@ private:
     // channel_mute_mask_ (the mute bits are 0-8), so the hot test in compute_stereo_mix() stays the single
     // `channel_mute_mask_ != 0` it always was: a separate byte tested there measured +0.1 to +0.3 % instructions.
     static constexpr uint16_t LATCH_BIT = 0x8000;
+    // hungarian-ui: the stereo override shares that test the same way.
+    static constexpr uint16_t OVERRIDE_BIT = 0x4000;
+    static constexpr uint16_t HOST_BITS = LATCH_BIT | OVERRIDE_BIT;
+    StereoOrder stereo_order_ = StereoOrder::Machine;   // host setting; NOT machine state
+    uint8_t mono_force_ = 0;                            // host setting; NOT machine state
 
     int active_ay_index() const;
     // always_inline: the hardware call passes silenced == 0, which folds away, so the hot path is the
     // pre-mute one (GH #533 bench).
     [[gnu::always_inline]] inline void compute_chip_stereo(int idx, uint8_t silenced, uint16_t& left, uint16_t& right) const;
+    [[gnu::always_inline]] inline void compute_chip_layout_(int idx, uint8_t silenced, bool acb, bool mono,
+                                                            uint16_t& left, uint16_t& right) const;
     void compute_stereo_mix_channels_();
     [[gnu::always_inline]] inline void compute_stereo_mix();
     [[gnu::always_inline]] inline void tick_impl_();

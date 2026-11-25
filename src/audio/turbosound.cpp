@@ -191,6 +191,12 @@ void TurboSound::tick_n(uint32_t count) { for (uint32_t i = 0; i < count; ++i) t
 // mute); 0 gives the hardware value.
 [[gnu::always_inline]] inline void TurboSound::compute_chip_stereo(int idx, uint8_t silenced, uint16_t& left, uint16_t& right) const
 {
+    compute_chip_layout_(idx, silenced, stereo_mode_, (mono_mode_ >> idx) & 1, left, right);
+}
+
+[[gnu::always_inline]] inline void TurboSound::compute_chip_layout_(int idx, uint8_t silenced, bool acb, bool mono,
+                                                                    uint16_t& left, uint16_t& right) const
+{
     left = right = 0;
 
     const bool active =
@@ -202,9 +208,8 @@ void TurboSound::tick_n(uint32_t count) { for (uint32_t i = 0; i < count; ++i) t
     const uint16_t a = (silenced & 1) ? 0 : ay_[idx].output_a();
     const uint16_t b = (silenced & 2) ? 0 : ay_[idx].output_b();
     const uint16_t c = (silenced & 4) ? 0 : ay_[idx].output_c();
-    const bool mono = (mono_mode_ >> idx) & 1;
 
-    const uint16_t left_mux = (stereo_mode_ || mono) ? c : b;
+    const uint16_t left_mux = (acb || mono) ? c : b;
     const uint16_t left_sum = left_mux + a;
     const uint16_t right_mux = mono ? left_sum : c;
     const uint16_t right_sum = right_mux + b;
@@ -233,7 +238,8 @@ void TurboSound::tick_n(uint32_t count) { for (uint32_t i = 0; i < count; ++i) t
         const bool muted = (chip_mute_mask_ >> i) & 1;
         const uint8_t silenced = (channel_mute_mask_ >> (3 * i)) & 7;
         uint16_t al = l, ar = r;
-        if (!muted && silenced) compute_chip_stereo(i, silenced, al, ar);
+        if (!muted && (silenced || (channel_mute_mask_ & OVERRIDE_BIT)))
+            compute_chip_layout_(i, silenced, audible_acb(), audible_mono(i), al, ar);
         chip_pcm_L_[i] = muted ? 0 : al;
         chip_pcm_R_[i] = muted ? 0 : ar;
         total_L += chip_pcm_L_[i];
@@ -266,7 +272,8 @@ inline void TurboSound::compute_stereo_mix()
     // host listening aid with no hardware analogue and must not reach the
     // saved state (audio/audio_mute.h).
 
-    // Debugger channel mutes in force, or the stems' per-chip latch on (LATCH_BIT of the same mask): the same mix, out of line (cold). Every normal run
+    // Debugger channel mutes in force, or the stems' per-chip latch on (LATCH_BIT of the same mask), or the host's
+    // stereo override (OVERRIDE_BIT, hungarian-ui): the same mix, out of line (cold). Every normal run
     // takes the loop below, which is the pre-mute code.
     if (__builtin_expect(channel_mute_mask_ != 0, 0)) {
         compute_stereo_mix_channels_();

@@ -621,6 +621,22 @@ SGP-HU-01..03 (`audio_gain_preferences_test`: the checkbox, live apply) cover th
 | DM-HU-07 | Idle DAC at loud settings, overload                    | Exact 0 (oversampled too); clips, never wraps             |
 | DM-HU-08 | `Mixer::reset()`, bad channel numbers, oversampling    | Setting kept, ignored, same level                         |
 
+### 5.7 AY stereo override (hungarian-ui)
+
+`TurboSound::set_stereo_override`: ABC or ACB instead of NR 0x08 bit 5 for all three chips, and mono forced per chip on
+top of NR 0x09. A host feature: only the audible sum changes; the oracle is a twin whose NextREGs say that layout.
+
+| ID       | Test                                                   | Verification                                              |
+|----------|--------------------------------------------------------|-----------------------------------------------------------|
+| AS-HU-01 | Off by default, off again after on                     | The machine's output                                      |
+| AS-HU-02 | All 24 overrides of all 16 machine settings            | Sounds as the twin set that way; a machine mono stays     |
+| AS-HU-03 | The hardware sum under every one of them               | The un-overridden machine's                               |
+| AS-HU-04 | Pan, TurboSound off                                    | Never overridden                                          |
+| AS-HU-05 | Set and cleared while the levels stand still           | Heard on the next PSG tick                                |
+| AS-HU-06 | With chip mute, channel mutes and the stems' latch     | All compose, none clears another                          |
+| AS-HU-07 | Saved state, `load_state()`, `reset()`                 | Byte-identical stream; the override stays in force        |
+| AS-HU-08 | Mixer, at 0 dB and with a chip volume                  | Both paths hear it                                        |
+
 ## 6. NextREG Configuration
 
 ### 6.1 PSG Mode (NextREG 0x06)

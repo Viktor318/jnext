@@ -27,6 +27,7 @@
 #include "audio/beeper.h"
 #include "audio/mixer.h"
 #include "audio/i2s.h"
+#include "core/saveable.h"
 
 #include <algorithm>
 #include <cmath>
@@ -4311,6 +4312,203 @@ void g_dac_mixer()
     }
 }
 
+// ---- 5.7 AY stereo override (hungarian-ui, TurboSound::set_stereo_override) --------
+//
+// A host feature. The oracle is the machine itself: a chip overridden to a layout
+// must sound as a twin whose NR 0x08 / NR 0x09 say that layout (turbosound.vhd:184-337),
+// while the hardware sum stays the un-overridden machine's.
+
+using Order = TurboSound::StereoOrder;
+
+// Three chips with nine different steady levels, TurboSound on.
+void as_load(TurboSound& ts, bool acb, uint8_t mono)
+{
+    ts.set_enabled(true);
+    ts.set_stereo_mode(acb);
+    ts.set_mono_mode(mono);
+    const uint8_t sel[3] = {0xFF, 0xFE, 0xFD};
+    for (int chip = 0; chip < 3; ++chip) {
+        ts.reg_addr(sel[chip]);
+        ts.reg_addr(7); ts.reg_write(0x3F);
+        for (int ch = 0; ch < 3; ++ch) {
+            ts.reg_addr(static_cast<uint8_t>(8 + ch));
+            ts.reg_write(static_cast<uint8_t>(15 - chip - 3 * ch));
+        }
+    }
+    ts.reg_addr(0xFF);
+    settle(ts);
+}
+
+bool as_same_audible(const TurboSound& a, const TurboSound& b)
+{
+    bool same = a.pcm_left() == b.pcm_left() && a.pcm_right() == b.pcm_right();
+    for (int chip = 0; chip < 3; ++chip) {
+        uint16_t al, ar, bl, br;
+        a.chip_pcm(chip, al, ar);
+        b.chip_pcm(chip, bl, br);
+        same = same && al == bl && ar == br;
+    }
+    return same;
+}
+
+std::vector<uint8_t> as_state(const TurboSound& ts)
+{
+    StateWriter measure;
+    ts.save_state(measure);
+    std::vector<uint8_t> out(measure.position());
+    StateWriter w(out.data(), out.size());
+    ts.save_state(w);
+    return out;
+}
+
+void g_ay_override()
+{
+    set_group("5.7 AY override");
+    const std::string no_vhdl = "host feature, no VHDL";
+
+    {
+        TurboSound never, back;
+        bool same = never.stereo_order() == Order::Machine && never.mono_force() == 0;
+        back.set_stereo_override(Order::Acb, 7);
+        back.set_stereo_override(Order::Machine, 0);
+        as_load(never, false, 0x02);
+        as_load(back, false, 0x02);
+        for (int i = 0; i < 50; ++i) { never.tick(); back.tick(); }
+        check("AS-HU-01", "off by default; off again after on, the output is the machine's",
+              same && as_same_audible(never, back) && never.pcm_left() != 0, no_vhdl);
+    }
+    {
+        // Every machine setting (2 x 8) under every override (3 x 8).
+        int bad_audible = 0, bad_hw = 0, differs = 0, bad_getters = 0;
+        for (int acb = 0; acb < 2; ++acb)
+            for (int mono = 0; mono < 8; ++mono) {
+                TurboSound machine;
+                as_load(machine, acb, static_cast<uint8_t>(mono));
+                for (int o = 0; o < 3; ++o)
+                    for (int force = 0; force < 8; ++force) {
+                        TurboSound ts, twin;
+                        ts.set_stereo_override(static_cast<Order>(o), static_cast<uint8_t>(force));
+                        as_load(ts, acb, static_cast<uint8_t>(mono));
+                        const bool want_acb = o == 0 ? acb != 0 : o == 2;
+                        as_load(twin, want_acb, static_cast<uint8_t>(mono | force));
+                        if (!as_same_audible(ts, twin)) ++bad_audible;
+                        if (ts.hw_pcm_left() != machine.pcm_left() || ts.hw_pcm_right() != machine.pcm_right()) ++bad_hw;
+                        if (!as_same_audible(ts, machine)) ++differs;
+                        if (ts.audible_acb() != want_acb) ++bad_getters;
+                        for (int c = 0; c < 3; ++c)
+                            if (ts.audible_mono(c) != ((((mono | force) >> c) & 1) != 0)) ++bad_getters;
+                        if (ts.stereo_mode() != (acb != 0) || ts.mono_mode() != mono) ++bad_getters;
+                    }
+            }
+        check("AS-HU-02", "every override of every machine setting sounds as the machine set that way; a mono of the machine's stays",
+              bad_audible == 0 && bad_getters == 0 && differs > 200, fmt("bad=%d getters=%d differs=%d", bad_audible, bad_getters, differs));
+        check("AS-HU-03", "the hardware sum stays the un-overridden machine's", bad_hw == 0, fmt("bad=%d", bad_hw));
+    }
+    {
+        // Pan (chip 1 left only, chip 2 off) and TurboSound off are the machine's still.
+        TurboSound ts, twin;
+        for (TurboSound* t : {&ts, &twin}) as_load(*t, false, 0);
+        ts.set_stereo_override(Order::Acb, 0x02);
+        twin.set_stereo_mode(true);
+        twin.set_mono_mode(0x02);
+        for (TurboSound* t : {&ts, &twin}) { t->reg_addr(0xDE); t->reg_addr(0x9D); t->reg_addr(0xFF); settle(*t); }
+        uint16_t l1, r1, l2, r2;
+        ts.chip_pcm(1, l1, r1);
+        ts.chip_pcm(2, l2, r2);
+        const bool pan = as_same_audible(ts, twin) && l1 > 0 && r1 == 0 && l2 == 0 && r2 == 0;
+        for (TurboSound* t : {&ts, &twin}) { t->set_enabled(false); settle(*t); }
+        uint16_t l0, r0;
+        ts.chip_pcm(0, l0, r0);
+        ts.chip_pcm(1, l1, r1);
+        check("AS-HU-04", "pan and TurboSound off are never overridden",
+              pan && as_same_audible(ts, twin) && l0 > 0 && r0 > 0 && l1 == 0, no_vhdl);
+    }
+    {
+        // A change is heard on the next PSG tick although no chip output moved.
+        TurboSound ts;
+        as_load(ts, false, 0);
+        const uint16_t before = ts.pcm_left();
+        ts.set_stereo_override(Order::Acb, 0);
+        ts.tick();
+        const uint16_t during = ts.pcm_left();
+        ts.set_stereo_override(Order::Machine, 0);
+        ts.tick();
+        check("AS-HU-05", "setting and clearing it is heard on the next PSG tick",
+              before != during && ts.pcm_left() == before, fmt("%u -> %u -> %u", before, during, ts.pcm_left()));
+    }
+    {
+        // It composes with the debugger's mutes and the stems' latch, which share its divert test.
+        TurboSound ts, twin;
+        as_load(ts, false, 0);
+        as_load(twin, true, 0x01);
+        ts.set_stereo_override(Order::Acb, 0x01);
+        bool ok = ts.channel_mute_mask() == 0;
+        for (TurboSound* t : {&ts, &twin}) { t->set_channel_mute_mask(0x00A1); t->set_chip_mute_mask(AudioMute::AY1); t->tick(); }
+        ok = ok && ts.channel_mute_mask() == 0x00A1 && as_same_audible(ts, twin);
+        for (TurboSound* t : {&ts, &twin}) { t->set_channel_mute_mask(0); t->set_chip_mute_mask(0); t->tick(); }
+        ok = ok && as_same_audible(ts, twin);
+        ts.set_hw_chip_latch(true);
+        ts.set_hw_chip_latch(false);
+        ts.tick();
+        ok = ok && as_same_audible(ts, twin);
+        ts.set_channel_mute_mask(0x0001);
+        ts.set_hw_chip_latch(true);
+        ts.set_stereo_override(Order::Machine, 0);
+        ok = ok && ts.channel_mute_mask() == 0x0001 && ts.hw_chip_latch();
+        TurboSound plain;
+        as_load(plain, false, 0);
+        plain.set_channel_mute_mask(0x0001);
+        ts.tick(); plain.tick();
+        uint16_t hl, hr, pl, pr;
+        ts.hw_chip_pcm(0, hl, hr);
+        as_load(twin, false, 0);
+        twin.chip_pcm(0, pl, pr);
+        check("AS-HU-06", "composes with the chip mute, the channel mutes and the stems' latch, and none of them clears another",
+              ok && as_same_audible(ts, plain) && hl == pl && hr == pr, no_vhdl);
+    }
+    {
+        // Not machine state: not in the stream, kept by reset() and load_state().
+        TurboSound ts, plain;
+        as_load(ts, false, 0x04);
+        as_load(plain, false, 0x04);
+        ts.set_stereo_override(Order::Acb, 0x03);
+        for (int i = 0; i < 30; ++i) { ts.tick(); plain.tick(); }
+        const std::vector<uint8_t> a = as_state(ts), b = as_state(plain);
+        StateReader r(b.data(), b.size());
+        ts.load_state(r);
+        const bool after_load = ts.stereo_order() == Order::Acb && ts.mono_force() == 0x03;
+        ts.reset();
+        const bool after_reset = ts.stereo_order() == Order::Acb && ts.mono_force() == 0x03;
+        TurboSound twin;
+        as_load(ts, false, 0);
+        as_load(twin, true, 0x03);
+        check("AS-HU-07", "not machine state: a saved state is byte-identical, reset() and load_state() keep it in force",
+              a == b && !a.empty() && after_load && after_reset && as_same_audible(ts, twin), no_vhdl);
+    }
+    {
+        // Through the mixer: the 0 dB path and the per-chip gain path both hear it.
+        bool ok = true;
+        for (float db : {0.0f, 6.0206f}) {
+            TurboSound ts, twin, machine;
+            as_load(ts, false, 0);
+            as_load(machine, false, 0);
+            as_load(twin, true, 0x04);
+            ts.set_stereo_override(Order::Acb, 0x04);
+            settle(ts);
+            int16_t p[3][2] = {};
+            const TurboSound* all[3] = {&ts, &twin, &machine};
+            for (int i = 0; i < 3; ++i) {
+                Mixer m; Beeper beeper; Dac dac;
+                m.set_ay_gain_db(1, db);
+                m.generate_sample(beeper, *all[i], dac);
+                m.read_samples(p[i], 1);
+            }
+            ok = ok && p[0][0] == p[1][0] && p[0][1] == p[1][1] && p[0][0] != p[2][0];
+        }
+        check("AS-HU-08", "the mixer hears it at 0 dB and with a chip volume set", ok, no_vhdl);
+    }
+}
+
 }  // namespace
 
 int main() {
@@ -4340,6 +4538,7 @@ int main() {
     g_mixer();         std::printf("  5   Mixer -- done\n");
     g_oversample();    std::printf("  5.5 Oversampling -- done\n");
     g_dac_mixer();     std::printf("  5.6 DAC mixer -- done\n");
+    g_ay_override();   std::printf("  5.7 AY override -- done\n");
     g_nextreg();       std::printf("  6   NextREG -- done\n");
     g_io();            std::printf("  7   IO -- done\n");
 
