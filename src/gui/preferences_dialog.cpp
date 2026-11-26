@@ -504,12 +504,13 @@ QWidget* PreferencesDialog::make_gain_slider(QWidget* parent, const QString& obj
     auto text = [](int db) {
         return QStringLiteral("%1%2 dB").arg(db > 0 ? QStringLiteral("+") : QString()).arg(db);
     };
-    // As wide as the widest value, so the slider never moves while it is dragged ("+10 dB" is
-    // wider than "-24 dB" in most fonts).
+    // A FIXED width: the widest value and one character more, so the slider never moves while it
+    // is dragged ("+10 dB" is wider than "-24 dB"). A minimum alone was not enough on Windows,
+    // where the label's own hint is a little wider than its text.
     int widest = 0;
     for (int db = slider->minimum(); db <= slider->maximum(); ++db)
         widest = qMax(widest, value->fontMetrics().horizontalAdvance(text(db)));
-    value->setMinimumWidth(widest);
+    value->setFixedWidth(widest + value->fontMetrics().averageCharWidth());
     auto update_value = [value, text](int db) { value->setText(text(db)); };
     connect(slider, &QSlider::valueChanged, value, update_value);
     update_value(slider->value());
@@ -681,7 +682,8 @@ QWidget* PreferencesDialog::build_dac_channels_group(QWidget* parent) {
         dac_pan_slider_[ch] = pan;
         auto* value = new QLabel(dac_pan_text(pan->value()), group);
         value->setObjectName(QStringLiteral("dac%1PanValue").arg(letter));
-        value->setMinimumWidth(value_width + group->fontMetrics().averageCharWidth());
+        value->setFixedWidth(value_width + group->fontMetrics().averageCharWidth());   // fixed, as the gains'
+
         connect(pan, &QSlider::valueChanged, this, [this, value](int p) {
             value->setText(dac_pan_text(p));
             sync_dac_layout_combo();

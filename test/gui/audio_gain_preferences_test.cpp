@@ -15,6 +15,7 @@
 #include <QElapsedTimer>
 #include <QLabel>
 #include <QTabWidget>
+#include <QRegularExpression>
 #include <QTextDocument>
 
 #include <cstdio>
@@ -367,7 +368,14 @@ int main(int argc, char** argv)
             if (!moved.empty()) break;
         }
         if (!moved.empty()) std::printf("  moved at %s\n", moved.c_str());
-        check("SGP-HU-14", all.size() == 14 && moved.empty());
+        // Whatever the font: every value label is of a fixed width (a minimum alone let Windows move them).
+        bool fixed = true;
+        for (QLabel* l : tabs->currentWidget()->findChildren<QLabel*>())
+            if (l->objectName().endsWith(QStringLiteral("Value")))
+                fixed = fixed && l->minimumWidth() == l->maximumWidth() &&
+                        l->minimumWidth() > l->fontMetrics().horizontalAdvance(QStringLiteral("+10 dB"));
+        const int labels = static_cast<int>(tabs->currentWidget()->findChildren<QLabel*>(QRegularExpression(QStringLiteral("Value$"))).size());
+        check("SGP-HU-14", all.size() == 14 && moved.empty() && fixed && labels == 14);
     }
 
     std::printf("Total: %d Passed: %d Failed: %d Skipped: 0\n",
