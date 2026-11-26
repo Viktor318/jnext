@@ -501,13 +501,16 @@ QWidget* PreferencesDialog::make_gain_slider(QWidget* parent, const QString& obj
     auto* value = new QLabel(row);
     value->setObjectName(object_name + QStringLiteral("Value"));
     value->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    value->setMinimumWidth(
-        value->fontMetrics().horizontalAdvance(QStringLiteral("-24 dB")));
-    auto update_value = [value](int db) {
-        value->setText(QStringLiteral("%1%2 dB")
-                           .arg(db > 0 ? QStringLiteral("+") : QString())
-                           .arg(db));
+    auto text = [](int db) {
+        return QStringLiteral("%1%2 dB").arg(db > 0 ? QStringLiteral("+") : QString()).arg(db);
     };
+    // As wide as the widest value, so the slider never moves while it is dragged ("+10 dB" is
+    // wider than "-24 dB" in most fonts).
+    int widest = 0;
+    for (int db = slider->minimum(); db <= slider->maximum(); ++db)
+        widest = qMax(widest, value->fontMetrics().horizontalAdvance(text(db)));
+    value->setMinimumWidth(widest);
+    auto update_value = [value, text](int db) { value->setText(text(db)); };
     connect(slider, &QSlider::valueChanged, value, update_value);
     update_value(slider->value());
     h->addWidget(slider, 1);
@@ -652,8 +655,8 @@ QWidget* PreferencesDialog::build_dac_channels_group(QWidget* parent) {
     grid->addWidget(heading(tr("Pan")), 0, 3, Qt::AlignHCenter);
     const int pan_width = group->fontMetrics().averageCharWidth() * 24;
     int value_width = 0;
-    for (const QString& t : {dac_pan_text(DacPan::Left), dac_pan_text(DacPan::Centre), dac_pan_text(DacPan::Right)})
-        value_width = qMax(value_width, group->fontMetrics().horizontalAdvance(t));
+    for (int p = DacPan::Left; p <= DacPan::Right; ++p)   // every value: the slider must not move
+        value_width = qMax(value_width, group->fontMetrics().horizontalAdvance(dac_pan_text(p)));
     for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
         const QChar letter = QLatin1Char(static_cast<char>('A' + ch));
         const int row = 1 + ch;

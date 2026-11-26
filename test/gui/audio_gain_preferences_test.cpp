@@ -341,6 +341,35 @@ int main(int argc, char** argv)
                                emulator.audio_channels() == live.audio_channels && emulator.mixer().oversample() == os_before);
     }
 
+    // hungarian-ui: no slider moves or changes width while any of them is dragged through its
+    // whole range (the value text "+10 dB" is wider than "-24 dB").
+    {
+        AppConfigData cfg;
+        PreferencesDialog dlg(cfg);
+        auto* tabs = dlg.findChild<QTabWidget*>();
+        tabs->setCurrentWidget(dlg.findChild<QWidget*>(QStringLiteral("audioNoteLabel"))->parentWidget());
+        dlg.show();
+        QApplication::processEvents();
+        const QList<QSlider*> all = tabs->currentWidget()->findChildren<QSlider*>();
+        QList<QRect> at;
+        for (QSlider* s : all) at << s->geometry();
+        std::string moved;
+        for (QSlider* s : all) {
+            const int keep = s->value();
+            for (int v = s->minimum(); v <= s->maximum(); ++v) {
+                s->setValue(v);
+                QApplication::processEvents();
+                for (int i = 0; i < all.size(); ++i)
+                    if (all[i]->geometry() != at[i]) { moved += s->objectName().toStdString() + "=" + std::to_string(v) + " "; break; }
+                if (!moved.empty()) break;
+            }
+            s->setValue(keep);
+            if (!moved.empty()) break;
+        }
+        if (!moved.empty()) std::printf("  moved at %s\n", moved.c_str());
+        check("SGP-HU-14", all.size() == 14 && moved.empty());
+    }
+
     std::printf("Total: %d Passed: %d Failed: %d Skipped: 0\n",
                 passed + failed, passed, failed);
     return failed == 0 ? 0 : 1;
