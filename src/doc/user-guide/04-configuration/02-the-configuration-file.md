@@ -51,8 +51,8 @@ value overrides the saved setting for that run. `oversample` (`true` or `false`,
 default `false`) is the 4x oversampled sound of the Preferences **Audio** tab;
 `--set audio.oversample=true` turns it on for one run. `dac_a_gain_db` to
 `dac_d_gain_db` (-24 to +24), `dac_a_pan` to `dac_d_pan` (-100 left to 100 right; the
-words `left`, `centre` and `right` of an earlier version are still read) and
-`dac_a_mute` to `dac_d_mute` (`true` or `false`) are the DAC channels of that tab, `ay_stereo` (`machine`, `abc` or `acb`)
+words `left`, `centre` and `right` of an earlier version are still read) are the
+DAC channels of that tab (its solo boxes are not saved), `ay_stereo` (`machine`, `abc` or `acb`)
 and `ay0_mono` to `ay2_mono` (`true` or `false`) its AY channels; each has a
 `--set` form too.
 

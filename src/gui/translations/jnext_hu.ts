@@ -4002,24 +4002,12 @@ Csak a módosított hozzárendelések kerülnek a beállításfájlba.</translat
         <translation>A(z) %1 DAC-csatorna hangereje, a DAC csúszkán felül.</translation>
     </message>
     <message>
-        <source>Sets the places of the four channels below. Their gains and mutes are not changed.</source>
-        <translation>Beállítja az alábbi négy csatorna helyét. A hangerejük és a némításuk nem változik.</translation>
-    </message>
-    <message>
-        <source>Mute</source>
-        <translation>Némítás</translation>
-    </message>
-    <message>
         <source>Gain</source>
         <translation>Hangerő</translation>
     </message>
     <message>
         <source>Pan</source>
         <translation>Panoráma</translation>
-    </message>
-    <message>
-        <source>Mute DAC channel %1.</source>
-        <translation>A(z) %1 DAC-csatorna némítása.</translation>
     </message>
     <message>
         <source>Where DAC channel %1 is heard, from left to right. Centre gives half of it to each side.</source>
@@ -4032,6 +4020,18 @@ Csak a módosított hozzárendelések kerülnek a beállításfájlba.</translat
     <message>
         <source>R %1</source>
         <translation>J %1</translation>
+    </message>
+    <message>
+        <source>Sets the places of the four channels below. Their gains and solos are not changed.</source>
+        <translation>Beállítja az alábbi négy csatorna helyét. A hangerejük és a szólójuk nem változik.</translation>
+    </message>
+    <message>
+        <source>Solo</source>
+        <translation>Szóló</translation>
+    </message>
+    <message>
+        <source>Solo: while any channel is ticked, only the ticked ones are heard. Not saved.</source>
+        <translation>Szóló: ha bármelyik csatornánál van pipa, csak a bepipáltak szólnak. Nem mentődik.</translation>
     </message>
 </context>
 <context>

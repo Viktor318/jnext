@@ -16534,7 +16534,7 @@ void Emulator::set_audio_channels(const AudioChannels& c)
     for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
         mixer_.dac_mixer().set_gain_db(ch, c.dac_gain_db[ch]);
         mixer_.dac_mixer().set_pan(ch, c.dac_pan[ch]);
-        mixer_.dac_mixer().set_mute(ch, c.dac_mute[ch]);
+        mixer_.dac_mixer().set_solo(ch, c.dac_solo[ch]);
     }
     uint8_t mono = 0;
     for (int chip = 0; chip < 3; ++chip)
@@ -16548,7 +16548,7 @@ AudioChannels Emulator::audio_channels() const
     for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
         c.dac_gain_db[ch] = mixer_.dac_mixer().gain_db(ch);
         c.dac_pan[ch]     = mixer_.dac_mixer().pan(ch);
-        c.dac_mute[ch]    = mixer_.dac_mixer().mute(ch);
+        c.dac_solo[ch]    = mixer_.dac_mixer().solo(ch);
     }
     c.ay_stereo = turbosound_.stereo_order();
     for (int chip = 0; chip < 3; ++chip) c.ay_mono[chip] = (turbosound_.mono_force() >> chip) & 1;

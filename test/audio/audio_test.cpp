@@ -4331,24 +4331,28 @@ void g_dac_mixer()
               ok, got.empty() ? no_vhdl : got);
     }
     {
-        // A muted channel is silent wherever it is placed and however loud; the others are untouched; unmuted it is back.
+        // Solo: none soloed, all heard; while any is, only the soloed ones, each with its own gain and place.
         const Dac dac = dm_dac(0xFF, 0x90, 0x70, 0xA0);   // +127, +16, -16, +32
         Mixer m;
-        m.dac_mixer().set_mute(0, true);
-        const Stereo a = dm_sample(m, dac);
-        m.dac_mixer().set_pan(0, Pan::Centre);
-        m.dac_mixer().set_gain_db(0, 24.0f);
-        const Stereo b = dm_sample(m, dac);
-        const bool muted = m.dac_mixer().mute(0) && !m.dac_mixer().mute(1) && m.dac_mixer().active();
-        m.dac_mixer().set_mute(0, false);
-        m.dac_mixer().set_pan(0, Pan::Left);
-        m.dac_mixer().set_gain_db(0, 0.0f);
+        const Stereo all = dm_sample(m, dac);
+        m.dac_mixer().set_solo(1, true);
+        const Stereo b = dm_sample(m, dac);                // B alone, left
+        const bool one = m.dac_mixer().solo(1) && !m.dac_mixer().solo(0) && m.dac_mixer().active();
+        m.dac_mixer().set_solo(3, true);
+        m.dac_mixer().set_pan(3, Pan::Centre);
+        m.dac_mixer().set_gain_db(3, 6.0206f);             // D x2, centred: 32 each side
+        const Stereo bd = dm_sample(m, dac);
+        m.dac_mixer().set_solo(1, false);
+        m.dac_mixer().set_solo(3, false);
+        m.dac_mixer().set_pan(3, Pan::Right);
+        m.dac_mixer().set_gain_db(3, 0.0f);
         const bool back = !m.dac_mixer().active();
-        const Stereo c = dm_sample(m, dac);
-        m.dac_mixer().set_mute(5, true);
-        check("DM-HU-10", "a muted channel is silent at any place and gain, the others play on, and unmuted the machine's routing is back",
-              muted && back && a.l == 16 * 16 && a.r == 16 * 16 && b.l == a.l && b.r == a.r &&
-                  c.l == (127 + 16) * 16 && c.r == 16 * 16 && !m.dac_mixer().mute(5), no_vhdl);
+        const Stereo again = dm_sample(m, dac);
+        m.dac_mixer().set_solo(5, true);
+        check("DM-HU-10", "no solo: every channel; a solo: only the soloed channels, each as set; all off: the machine's routing again",
+              one && back && all.l == (127 + 16) * 16 && all.r == 16 * 16 && b.l == 16 * 16 && b.r == 0 &&
+                  bd.l == (16 + 32) * 16 && bd.r == 32 * 16 && again.l == all.l && again.r == all.r && !m.dac_mixer().solo(5),
+              no_vhdl);
     }
 }
 

@@ -166,13 +166,13 @@ int main(int argc, char** argv)
             QSlider* s = slider(dlg, n);
             sliders = sliders && s && s->minimum() == -24 && s->maximum() == 24 && s->value() == 0;
         }
-        bool pans = true, mutes = true;
+        bool pans = true, solos = true;
         for (int ch = 0; ch < 4; ++ch) {
             pans = pans && pan(ch) && pan(ch)->minimum() == -100 && pan(ch)->maximum() == 100;
-            auto* m = dlg.findChild<QCheckBox*>(QStringLiteral("dac%1MuteCheck").arg(QLatin1Char(static_cast<char>('A' + ch))));
-            mutes = mutes && m && !m->isChecked();
+            auto* m = dlg.findChild<QCheckBox*>(QStringLiteral("dac%1SoloCheck").arg(QLatin1Char(static_cast<char>('A' + ch))));
+            solos = solos && m && !m->isChecked() && m->text() == QStringLiteral("%1:").arg(QLatin1Char(static_cast<char>('A' + ch)));
         }
-        check("SGP-HU-04", sliders && pans && mutes && layout && order && layout->currentIndex() == 0 &&
+        check("SGP-HU-04", sliders && pans && solos && layout && order && layout->currentIndex() == 0 &&
                                order->currentIndex() == 0 && places() == QStringLiteral("LLRR") &&
                                pan_text(0) == QStringLiteral("L 100") && pan_text(3) == QStringLiteral("R 100") &&
                                !apply->isEnabled());
@@ -199,7 +199,7 @@ int main(int argc, char** argv)
         QObject::connect(&dlg, &PreferencesDialog::apply_requested, [&got](const AppConfigData& c) { got = c; });
         pick(1);
         pan(3)->setValue(65);
-        dlg.findChild<QCheckBox*>(QStringLiteral("dacCMuteCheck"))->setChecked(true);
+        dlg.findChild<QCheckBox*>(QStringLiteral("dacCSoloCheck"))->setChecked(true);
         slider(dlg, "audioDacAGainDbSlider")->setValue(-3);
         slider(dlg, "audioDacDGainDbSlider")->setValue(4);
         order->setCurrentIndex(2);
@@ -210,7 +210,7 @@ int main(int argc, char** argv)
         want.dac_gain_db[3] = 4.0f;
         want.dac_pan[1] = want.dac_pan[2] = DacPan::Centre;
         want.dac_pan[3] = 65;
-        want.dac_mute[2] = true;
+        want.dac_solo[2] = true;
         want.ay_stereo = AyStereoOrder::Acb;
         want.ay_mono[1] = true;
         const bool collected_ok = got.audio_channels == want && !apply->isEnabled();

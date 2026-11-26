@@ -1753,8 +1753,10 @@ The default is the machine’s own: A and B -100, C and D 100. A file of
 an earlier version that says *left*, *centre* or *right* is read as
 -100, 0 or 100. All frontends.
 
-`audio.dac_a_mute`, `audio.dac_b_mute`, `audio.dac_c_mute`, `audio.dac_d_mute` *true\|false*  
-Silence that DAC channel. Default false. All frontends.
+`audio.dac_a_solo`, `audio.dac_b_solo`, `audio.dac_c_solo`, `audio.dac_d_solo` *true\|false*  
+Solo that DAC channel: while any of the four is soloed, only the soloed
+ones are heard; none soloed, all are. Held for the run and never written
+to `jnext.conf`. Default false. All frontends.
 
 `audio.ay_stereo` *machine\|abc\|acb*  
 The stereo layout of the three AY chips. Default *machine*: as the
@@ -4137,8 +4139,8 @@ GUI configuration, in INI format. Written by **Settings \>
 Preferences**. Host gains are stored under `[audio]` as `gain_db`
 (master), `gain_beeper_db`, `gain_ay0_db`, `gain_ay1_db`, `gain_ay2_db`,
 and `gain_dac_db`; `oversample` (`true`/`false`) is the 4x oversampled
-sound. `dac_a_gain_db` to `dac_d_gain_db`, `dac_a_pan` to `dac_d_pan`
-and `dac_a_mute` to `dac_d_mute` are the DAC channel mixer, `ay_stereo`
+sound. `dac_a_gain_db` to `dac_d_gain_db` and `dac_a_pan` to `dac_d_pan`
+are the DAC channel mixer (its solo switches are not saved), `ay_stereo`
 and `ay0_mono` to `ay2_mono` the AY stereo layout. The degradation
 policy is stored under `[startup]` as `when_slow_prefer` (`audio` or
 `video`, the persistent form of **--when-slow-prefer**); an unrecognised

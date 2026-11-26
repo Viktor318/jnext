@@ -2140,15 +2140,15 @@ Notes and rationale: [AUDIO-TEST-PLAN-DESIGN.md](AUDIO-TEST-PLAN-DESIGN.md).
 | DM-HU-07 | an idle DAC is exact digital zero at any setting, and overload clips | — | pass | test/audio/audio_test.cpp:4288 |
 | DM-HU-08 | Mixer::reset() keeps the setting, other channel numbers are ignored, and oversampling mixes the same level | — | pass | test/audio/audio_test.cpp:4308 |
 | DM-HU-09 | any place between left and right shares the channel linearly; a value beyond an end is that end | — | pass | test/audio/audio_test.cpp:4330 |
-| DM-HU-10 | a muted channel is silent at any place and gain, the others play on, and unmuted the machine's routing is back | — | pass | test/audio/audio_test.cpp:4349 |
-| AS-HU-01 | off by default; off again after on, the output is the machine's | — | pass | test/audio/audio_test.cpp:4417 |
-| AS-HU-02 | every override of every machine setting sounds as the machine set that way; a mono of the machine's stays | — | pass | test/audio/audio_test.cpp:4443 |
-| AS-HU-03 | the hardware sum stays the un-overridden machine's | — | pass | test/audio/audio_test.cpp:4445 |
-| AS-HU-04 | pan and TurboSound off are never overridden | — | pass | test/audio/audio_test.cpp:4463 |
-| AS-HU-05 | setting and clearing it is heard on the next PSG tick | — | pass | test/audio/audio_test.cpp:4476 |
-| AS-HU-06 | composes with the chip mute, the channel mutes and the stems' latch, and none of them clears another | — | pass | test/audio/audio_test.cpp:4506 |
-| AS-HU-07 | not machine state: a saved state is byte-identical, reset() and load_state() keep it in force | — | pass | test/audio/audio_test.cpp:4525 |
-| AS-HU-08 | the mixer hears it at 0 dB and with a chip volume set | — | pass | test/audio/audio_test.cpp:4548 |
+| DM-HU-10 | no solo: every channel; a solo: only the soloed channels, each as set; all off: the machine's routing again | — | pass | test/audio/audio_test.cpp:4352 |
+| AS-HU-01 | off by default; off again after on, the output is the machine's | — | pass | test/audio/audio_test.cpp:4421 |
+| AS-HU-02 | every override of every machine setting sounds as the machine set that way; a mono of the machine's stays | — | pass | test/audio/audio_test.cpp:4447 |
+| AS-HU-03 | the hardware sum stays the un-overridden machine's | — | pass | test/audio/audio_test.cpp:4449 |
+| AS-HU-04 | pan and TurboSound off are never overridden | — | pass | test/audio/audio_test.cpp:4467 |
+| AS-HU-05 | setting and clearing it is heard on the next PSG tick | — | pass | test/audio/audio_test.cpp:4480 |
+| AS-HU-06 | composes with the chip mute, the channel mutes and the stems' latch, and none of them clears another | — | pass | test/audio/audio_test.cpp:4510 |
+| AS-HU-07 | not machine state: a saved state is byte-identical, reset() and load_state() keep it in force | — | pass | test/audio/audio_test.cpp:4529 |
+| AS-HU-08 | the mixer hears it at 0 dB and with a chip volume set | — | pass | test/audio/audio_test.cpp:4552 |
 | AUD-NR-01 | NR 0x06 bits[1:0] handler forwards to TurboSound::ay_mode [zxnext.vhd:5170, :6389] | zxnext.vhd:5170,6389 | pass | test/audio/audio_nextreg_test.cpp:160 |
 | AUD-NR-02 | psg_mode=00 sinks to YM mode [zxnext.vhd:6389] | zxnext.vhd:6389 | pass | test/audio/audio_nextreg_test.cpp:172 |
 | AUD-NR-03 | psg_mode=01 sinks to AY mode [zxnext.vhd:6389] | zxnext.vhd:6389 | pass | test/audio/audio_nextreg_test.cpp:183 |

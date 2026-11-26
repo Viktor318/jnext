@@ -46,7 +46,9 @@ enum class Type : uint8_t {
 enum Frontend : uint8_t { QT = 1, SDL = 2, HEADLESS = 4, WEB = 8 };
 
 /// Which module reads and writes the key in jnext.conf.
-enum class Owner : uint8_t { AppConfig, DebuggerWindow };
+/// Session (hungarian-ui): settable with --set and held for the run, never written to jnext.conf
+/// (the DAC channel solo switches, a listening aid of one session).
+enum class Owner : uint8_t { AppConfig, DebuggerWindow, Session };
 
 /// One id per row, in table order. A `switch` over it with no `default` fails
 /// to compile (-Werror=switch) when a row is added without an arm.
@@ -80,10 +82,10 @@ enum class KeyId : uint8_t {
     AudioDacBPan,
     AudioDacCPan,
     AudioDacDPan,
-    AudioDacAMute,
-    AudioDacBMute,
-    AudioDacCMute,
-    AudioDacDMute,
+    AudioDacASolo,
+    AudioDacBSolo,
+    AudioDacCSolo,
+    AudioDacDSolo,
     AudioAyStereo,
     AudioAy0Mono,
     AudioAy1Mono,
@@ -234,18 +236,18 @@ inline constexpr Key KEYS[] = {
     { KeyId::AudioDacDPan, "audio", "dac_d_pan", Type::Int, -100, 100,
       "-100..100", nullptr, QT | SDL | HEADLESS, false, Owner::AppConfig, nullptr,
       "Where DAC channel D is heard: -100 left, 0 centre, 100 right (the machine: 100)" },
-    { KeyId::AudioDacAMute, "audio", "dac_a_mute", Type::Bool, 0, 0,
-      "true|false", nullptr, QT | SDL | HEADLESS, false, Owner::AppConfig, nullptr,
-      "Mute DAC channel A" },
-    { KeyId::AudioDacBMute, "audio", "dac_b_mute", Type::Bool, 0, 0,
-      "true|false", nullptr, QT | SDL | HEADLESS, false, Owner::AppConfig, nullptr,
-      "Mute DAC channel B" },
-    { KeyId::AudioDacCMute, "audio", "dac_c_mute", Type::Bool, 0, 0,
-      "true|false", nullptr, QT | SDL | HEADLESS, false, Owner::AppConfig, nullptr,
-      "Mute DAC channel C" },
-    { KeyId::AudioDacDMute, "audio", "dac_d_mute", Type::Bool, 0, 0,
-      "true|false", nullptr, QT | SDL | HEADLESS, false, Owner::AppConfig, nullptr,
-      "Mute DAC channel D" },
+    { KeyId::AudioDacASolo, "audio", "dac_a_solo", Type::Bool, 0, 0,
+      "true|false", nullptr, QT | SDL | HEADLESS, false, Owner::Session, nullptr,
+      "Solo DAC channel A: only soloed channels are heard (not saved)" },
+    { KeyId::AudioDacBSolo, "audio", "dac_b_solo", Type::Bool, 0, 0,
+      "true|false", nullptr, QT | SDL | HEADLESS, false, Owner::Session, nullptr,
+      "Solo DAC channel B: only soloed channels are heard (not saved)" },
+    { KeyId::AudioDacCSolo, "audio", "dac_c_solo", Type::Bool, 0, 0,
+      "true|false", nullptr, QT | SDL | HEADLESS, false, Owner::Session, nullptr,
+      "Solo DAC channel C: only soloed channels are heard (not saved)" },
+    { KeyId::AudioDacDSolo, "audio", "dac_d_solo", Type::Bool, 0, 0,
+      "true|false", nullptr, QT | SDL | HEADLESS, false, Owner::Session, nullptr,
+      "Solo DAC channel D: only soloed channels are heard (not saved)" },
     { KeyId::AudioAyStereo, "audio", "ay_stereo", Type::Word, 0, 0,
       "machine|abc|acb", nullptr, QT | SDL | HEADLESS, false, Owner::AppConfig, nullptr,
       "Stereo layout of the AY chips, machine = as the program set it" },

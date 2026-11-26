@@ -172,7 +172,6 @@ void load_audio_channels(QSettings& settings, AudioChannels& c)
     for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
         load_gain(settings, nth(KeyId::AudioDacAGainDb, ch), c.dac_gain_db[ch]);
         load_pan(settings, nth(KeyId::AudioDacAPan, ch), c.dac_pan[ch]);
-        c.dac_mute[ch] = settings.value(config_keys::info(nth(KeyId::AudioDacAMute, ch)).name, c.dac_mute[ch]).toBool();
     }
     c.ay_stereo = static_cast<AyStereoOrder>(
         load_word(settings, KeyId::AudioAyStereo, static_cast<int>(c.ay_stereo)));
@@ -186,7 +185,10 @@ void save_audio_channels(QSettings& settings, const AudioChannels& c)
         const KeyId gain = nth(KeyId::AudioDacAGainDb, ch), pan = nth(KeyId::AudioDacAPan, ch);
         settings.setValue(config_keys::info(gain).name, gain_text(c.dac_gain_db[ch]));
         settings.setValue(config_keys::info(pan).name, c.dac_pan[ch]);
-        settings.setValue(config_keys::info(nth(KeyId::AudioDacAMute, ch)).name, c.dac_mute[ch]);
+        // The solo switches are not saved (a listening aid of one session), and the mute of a
+        // short-lived earlier build is taken out of the file.
+        settings.remove(config_keys::info(nth(KeyId::AudioDacASolo, ch)).name);
+        settings.remove(QStringLiteral("dac_%1_mute").arg(QLatin1Char(static_cast<char>('a' + ch))));
     }
     settings.setValue(config_keys::info(KeyId::AudioAyStereo).name,
                       word_text(KeyId::AudioAyStereo, static_cast<int>(c.ay_stereo)));

@@ -22,14 +22,14 @@ constexpr int dac_machine_pan(int ch) { return ch < 2 ? DacPan::Left : DacPan::R
 struct AudioChannels {
     float         dac_gain_db[DAC_MIX_CHANNELS] = {0.0f, 0.0f, 0.0f, 0.0f};
     int           dac_pan[DAC_MIX_CHANNELS] = {dac_machine_pan(0), dac_machine_pan(1), dac_machine_pan(2), dac_machine_pan(3)};
-    bool          dac_mute[DAC_MIX_CHANNELS] = {false, false, false, false};
+    bool          dac_solo[DAC_MIX_CHANNELS] = {false, false, false, false};   // none = all heard; not saved
     AyStereoOrder ay_stereo = AyStereoOrder::Machine;
     bool          ay_mono[3] = {false, false, false};
 
     bool operator==(const AudioChannels& o) const
     {
         for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch)
-            if (dac_gain_db[ch] != o.dac_gain_db[ch] || dac_pan[ch] != o.dac_pan[ch] || dac_mute[ch] != o.dac_mute[ch])
+            if (dac_gain_db[ch] != o.dac_gain_db[ch] || dac_pan[ch] != o.dac_pan[ch] || dac_solo[ch] != o.dac_solo[ch])
                 return false;
         for (int chip = 0; chip < 3; ++chip)
             if (ay_mono[chip] != o.ay_mono[chip]) return false;

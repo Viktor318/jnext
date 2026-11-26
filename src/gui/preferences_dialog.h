@@ -153,7 +153,7 @@ private:
     QComboBox*    dac_layout_combo_ = nullptr;
     QSlider*      dac_channel_slider_[DAC_MIX_CHANNELS] = {};
     QSlider*      dac_pan_slider_[DAC_MIX_CHANNELS] = {};   // DacPan::Left .. DacPan::Right
-    QCheckBox*    dac_mute_check_[DAC_MIX_CHANNELS] = {};
+    QCheckBox*    dac_solo_check_[DAC_MIX_CHANNELS] = {};
     std::function<AyLayouts()> ay_layout_source_;
     QTimer*    ay_layout_timer_ = nullptr;
 

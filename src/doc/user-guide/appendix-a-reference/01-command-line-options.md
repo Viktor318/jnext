@@ -1750,8 +1750,10 @@ use the key: the Qt window, the SDL-only build (both interactive) or
     file of an earlier version that says *left*, *centre* or *right* is
     read as -100, 0 or 100. All frontends.
 
-`audio.dac_a_mute`, `audio.dac_b_mute`, `audio.dac_c_mute`, `audio.dac_d_mute` *true\|false*
-:   Silence that DAC channel. Default false. All frontends.
+`audio.dac_a_solo`, `audio.dac_b_solo`, `audio.dac_c_solo`, `audio.dac_d_solo` *true\|false*
+:   Solo that DAC channel: while any of the four is soloed, only the
+    soloed ones are heard; none soloed, all are. Held for the run and
+    never written to `jnext.conf`. Default false. All frontends.
 
 `audio.ay_stereo` *machine\|abc\|acb*
 :   The stereo layout of the three AY chips. Default *machine*: as the

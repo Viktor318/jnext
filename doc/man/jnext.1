@@ -2055,8 +2055,10 @@ A file of an earlier version that says \f[I]left\f[R], \f[I]centre\f[R]
 or \f[I]right\f[R] is read as \-100, 0 or 100.
 All frontends.
 .TP
-\f[CR]audio.dac_a_mute\f[R], \f[CR]audio.dac_b_mute\f[R], \f[CR]audio.dac_c_mute\f[R], \f[CR]audio.dac_d_mute\f[R] \f[I]true|false\f[R]
-Silence that DAC channel.
+\f[CR]audio.dac_a_solo\f[R], \f[CR]audio.dac_b_solo\f[R], \f[CR]audio.dac_c_solo\f[R], \f[CR]audio.dac_d_solo\f[R] \f[I]true|false\f[R]
+Solo that DAC channel: while any of the four is soloed, only the soloed
+ones are heard; none soloed, all are.
+Held for the run and never written to \f[CR]jnext.conf\f[R].
 Default false.
 All frontends.
 .TP
@@ -5156,10 +5158,10 @@ Host gains are stored under \f[CR][audio]\f[R] as \f[CR]gain_db\f[R]
 \f[CR]gain_ay1_db\f[R], \f[CR]gain_ay2_db\f[R], and
 \f[CR]gain_dac_db\f[R]; \f[CR]oversample\f[R]
 (\f[CR]true\f[R]/\f[CR]false\f[R]) is the 4x oversampled sound.
-\f[CR]dac_a_gain_db\f[R] to \f[CR]dac_d_gain_db\f[R],
-\f[CR]dac_a_pan\f[R] to \f[CR]dac_d_pan\f[R] and \f[CR]dac_a_mute\f[R]
-to \f[CR]dac_d_mute\f[R] are the DAC channel mixer, \f[CR]ay_stereo\f[R]
-and \f[CR]ay0_mono\f[R] to \f[CR]ay2_mono\f[R] the AY stereo layout.
+\f[CR]dac_a_gain_db\f[R] to \f[CR]dac_d_gain_db\f[R] and
+\f[CR]dac_a_pan\f[R] to \f[CR]dac_d_pan\f[R] are the DAC channel mixer
+(its solo switches are not saved), \f[CR]ay_stereo\f[R] and
+\f[CR]ay0_mono\f[R] to \f[CR]ay2_mono\f[R] the AY stereo layout.
 The degradation policy is stored under \f[CR][startup]\f[R] as
 \f[CR]when_slow_prefer\f[R] (\f[CR]audio\f[R] or \f[CR]video\f[R], the
 persistent form of \f[B]\-\-when\-slow\-prefer\f[R]); an unrecognised

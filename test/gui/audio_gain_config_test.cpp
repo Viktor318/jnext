@@ -144,9 +144,14 @@ int main(int argc, char** argv)
             c.dac_gain_db[ch] = static_cast<float>(ch + 1) * -2.0f;
             c.dac_pan[ch] = pans[ch];
         }
-        c.dac_mute[1] = true;
+        c.dac_solo[1] = true;   // not saved
         c.ay_stereo = AyStereoOrder::Acb;
         c.ay_mono[1] = true;
+        {
+            // A short-lived earlier build saved mutes: the next save takes them out.
+            QSettings old(ch_path, QSettings::IniFormat);
+            old.setValue(QStringLiteral("audio/dac_b_mute"), true);
+        }
         AppConfig w(ch_path);
         w.data().audio_channels = c;
         w.save();
@@ -158,11 +163,18 @@ int main(int argc, char** argv)
         const bool spelled =
             is("dac_a_gain_db", "-2") && is("dac_b_gain_db", "-4") && is("dac_c_gain_db", "-6") && is("dac_d_gain_db", "-8") &&
             is("dac_a_pan", "100") && is("dac_b_pan", "0") && is("dac_c_pan", "-100") && is("dac_d_pan", "-35") &&
-            is("dac_a_mute", "false") && is("dac_b_mute", "true") && is("dac_c_mute", "false") && is("dac_d_mute", "false") &&
+            !raw.contains(QStringLiteral("dac_b_solo")) && !raw.contains(QStringLiteral("dac_a_solo")) &&
+            !raw.contains(QStringLiteral("dac_b_mute")) &&
             is("ay_stereo", "acb") && is("ay0_mono", "false") && is("ay1_mono", "true") && is("ay2_mono", "false");
+        {
+            QSettings hand(ch_path, QSettings::IniFormat);   // a solo written by hand is not read either
+            hand.setValue(QStringLiteral("audio/dac_c_solo"), true);
+        }
         AppConfig r(ch_path);
         r.load();
-        check("SGC-HU-04", spelled && r.data().audio_channels == c);
+        AudioChannels want = c;
+        want.dac_solo[1] = false;
+        check("SGC-HU-04", spelled && r.data().audio_channels == want && w.data().audio_channels.dac_solo[1]);
     }
     {
         const QString bad_path = dir.filePath(QStringLiteral("channels-bad.conf"));

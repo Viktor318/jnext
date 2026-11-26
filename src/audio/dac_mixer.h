@@ -6,7 +6,7 @@
 #include "audio/dac.h"
 
 /// hungarian-ui - the DAC channel mixer: a volume, a place (-100 left .. +100
-/// right) and a mute for each Soundrive channel A-D. A host listening aid with no hardware
+/// right) and a solo switch for each Soundrive channel A-D. A host listening aid with no hardware
 /// analogue: the machine adds A + B to the left and C + D to the right
 /// (soundrive.vhd:112-113), which is the default here. It sits beside the host
 /// gains in Mixer and changes only the audible mix; the channel registers, the
@@ -35,13 +35,14 @@ public:
     }
     int pan(int ch) const { return ch >= 0 && ch < CHANNELS ? pan_[ch] : Pan::Centre; }
 
-    void set_mute(int ch, bool m)
+    /// Solo: while any channel is soloed, only the soloed ones are heard; none soloed, all are.
+    void set_solo(int ch, bool on)
     {
         if (ch < 0 || ch >= CHANNELS) return;
-        mute_[ch] = m;
+        solo_[ch] = on;
         refresh_();
     }
-    bool mute(int ch) const { return ch >= 0 && ch < CHANNELS && mute_[ch]; }
+    bool solo(int ch) const { return ch >= 0 && ch < CHANNELS && solo_[ch]; }
 
     /// False when every channel is as the machine has it: the Mixer then takes
     /// its own integer path and this class does no work.
@@ -69,8 +70,9 @@ private:
     void refresh_()
     {
         active_ = false;
+        const bool any_solo = solo_[0] || solo_[1] || solo_[2] || solo_[3];
         for (int ch = 0; ch < CHANNELS; ++ch) {
-            const float gain = mute_[ch] ? 0.0f : gain_db_[ch] == 0.0f ? 1.0f : std::pow(10.0f, gain_db_[ch] / 20.0f);
+            const float gain = any_solo && !solo_[ch] ? 0.0f : gain_db_[ch] == 0.0f ? 1.0f : std::pow(10.0f, gain_db_[ch] / 20.0f);
             // Exact at the three old places: 1 / 0, 0.5 / 0.5, 0 / 1.
             weight_l_[ch] = gain * static_cast<float>(100 - pan_[ch]) / 200.0f;
             weight_r_[ch] = gain * static_cast<float>(100 + pan_[ch]) / 200.0f;
@@ -80,7 +82,7 @@ private:
 
     float gain_db_[CHANNELS]{};
     int   pan_[CHANNELS]{};
-    bool  mute_[CHANNELS]{};
+    bool  solo_[CHANNELS]{};
     float weight_l_[CHANNELS]{};
     float weight_r_[CHANNELS]{};
     bool  active_ = false;

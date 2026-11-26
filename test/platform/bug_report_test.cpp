@@ -1401,7 +1401,7 @@ int main() {
             "audio.gain_ay2_db", "audio.gain_dac_db", "audio.oversample",
             "audio.dac_a_gain_db", "audio.dac_b_gain_db", "audio.dac_c_gain_db", "audio.dac_d_gain_db",
             "audio.dac_a_pan", "audio.dac_b_pan", "audio.dac_c_pan", "audio.dac_d_pan",
-            "audio.dac_a_mute", "audio.dac_b_mute", "audio.dac_c_mute", "audio.dac_d_mute",
+            "audio.dac_a_solo", "audio.dac_b_solo", "audio.dac_c_solo", "audio.dac_d_solo",
             "audio.ay_stereo", "audio.ay0_mono", "audio.ay1_mono", "audio.ay2_mono",
             "screenshot.quick_format", "snapshot.quick_keep",
             "input.joy1_source", "input.joy2_source", "input.mouse_release", "input.windows_layout",

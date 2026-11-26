@@ -582,7 +582,7 @@ int main() {
         for (const char* arg : {"audio.dac_a_gain_db=1", "audio.dac_b_gain_db=2", "audio.dac_c_gain_db=3",
                                 "audio.dac_d_gain_db=-4.5", "audio.dac_a_pan=100", "audio.dac_b_pan=0",
                                 "audio.dac_c_pan=-100", "audio.dac_d_pan=-100", "audio.dac_d_pan=-35",
-                                "audio.dac_b_mute=true", "audio.dac_c_mute=true", "audio.dac_c_mute=false",
+                                "audio.dac_b_solo=true", "audio.dac_c_solo=true", "audio.dac_c_solo=false",
                                 "audio.ay_stereo=acb", "audio.ay0_mono=true", "audio.ay2_mono=true", "audio.ay0_mono=false"}) {
             config_keys::Assignment a;
             if (!config_keys::parse_assignment(arg, a, why)) bad += std::string(arg) + " ";
@@ -594,12 +594,12 @@ int main() {
         const float gains[4] = {1.0f, 2.0f, 3.0f, -4.5f};
         const int pans[4] = {DacPan::Right, DacPan::Centre, DacPan::Left, -35};
         for (int ch = 0; ch < 4; ++ch) { want.dac_gain_db[ch] = gains[ch]; want.dac_pan[ch] = pans[ch]; }
-        want.dac_mute[1] = true;
+        want.dac_solo[1] = true;
         want.ay_stereo = AyStereoOrder::Acb;
         want.ay_mono[1] = want.ay_mono[2] = true;
         if (c != want) bad += "values ";
         for (const char* arg : {"audio.dac_a_pan=middle", "audio.dac_a_pan=left", "audio.dac_a_pan=101", "audio.dac_b_pan=-101",
-                                "audio.dac_c_pan=1.5", "audio.dac_a_mute=2", "audio.dac_a_gain_db=25", "audio.ay_stereo=bca", "audio.ay0_mono=2",
+                                "audio.dac_c_pan=1.5", "audio.dac_a_solo=2", "audio.dac_a_mute=true", "audio.dac_a_gain_db=25", "audio.ay_stereo=bca", "audio.ay0_mono=2",
                                 "audio.dac_e_pan=left", "audio.ay3_mono=true"}) {
             config_keys::Assignment a;
             if (config_keys::parse_assignment(arg, a, why)) bad += std::string("accepts ") + arg + " ";
