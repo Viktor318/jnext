@@ -40,6 +40,19 @@
 
 namespace {
 
+// hungarian-ui - the width `label` asks for its widest text over lo..hi: what its value labels
+// are fixed to, so a slider beside one never moves. The label is left showing text(lo).
+template <class Text>
+int widest_label_width(QLabel* label, int lo, int hi, Text text) {
+    int widest = 0;
+    for (int v = lo; v <= hi; ++v) {
+        label->setText(text(v));
+        widest = qMax(widest, label->sizeHint().width());
+    }
+    label->setText(text(lo));
+    return widest;
+}
+
 // hungarian-ui - a justified, word-wrapped note whose hint does not depend on its present width:
 // it asks for the width of half its text and the height that gives (two lines), as its minimum
 // too. QLabel's own hint for wrapped text is taken at a guessed narrow width (five lines for two),
@@ -504,13 +517,10 @@ QWidget* PreferencesDialog::make_gain_slider(QWidget* parent, const QString& obj
     auto text = [](int db) {
         return QStringLiteral("%1%2 dB").arg(db > 0 ? QStringLiteral("+") : QString()).arg(db);
     };
-    // A FIXED width: the widest value and one character more, so the slider never moves while it
-    // is dragged ("+10 dB" is wider than "-24 dB"). A minimum alone was not enough on Windows,
-    // where the label's own hint is a little wider than its text.
-    int widest = 0;
-    for (int db = slider->minimum(); db <= slider->maximum(); ++db)
-        widest = qMax(widest, value->fontMetrics().horizontalAdvance(text(db)));
-    value->setFixedWidth(widest + value->fontMetrics().averageCharWidth());
+    // A FIXED width, the label's own hint for its widest value, so the slider never moves while
+    // it is dragged ("+10 dB" is wider than "-24 dB"). The hint, not the text's advance: on
+    // Windows the label asks a little more than its text, and a minimum alone was not enough.
+    value->setFixedWidth(widest_label_width(value, slider->minimum(), slider->maximum(), text));
     auto update_value = [value, text](int db) { value->setText(text(db)); };
     connect(slider, &QSlider::valueChanged, value, update_value);
     update_value(slider->value());
@@ -655,9 +665,6 @@ QWidget* PreferencesDialog::build_dac_channels_group(QWidget* parent) {
     grid->addWidget(heading(tr("Gain")), 0, 1);
     grid->addWidget(heading(tr("Pan")), 0, 3, Qt::AlignHCenter);
     const int pan_width = group->fontMetrics().averageCharWidth() * 24;
-    int value_width = 0;
-    for (int p = DacPan::Left; p <= DacPan::Right; ++p)   // every value: the slider must not move
-        value_width = qMax(value_width, group->fontMetrics().horizontalAdvance(dac_pan_text(p)));
     for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
         const QChar letter = QLatin1Char(static_cast<char>('A' + ch));
         const int row = 1 + ch;
@@ -682,7 +689,7 @@ QWidget* PreferencesDialog::build_dac_channels_group(QWidget* parent) {
         dac_pan_slider_[ch] = pan;
         auto* value = new QLabel(dac_pan_text(pan->value()), group);
         value->setObjectName(QStringLiteral("dac%1PanValue").arg(letter));
-        value->setFixedWidth(value_width + group->fontMetrics().averageCharWidth());   // fixed, as the gains'
+        value->setFixedWidth(widest_label_width(value, DacPan::Left, DacPan::Right, dac_pan_text));   // fixed, as the gains'
 
         connect(pan, &QSlider::valueChanged, this, [this, value](int p) {
             value->setText(dac_pan_text(p));

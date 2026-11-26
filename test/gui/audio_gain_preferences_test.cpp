@@ -368,12 +368,24 @@ int main(int argc, char** argv)
             if (!moved.empty()) break;
         }
         if (!moved.empty()) std::printf("  moved at %s\n", moved.c_str());
-        // Whatever the font: every value label is of a fixed width (a minimum alone let Windows move them).
+        // Whatever the font: every value label is of a fixed width (a minimum alone let Windows move
+        // them), exactly what it asks for its widest text: "+10 dB" fits, and nothing is spare.
         bool fixed = true;
-        for (QLabel* l : tabs->currentWidget()->findChildren<QLabel*>())
-            if (l->objectName().endsWith(QStringLiteral("Value")))
-                fixed = fixed && l->minimumWidth() == l->maximumWidth() &&
-                        l->minimumWidth() > l->fontMetrics().horizontalAdvance(QStringLiteral("+10 dB"));
+        for (QLabel* l : tabs->currentWidget()->findChildren<QLabel*>()) {
+            if (!l->objectName().endsWith(QStringLiteral("Value"))) continue;
+            const bool gain = l->text().endsWith(QStringLiteral("dB"));
+            // Measured on a fresh label of the same font: a fixed label's own hint is its fixed width.
+            QLabel probe;
+            probe.setFont(l->font());
+            int widest = 0;
+            for (const QString& t : gain ? QStringList{QStringLiteral("+10 dB"), QStringLiteral("+24 dB"), QStringLiteral("-24 dB")}
+                                         : QStringList{QStringLiteral("B 100"), QStringLiteral("J 100"), QStringLiteral("Centre")}) {
+                probe.setText(t);
+                widest = qMax(widest, probe.sizeHint().width());
+            }
+            fixed = fixed && l->minimumWidth() == l->maximumWidth() && l->minimumWidth() >= widest &&
+                    l->minimumWidth() < widest + l->fontMetrics().averageCharWidth();
+        }
         const int labels = static_cast<int>(tabs->currentWidget()->findChildren<QLabel*>(QRegularExpression(QStringLiteral("Value$"))).size());
         check("SGP-HU-14", all.size() == 14 && moved.empty() && fixed && labels == 14);
     }
