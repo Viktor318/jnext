@@ -189,11 +189,25 @@ PreferencesDialog::PreferencesDialog(const AppConfigData& current, QWidget* pare
     apply_button_ = buttons->button(QDialogButtonBox::Apply);
     connect(apply_button_, &QPushButton::clicked, this, [this]() {
         if (!source_dirs_ok()) return;
-        emit apply_requested(collect());
+        const AppConfigData cfg = collect();
+        emit apply_requested(cfg);
+        audio_applied_ = cfg;
         mark_applied();
     });
     watch_controls();
     mark_applied();
+    audio_applied_ = current;
+    // Live sound: every control of the Audio tab but the oversampling box (it waits for OK or
+    // Apply) and the derived Layout list (it moves the pan sliders, which preview themselves).
+    for (QWidget* w : audio_tab_->findChildren<QWidget*>()) {
+        if (w == audio_oversample_check_ || w->property("derived").toBool()) continue;
+        if (auto* slider = qobject_cast<QSlider*>(w))
+            connect(slider, &QSlider::valueChanged, this, &PreferencesDialog::preview_audio);
+        else if (auto* box = qobject_cast<QCheckBox*>(w))
+            connect(box, &QCheckBox::toggled, this, &PreferencesDialog::preview_audio);
+        else if (auto* combo = qobject_cast<QComboBox*>(w))
+            connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &PreferencesDialog::preview_audio);
+    }
 
     auto* layout = new QVBoxLayout(this);
     layout->addWidget(tabs);
@@ -423,6 +437,7 @@ QWidget* PreferencesDialog::build_input_tab() {
 
 QWidget* PreferencesDialog::build_audio_tab() {
     auto* tab = new QWidget(this);
+    audio_tab_ = tab;
     auto* form = new QFormLayout(tab);
 
     auto add_gain = [&](const QString& label, const QString& object_name,
@@ -1041,6 +1056,19 @@ PreferencesDialog::ControlState PreferencesDialog::control_state() const {
     }
     st.keys = debug_keys_;
     return st;
+}
+
+void PreferencesDialog::set_audio_preview(std::function<void(const AppConfigData&)> preview) {
+    audio_preview_ = std::move(preview);
+}
+
+void PreferencesDialog::preview_audio() {
+    if (audio_preview_) audio_preview_(collect());
+}
+
+void PreferencesDialog::reject() {
+    if (audio_preview_) audio_preview_(audio_applied_);
+    QDialog::reject();
 }
 
 void PreferencesDialog::mark_applied() {

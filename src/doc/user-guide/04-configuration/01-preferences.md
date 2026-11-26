@@ -46,11 +46,13 @@ Alt+1..8 stay its keys. Both take effect at once.
 **Audio** has -24 dB to +24 dB sliders for the final master output and for the
 beeper, each of the three TurboSound AY chips, and the DAC family. Every slider
 is centred on the 0 dB default, which leaves that source unchanged. Subsystem
-gains are applied before the master. Changes apply immediately to playback and
-WAV/video recording; large positive boosts can clip.
+gains are applied before the master. Every control of this tab except
+**Oversampled sound** is heard at once, while you move it, also in a WAV or video
+recording; OK or **Apply** keeps it, **Cancel** (or closing the window) gives back
+the sound of the last Apply. Large positive boosts can clip.
 **Oversampled sound (4x)** (`audio.oversample`, off by default) mixes at
 176.4 kHz and filters down to 44.1 kHz, which gives clearer high notes, above all
-from the DACs, for a few per cent more CPU.
+from the DACs, for a few per cent more CPU. It takes effect with OK or **Apply**.
 
 **AY channels** overrides how the three AY chips are heard. **AY stereo**
 (`audio.ay_stereo`) chooses ABC or ACB for all of them instead of what the

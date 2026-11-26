@@ -3402,6 +3402,16 @@ void MainWindow::on_save_snapshot() {
 // Preferences (Task 66 — Configurability)
 // ---------------------------------------------------------------------------
 
+void MainWindow::apply_audio_live(const AppConfigData& cfg) {
+    if (!emulator_) return;
+    emulator_->mixer().set_output_gain_db(cfg.audio_gain_db);
+    emulator_->mixer().set_beeper_gain_db(cfg.audio_gain_beeper_db);
+    for (int chip = 0; chip < 3; ++chip)
+        emulator_->mixer().set_ay_gain_db(chip, cfg.audio_gain_ay_db[chip]);
+    emulator_->mixer().set_dac_gain_db(cfg.audio_gain_dac_db);
+    emulator_->set_audio_channels(cfg.audio_channels);
+}
+
 void MainWindow::apply_startup_config(const AppConfigData& cfg, bool program_cpu_speed) {
     // GH #417 - the session's paths and quick-screenshot format. At start-up cfg is the
     // saved file with the command line's values over it; from Preferences it is the
@@ -3424,13 +3434,8 @@ void MainWindow::apply_startup_config(const AppConfigData& cfg, bool program_cpu
         emulator_->tape().set_fast_load(cfg.tape_fast_load);
         emulator_->tzx_tape().set_fast_load(cfg.tape_fast_load);
         emulator_->set_tape_auto_play(cfg.tape_auto_play);
-        emulator_->mixer().set_output_gain_db(cfg.audio_gain_db);
-        emulator_->mixer().set_beeper_gain_db(cfg.audio_gain_beeper_db);
-        for (int chip = 0; chip < 3; ++chip)
-            emulator_->mixer().set_ay_gain_db(chip, cfg.audio_gain_ay_db[chip]);
-        emulator_->mixer().set_dac_gain_db(cfg.audio_gain_dac_db);
+        apply_audio_live(cfg);
         emulator_->mixer().set_oversample(cfg.audio_oversample);
-        emulator_->set_audio_channels(cfg.audio_channels);
     }
     if (tape_fast_action_) tape_fast_action_->setChecked(cfg.tape_fast_load);
     if (tape_auto_action_) tape_auto_action_->setChecked(cfg.tape_auto_play);
@@ -3682,6 +3687,7 @@ void MainWindow::on_open_preferences() {
         apply_preferences(merged);
     });
     dlg.set_ay_layout_source([this]() { return emulator_ ? emulator_->ay_layouts() : AyLayouts{}; });
+    dlg.set_audio_preview([this](const AppConfigData& cfg) { apply_audio_live(cfg); });
     dlg.exec();
 }
 

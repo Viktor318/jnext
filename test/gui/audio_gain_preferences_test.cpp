@@ -18,6 +18,7 @@
 #include <QTextDocument>
 
 #include <cstdio>
+#include <vector>
 #include "../row_id.h"
 
 namespace {
@@ -277,6 +278,67 @@ int main(int argc, char** argv)
         const int left = audio_tab->findChild<QWidget*>(QStringLiteral("audioGainDbSlider"))->parentWidget()->x();
         check("SGP-HU-10", opened == moved && dlg.height() == opened && note->x() < left && box->x() < left &&
                                note->height() < note->fontMetrics().height() * 4);
+    }
+
+    // hungarian-ui: live sound. Every Audio control but the oversampling box previews at once;
+    // Cancel gives back the sound of the opening, or of the last Apply.
+    {
+        AppConfigData opened;
+        opened.audio_gain_db = 2.0f;
+        opened.audio_channels.dac_pan[1] = 30;
+        PreferencesDialog dlg(opened);
+        std::vector<AppConfigData> seen;
+        dlg.set_audio_preview([&seen](const AppConfigData& c) { seen.push_back(c); });
+        const auto box = [&dlg](const char* n) { return dlg.findChild<QCheckBox*>(QString::fromLatin1(n)); };
+        const auto combo = [&dlg](const char* n) { return dlg.findChild<QComboBox*>(QString::fromLatin1(n)); };
+
+        slider(dlg, "audioGainDbSlider")->setValue(-5);
+        const bool master = seen.size() == 1 && seen.back().audio_gain_db == -5.0f;
+        slider(dlg, "audioDacBGainDbSlider")->setValue(7);
+        box("dacCSoloCheck")->setChecked(true);
+        combo("ayStereoCombo")->setCurrentIndex(2);
+        box("ay2MonoCheck")->setChecked(true);
+        const bool each = seen.size() == 5 && seen.back().audio_channels.dac_gain_db[1] == 7.0f &&
+                          seen.back().audio_channels.dac_solo[2] && seen.back().audio_channels.ay_stereo == AyStereoOrder::Acb &&
+                          seen.back().audio_channels.ay_mono[2];
+        seen.clear();
+        combo("dacLayoutCombo")->setCurrentIndex(2);   // Mono: the pan sliders move and preview themselves
+        const bool layout = !seen.empty() && seen.back().audio_channels.dac_pan[0] == 0 && seen.back().audio_channels.dac_pan[3] == 0;
+        seen.clear();
+        box("audioOversampleCheck")->setChecked(true);
+        const bool waits = seen.empty();
+        check("SGP-HU-11", master && each && layout && waits);
+
+        // Cancel: the opening sound. After an Apply: that one. The close box and Esc are reject() too.
+        seen.clear();
+        dlg.reject();
+        const bool back = seen.size() == 1 && seen[0].audio_gain_db == 2.0f && seen[0].audio_channels == opened.audio_channels;
+        PreferencesDialog dlg2(opened);
+        std::vector<AppConfigData> seen2;
+        dlg2.set_audio_preview([&seen2](const AppConfigData& c) { seen2.push_back(c); });
+        slider(dlg2, "audioGainDbSlider")->setValue(-9);
+        dlg2.findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Apply)->click();
+        slider(dlg2, "audioGainDbSlider")->setValue(4);
+        seen2.clear();
+        dlg2.reject();
+        const bool to_applied = seen2.size() == 1 && seen2[0].audio_gain_db == -9.0f;
+        PreferencesDialog dlg3(opened);
+        int calls = 0;
+        dlg3.set_audio_preview([&calls](const AppConfigData&) { ++calls; });
+        dlg3.findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click();
+        check("SGP-HU-12", back && to_applied && calls == 0);
+
+        // The window's half: the gains and the channel settings, never the oversampling.
+        AppConfigData live;
+        live.audio_gain_db = -7.0f;
+        live.audio_gain_ay_db[1] = 5.0f;
+        live.audio_channels.dac_pan[0] = 20;
+        live.audio_channels.dac_solo[3] = true;
+        live.audio_oversample = !emulator.mixer().oversample();
+        const bool os_before = emulator.mixer().oversample();
+        window.apply_audio_live(live);
+        check("SGP-HU-13", emulator.mixer().output_gain_db() == -7.0f && emulator.mixer().ay_gain_db(1) == 5.0f &&
+                               emulator.audio_channels() == live.audio_channels && emulator.mixer().oversample() == os_before);
     }
 
     std::printf("Total: %d Passed: %d Failed: %d Skipped: 0\n",

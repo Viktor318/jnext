@@ -62,6 +62,15 @@ public:
     /// refreshed twice a second while the dialog is open. Without it the two rows show a dash.
     void set_ay_layout_source(std::function<AyLayouts()> source);
 
+    /// hungarian-ui - live sound: every control of the Audio tab but the oversampling box is
+    /// handed to `preview` as soon as it moves (the dialog's whole data; the caller takes the
+    /// sound part). Cancel, Esc or the close box hand back the sound of the last Apply (or of
+    /// the opening). Saving stays with OK and Apply.
+    void set_audio_preview(std::function<void(const AppConfigData&)> preview);
+
+public slots:
+    void reject() override;   ///< restores the previewed sound first
+
 signals:
     /// Emitted on OK (then the dialog closes) and on Apply (dialog stays open).
     void apply_requested(const AppConfigData& cfg);
@@ -155,6 +164,10 @@ private:
     QSlider*      dac_pan_slider_[DAC_MIX_CHANNELS] = {};   // DacPan::Left .. DacPan::Right
     QCheckBox*    dac_solo_check_[DAC_MIX_CHANNELS] = {};
     std::function<AyLayouts()> ay_layout_source_;
+    std::function<void(const AppConfigData&)> audio_preview_;
+    QWidget*      audio_tab_ = nullptr;
+    AppConfigData audio_applied_;   ///< the sound as last applied (or opened): what Cancel gives back
+    void preview_audio();
     QTimer*    ay_layout_timer_ = nullptr;
 
     QCheckBox*      esp_enabled_check_ = nullptr;   // GH #25

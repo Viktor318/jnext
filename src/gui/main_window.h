@@ -456,6 +456,9 @@ public:
     /// Preferences passes it only when the CPU-speed field changed, because the machine's
     /// speed is whatever the program or the menu set it to, not the dialog's value.
     void apply_startup_config(const AppConfigData& cfg, bool program_cpu_speed = true);
+    /// hungarian-ui - the sound part of `cfg` on the running machine: the gains and the channel
+    /// settings, not the oversampling. Preferences' live sound, and part of apply_startup_config().
+    void apply_audio_live(const AppConfigData& cfg);
 
     /// Access to the live, on-disk-backed preferences (Preferences dialog
     /// reads/writes through this).
