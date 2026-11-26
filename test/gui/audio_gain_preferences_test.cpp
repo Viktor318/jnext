@@ -15,6 +15,7 @@
 #include <QElapsedTimer>
 #include <QLabel>
 #include <QRadioButton>
+#include <QTabWidget>
 #include <QTextDocument>
 
 #include <cstdio>
@@ -237,6 +238,26 @@ int main(int argc, char** argv)
         dlg.show();
         QApplication::processEvents();
         check("SGP-HU-09", layout->width() <= layout->sizeHint().width() && order->width() <= order->sizeHint().width());
+
+        // The Audio tab asks for no more height than it needs: a larger hint than minimum let Windows
+        // grow the dialog by a few empty lines when it was moved. Opened, then laid out again as a
+        // move does it: the same height. The note and the checkbox start at the tab's left edge.
+        auto* tabs = dlg.findChild<QTabWidget*>();
+        QWidget* note = dlg.findChild<QWidget*>(QStringLiteral("audioNoteLabel"));
+        QWidget* audio_tab = note->parentWidget();
+        tabs->setCurrentWidget(audio_tab);
+        dlg.resize(dlg.sizeHint());
+        QApplication::processEvents();
+        const int opened = dlg.height();
+        dlg.adjustSize();
+        QApplication::processEvents();
+        const int moved = dlg.height();
+        dlg.resize(dlg.sizeHint());
+        QApplication::processEvents();
+        auto* box = dlg.findChild<QWidget*>(QStringLiteral("audioOversampleCheck"));
+        const int left = audio_tab->findChild<QWidget*>(QStringLiteral("audioGainDbSlider"))->parentWidget()->x();
+        check("SGP-HU-10", opened == moved && dlg.height() == opened && note->x() < left && box->x() < left &&
+                               note->height() < note->fontMetrics().height() * 4);
     }
 
     std::printf("Total: %d Passed: %d Failed: %d Skipped: 0\n",

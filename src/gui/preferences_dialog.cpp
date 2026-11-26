@@ -40,6 +40,32 @@
 
 #include <cmath>
 
+namespace {
+
+// hungarian-ui - a justified, word-wrapped note whose hint does not depend on its present width:
+// it asks for the width of half its text and the height that gives (two lines), as its minimum
+// too. QLabel's own hint for wrapped text is taken at a guessed narrow width (five lines for two),
+// and Windows grows a dialog to its hint when it is moved, which left empty lines under the note.
+// A narrower window than that still gets every line: the layout asks heightForWidth().
+class FitNoteLabel : public QLabel {
+public:
+    FitNoteLabel(const QString& text, QWidget* parent) : QLabel(parent), plain_(text) {
+        setTextFormat(Qt::RichText);
+        setText(QStringLiteral("<div align=\"justify\">%1</div>").arg(text.toHtmlEscaped()));
+        setWordWrap(true);
+    }
+    QSize sizeHint() const override {
+        const int w = fontMetrics().horizontalAdvance(plain_) / 2 + fontMetrics().averageCharWidth() * 6;
+        return QSize(w, heightForWidth(w));
+    }
+    QSize minimumSizeHint() const override { return sizeHint(); }
+
+private:
+    QString plain_;
+};
+
+} // namespace
+
 PreferencesDialog::PreferencesDialog(const AppConfigData& current, QWidget* parent,
                                      const std::vector<jnext::dbgkeys::LoadIssue>& key_issues,
                                      const std::vector<HostChord>& host_chords,
@@ -427,18 +453,20 @@ QWidget* PreferencesDialog::build_audio_tab() {
     form->addItem(new QSpacerItem(0, line, QSizePolicy::Minimum, QSizePolicy::Fixed));
     form->addRow(build_dac_channels_group(tab));
 
-    auto* note = new QLabel(
-        tr("0 dB preserves each source. Subsystem gains are applied before the "
-           "master gain; large boosts may clip. The DAC channel gains multiply with the DAC gain."), tab);
-    note->setWordWrap(true);
-    form->addRow(QString(), note);
+    // Across the whole tab, justified (Viktor). A FitNoteLabel: a plain wrapped label asks for several
+    // lines more than it needs, so the dialog opened at its minimum and Windows grew it when it was moved.
+    auto* note = new FitNoteLabel(
+        tr("0 dB preserves each source. Subsystem gains are applied before the master gain; "
+           "large boosts may clip. The DAC channel gains multiply with the DAC gain."), tab);
+    note->setObjectName(QStringLiteral("audioNoteLabel"));
+    form->addRow(note);
 
     audio_oversample_check_ = new QCheckBox(tr("Oversampled sound (4x)"), tab);
     audio_oversample_check_->setObjectName(QStringLiteral("audioOversampleCheck"));
     audio_oversample_check_->setToolTip(
         tr("Mixes at 176.4 kHz and filters down to 44.1 kHz: clearer high notes for a few "
            "per cent more CPU. Takes effect at once; recordings include it."));
-    form->addRow(QString(), audio_oversample_check_);
+    form->addRow(audio_oversample_check_);
 
     return tab;
 }
