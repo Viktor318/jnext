@@ -212,7 +212,7 @@ VHDL-derived compliance test suite for the JNEXT ZX Spectrum Next emulator. All 
 | CRT display effect rules (pure) |       18 |       18 |      0 |       0 |    100% | 🟢 All tests pass. |
 | GUI Preferences (AppConfig) |      186 |      186 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Audio gain configuration |       28 |       28 |      0 |       0 |    100% | 🟢 All tests pass. |
-| Audio gain Preferences |       24 |       24 |      0 |       0 |    100% | 🟢 All tests pass. |
+| Audio gain Preferences |       25 |       25 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Mouse Release Gesture (GH #365) |       22 |       22 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Present count (widget) |       27 |       27 |      0 |       0 |    100% | 🟢 All tests pass. |
 | GUI frame timer (single-shot, GH #155) |        6 |        6 |      0 |       0 |    100% | 🟢 All tests pass. |
@@ -261,6 +261,6 @@ VHDL-derived compliance test suite for the JNEXT ZX Spectrum Next emulator. All 
 | Debugger Verbs (GH #278) |      203 |      203 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Source panel |      299 |      299 |      0 |       0 |    100% | 🟢 All tests pass. |
 | Debugger Variables panel |       55 |       55 |      0 |       0 |    100% | 🟢 All tests pass. |
-| **Total**             | **18569**| **18569**|  **0** |   **0** | **100%**| 🟢 All tests pass. |
+| **Total**             | **18570**| **18570**|  **0** |   **0** | **100%**| 🟢 All tests pass. |
 
 **SKIP:** A row its suite could not exercise on the host that ran it. A SKIP fails the run (owner, 2026-10-06). A planned row whose feature does not exist yet is PLANNED in its `*-TEST-PLAN-DESIGN.md`, not a SKIP.

@@ -388,6 +388,23 @@ int main(int argc, char** argv)
         }
         const int labels = static_cast<int>(tabs->currentWidget()->findChildren<QLabel*>(QRegularExpression(QStringLiteral("Value$"))).size());
         check("SGP-HU-14", all.size() == 14 && moved.empty() && fixed && labels == 14);
+
+        // SGP-HU-15: every value stands close to its slider: a gap of half a character, not the
+        // style's default spacing.
+        int pairs = 0;
+        std::string far;
+        for (QSlider* sl : all) {
+            const QString name = sl->objectName().endsWith(QStringLiteral("PanSlider"))
+                                     ? QString(sl->objectName()).replace(QStringLiteral("PanSlider"), QStringLiteral("PanValue"))
+                                     : sl->objectName() + QStringLiteral("Value");
+            auto* v = dlg.findChild<QLabel*>(name);
+            if (!v || v->parentWidget() != sl->parentWidget()) { far += name.toStdString() + "(missing) "; continue; }
+            const int gap = v->x() - (sl->x() + sl->width());
+            ++pairs;
+            if (gap < 0 || gap > qMax(2, sl->fontMetrics().averageCharWidth() / 2)) far += name.toStdString() + "=" + std::to_string(gap) + " ";
+        }
+        if (!far.empty()) std::printf("  far: %s\n", far.c_str());
+        check("SGP-HU-15", pairs == 14 && far.empty());
     }
 
     std::printf("Total: %d Passed: %d Failed: %d Skipped: 0\n",

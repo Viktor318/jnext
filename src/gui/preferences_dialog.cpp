@@ -40,6 +40,10 @@
 
 namespace {
 
+// hungarian-ui - the gap between a slider and its value: half a character, not the style's
+// default (about six pixels on Windows).
+int value_gap(const QWidget* w) { return qMax(2, w->fontMetrics().averageCharWidth() / 2); }
+
 // hungarian-ui - the width `label` asks for its widest text over lo..hi: what its value labels
 // are fixed to, so a slider beside one never moves. The label is left showing text(lo).
 template <class Text>
@@ -503,6 +507,7 @@ QWidget* PreferencesDialog::make_gain_slider(QWidget* parent, const QString& obj
     auto* row = new QWidget(parent);
     auto* h = new QHBoxLayout(row);
     h->setContentsMargins(0, 0, 0, 0);
+    h->setSpacing(value_gap(row));   // the value close to its slider (Viktor)
     slider = new QSlider(Qt::Horizontal, row);
     slider->setObjectName(object_name);
     slider->setRange(-24, 24);
@@ -663,8 +668,14 @@ QWidget* PreferencesDialog::build_dac_channels_group(QWidget* parent) {
     };
     grid->addWidget(heading(tr("Solo")), 0, 0);
     grid->addWidget(heading(tr("Gain")), 0, 1);
-    grid->addWidget(heading(tr("Pan")), 0, 3, Qt::AlignHCenter);
     const int pan_width = group->fontMetrics().averageCharWidth() * 24;
+    {
+        // Over the pan slider itself, not over the slider and its value.
+        auto* pan_head = heading(tr("Pan"));
+        pan_head->setFixedWidth(pan_width);
+        pan_head->setAlignment(Qt::AlignHCenter);
+        grid->addWidget(pan_head, 0, 3, Qt::AlignLeft);
+    }
     for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
         const QChar letter = QLatin1Char(static_cast<char>('A' + ch));
         const int row = 1 + ch;
@@ -677,7 +688,11 @@ QWidget* PreferencesDialog::build_dac_channels_group(QWidget* parent) {
         grid->addWidget(make_gain_slider(group, QStringLiteral("audioDac%1GainDbSlider").arg(letter),
                                          tr("Host gain of DAC channel %1, on top of the DAC gain.").arg(letter),
                                          dac_channel_slider_[ch]), row, 1);
-        auto* pan = new QSlider(Qt::Horizontal, group);
+        auto* pan_row = new QWidget(group);
+        auto* pan_box = new QHBoxLayout(pan_row);
+        pan_box->setContentsMargins(0, 0, 0, 0);
+        pan_box->setSpacing(value_gap(pan_row));
+        auto* pan = new QSlider(Qt::Horizontal, pan_row);
         pan->setObjectName(QStringLiteral("dac%1PanSlider").arg(letter));
         pan->setRange(DacPan::Left, DacPan::Right);
         pan->setSingleStep(1);
@@ -687,7 +702,7 @@ QWidget* PreferencesDialog::build_dac_channels_group(QWidget* parent) {
         pan->setFixedWidth(pan_width);
         pan->setToolTip(tr("Where DAC channel %1 is heard, from left to right. Centre gives half of it to each side.").arg(letter));
         dac_pan_slider_[ch] = pan;
-        auto* value = new QLabel(dac_pan_text(pan->value()), group);
+        auto* value = new QLabel(dac_pan_text(pan->value()), pan_row);
         value->setObjectName(QStringLiteral("dac%1PanValue").arg(letter));
         value->setFixedWidth(widest_label_width(value, DacPan::Left, DacPan::Right, dac_pan_text));   // fixed, as the gains'
 
@@ -696,8 +711,9 @@ QWidget* PreferencesDialog::build_dac_channels_group(QWidget* parent) {
             sync_dac_layout_combo();
         });
         grid->addItem(new QSpacerItem(group->fontMetrics().height(), 0), row, 2);
-        grid->addWidget(pan, row, 3);
-        grid->addWidget(value, row, 4);
+        pan_box->addWidget(pan);
+        pan_box->addWidget(value);
+        grid->addWidget(pan_row, row, 3);
     }
     grid->setColumnStretch(1, 1);
 
