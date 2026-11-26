@@ -3011,16 +3011,72 @@ Restart now?
         <translation>Az SD-kártyát éppen egy másik művelet módosítja. Próbálja újra, ha befejeződött.</translation>
     </message>
     <message>
-        <source>The SD card file manager is not available: the machine cannot be paused.</source>
-        <translation>Az SD-kártya fájlkezelő nem érhető el: a gép nem szüneteltethető.</translation>
+        <source>The SD card file manager is not available: there is no machine.</source>
+        <translation>Az SD-kártya fájlkezelő nem érhető el: nincs futó gép.</translation>
     </message>
     <message>
-        <source>The SD card file manager cannot open: %1</source>
-        <translation>Az SD-kártya fájlkezelő nem nyitható meg: %1</translation>
+        <source>The second SD card</source>
+        <translation>A második SD-kártya</translation>
     </message>
     <message>
-        <source>SD card changed: the machine restarts paused, resume it afterwards</source>
-        <translation>Az SD-kártya megváltozott: a gép szüneteltetve indul újra, utána folytassa</translation>
+        <source>The SD card</source>
+        <translation>Az SD-kártya</translation>
+    </message>
+    <message>
+        <source>was replaced by another file while JNEXT is running. The machine keeps using the old file, and what it writes goes into the SD-writes file, which no longer fits the new image.</source>
+        <translation>a JNEXT futása közben egy másik fájlra cserélődött. A gép a régi fájlt használja tovább, és amit ír, az az SD-írásfájlba kerül, amely már nem illik az új képhez.</translation>
+    </message>
+    <message>
+        <source>was replaced by another file while JNEXT is running. The machine keeps using the old file, and what it writes is lost when JNEXT exits.</source>
+        <translation>a JNEXT futása közben egy másik fájlra cserélődött. A gép a régi fájlt használja tovább, és amit ír, az a JNEXT bezárásakor elvész.</translation>
+    </message>
+    <message>
+        <source>was deleted while JNEXT is running. The machine keeps using the open file, and what it writes goes into the SD-writes file, which cannot be used again without the image.</source>
+        <translation>a JNEXT futása közben törlődött. A gép a megnyitott fájlt használja tovább, és amit ír, az az SD-írásfájlba kerül, amely a kép nélkül többé nem használható.</translation>
+    </message>
+    <message>
+        <source>was deleted while JNEXT is running. The machine keeps using the open file, and what it writes is lost when JNEXT exits.</source>
+        <translation>a JNEXT futása közben törlődött. A gép a megnyitott fájlt használja tovább, és amit ír, az a JNEXT bezárásakor elvész.</translation>
+    </message>
+    <message>
+        <source>was resized while JNEXT is running. The card keeps its old size.</source>
+        <translation>a JNEXT futása közben átméreteződött. A kártya a régi méretén marad.</translation>
+    </message>
+    <message>
+        <source>was changed by another program while it has an SD-writes file. The writes file no longer fits the image, and the card the machine sees may be damaged.</source>
+        <translation>egy másik program módosította, miközben SD-írásfájl tartozik hozzá. Az írásfájl már nem illik a képhez, és a gép által látott kártya sérült lehet.</translation>
+    </message>
+    <message>
+        <source>%1 image &apos;%2&apos; %3
+
+Stop using this card.</source>
+        <translation>%1 képe (&apos;%2&apos;) %3
+
+Ne használja tovább ezt a kártyát.</translation>
+    </message>
+    <message>
+        <source>%1 image &apos;%2&apos; %3
+
+Insert the card again (File &gt; %4) before changing files on it: the file manager would work on the new file, not the one the machine reads.</source>
+        <translation>%1 képe (&apos;%2&apos;) %3
+
+Mielőtt fájlokat módosítana rajta, helyezze be újra a kártyát (Fájl &gt; %4): a fájlkezelő az új fájlon dolgozna, nem azon, amelyet a gép olvas.</translation>
+    </message>
+    <message>
+        <source>Insert SD Card Image...</source>
+        <translation>SD-kártyakép behelyezése…</translation>
+    </message>
+    <message>
+        <source>%1 image &apos;%2&apos; %3
+
+Stop using this card, and change files on the card with File &gt; SD Card File Manager instead (see the user guide, &quot;Changing the card from outside JNEXT&quot;).</source>
+        <translation>%1 képe (&apos;%2&apos;) %3
+
+Ne használja tovább ezt a kártyát, és a fájlokat inkább a Fájl &gt; SD-kártya fájlkezelővel módosítsa (lásd a kézikönyvben: „Changing the card from outside JNEXT”).</translation>
+    </message>
+    <message>
+        <source>SD card image changed</source>
+        <translation>Az SD-kártyakép megváltozott</translation>
     </message>
 </context>
 <context>
@@ -4481,14 +4537,6 @@ Csak akkor frissül, amikor az emulátor szünetel.</translation>
         <translation>Most nem</translation>
     </message>
     <message>
-        <source>SD card</source>
-        <translation>SD-kártya</translation>
-    </message>
-    <message>
-        <source>Second SD card (D:)</source>
-        <translation>Második SD-kártya (D:)</translation>
-    </message>
-    <message>
         <source>Pause the machine to rewind to a frame</source>
         <translation>Szüneteltesse a gépet egy képkockára való visszatekeréshez</translation>
     </message>
@@ -4714,6 +4762,17 @@ Csak akkor frissül, amikor az emulátor szünetel.</translation>
         <source>this entry cannot be addressed: it is not acted on</source>
         <translation>ez a bejegyzés nem címezhető meg, ezért a műveletek kihagyják</translation>
     </message>
+    <message>
+        <source>Up to the parent folder</source>
+        <translation>Egy szinttel feljebb</translation>
+    </message>
+</context>
+<context>
+    <name>SdHostModel</name>
+    <message>
+        <source>Up to the parent folder</source>
+        <translation>Egy szinttel feljebb</translation>
+    </message>
 </context>
 <context>
     <name>SdManagerDialog</name>
@@ -4724,14 +4783,6 @@ Csak akkor frissül, amikor az emulátor szünetel.</translation>
     <message>
         <source>Read-only</source>
         <translation>Csak olvasható</translation>
-    </message>
-    <message>
-        <source>Up</source>
-        <translation>Fel</translation>
-    </message>
-    <message>
-        <source>Icons</source>
-        <translation>Ikonok</translation>
     </message>
     <message>
         <source>Copy &gt;</source>
@@ -4764,10 +4815,6 @@ Csak akkor frissül, amikor az emulátor szünetel.</translation>
     <message>
         <source>New Folder</source>
         <translation>Új mappa</translation>
-    </message>
-    <message>
-        <source>empty</source>
-        <translation>üres</translation>
     </message>
     <message>
         <source>No SD card in this slot.</source>
@@ -4814,14 +4861,6 @@ Csak akkor frissül, amikor az emulátor szünetel.</translation>
         <translation>Nem került sorra (%1):
   %2
 </translation>
-    </message>
-    <message>
-        <source>Change the SD card?</source>
-        <translation>Módosítja az SD-kártyát?</translation>
-    </message>
-    <message>
-        <source>Changing the card restarts the machine (a hard reset) when this window closes, so that it sees the new contents. Make the change?</source>
-        <translation>A kártya módosítása után az ablak bezárásakor a gép újraindul (hidegindítás), hogy az új tartalmat lássa. Végrehajtja a módosítást?</translation>
     </message>
     <message>
         <source>the system trash did not take it</source>
@@ -4906,6 +4945,38 @@ Csak akkor frissül, amikor az emulátor szünetel.</translation>
     <message>
         <source>Name of the new folder:</source>
         <translation>Az új mappa neve:</translation>
+    </message>
+    <message>
+        <source>SD Card</source>
+        <translation>SD-kártya</translation>
+    </message>
+    <message>
+        <source>Host filesystem</source>
+        <translation>Gazdagép fájlrendszere</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Frissítés</translation>
+    </message>
+    <message>
+        <source>&lt;empty&gt;</source>
+        <translation>&lt;üres&gt;</translation>
+    </message>
+    <message>
+        <source>SD Card %1: %2</source>
+        <translation>%1. SD-kártya: %2</translation>
+    </message>
+    <message>
+        <source>The SD card is being changed by another action.</source>
+        <translation>Az SD-kártyát éppen egy másik művelet módosítja.</translation>
+    </message>
+    <message>
+        <source>Changes go into the writes file %1.</source>
+        <translation>A változások a(z) %1 írásfájlba kerülnek.</translation>
+    </message>
+    <message>
+        <source>The machine sees a change when it next reads the folder. Do not change files a running program is using.</source>
+        <translation>A gép akkor látja a változást, amikor legközelebb beolvassa a mappát. Ne módosítson olyan fájlt, amelyet egy futó program használ.</translation>
     </message>
 </context>
 <context>
