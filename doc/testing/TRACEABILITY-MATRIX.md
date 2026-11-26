@@ -29,7 +29,7 @@ mentions them, so a test can no longer be absent from this document.
 | Tilemap                                    |   123 |  123 |    0 |    0 |       0 |          0 |
 | Copper                                     |   115 |  115 |    0 |    0 |       0 |          0 |
 | Compositor                                 |   300 |  300 |    0 |    0 |       0 |          0 |
-| Audio                                      |   672 |  672 |    0 |    0 |       0 |          0 |
+| Audio                                      |   674 |  674 |    0 |    0 |       0 |          0 |
 | DMA                                        |   192 |  192 |    0 |    0 |       0 |          0 |
 | DivMMC+SPI                                 |   173 |  173 |    0 |    0 |       0 |          0 |
 | Multiface                                  |    58 |   58 |    0 |    0 |       0 |          0 |
@@ -71,9 +71,9 @@ mentions them, so a test can no longer be absent from this document.
 | Companion: uart_integration_native_test    |     4 |    4 |    0 |    0 |       0 |          0 |
 | Companion: uart_posix_test                 |    51 |   51 |    0 |    0 |       0 |          0 |
 | Companion: nextpi_test                     |   103 |  103 |    0 |    0 |       0 |          0 |
-| **Total**                                  |  6727 | 6727 |    0 |    0 |       0 |          0 |
+| **Total**                                  |  6729 | 6729 |    0 |    0 |       0 |          0 |
 
-Rows the sections above carry: **6727**. Distinct row IDs recorded anywhere in this document (every table, including "Extra coverage"): **6197**. Rows the 258 suites declared in `test/unit-tests.conf` run live: **18562**.
+Rows the sections above carry: **6729**. Distinct row IDs recorded anywhere in this document (every table, including "Extra coverage"): **6199**. Rows the 258 suites declared in `test/unit-tests.conf` run live: **18565**.
 
 The `Rows` column counts rows that publish a **`Status`**, so it equals pass+fail+skip+missing by construction. A further **0** rows live in the 4-column "Extra coverage (not in plan)" tables, which have no `Status` column: their `VHDL file:line` and `Test file:line` ARE recomputed on every run (they were not, for two years — GH #192), and a row asserted nowhere reads `missing` in the location column exactly as it would in a main table. A further **0** rows sit in **0** tables that carry neither column and are therefore not refreshed at all; each says so above itself.
 
@@ -85,7 +85,7 @@ The `Rows` column counts rows that publish a **`Status`**, so it equals pass+fai
 
 Every suite `test/unit-tests.conf` declares is accounted for: it is either traced by a section above or listed below with the authority it is actually written against. **Anything else is a hard failure** — `test/refresh-traceability-matrix.pl` refuses to run (exit 2) and rewrites nothing, in the manner of `test/run-unit-tests.sh` refusing when its manifest and CMake disagree. That refusal is the anti-drift mechanism: the traced-suite count sat at 28 for the whole v0.98 series while the manifest grew 49 → 80, because each of the ~31 additions arrived as one more name on a warning line that already listed fifty.
 
-These 205 suites (12449 live rows) have no VHDL-derived plan row to map, so they have no section here. They are still declared, counted and run; their runtime view is `test/SUBSYSTEM-TESTS-STATUS.md`.
+These 205 suites (12450 live rows) have no VHDL-derived plan row to map, so they have no section here. They are still declared, counted and run; their runtime view is `test/SUBSYSTEM-TESTS-STATUS.md`.
 
 | Suite | Rows | Authority it is written against |
 |-------|-----:|---------------------------------|
@@ -243,7 +243,7 @@ These 205 suites (12449 live rows) have no VHDL-derived plan row to map, so they
 | `zrcp_adapter_test` | 232 | ZRCP remote-debugger adapter (GH #280; ZEsarUX 12.0 transcripts, jnext-internal); the T80N core has no debugger |
 | `crt_shader_policy_test` | 18 | OpenGL CRT shader decision rules: style numbers, fullscreen placement, ARGB-to-GL byte order (host GUI) |
 | `app_config_test` | 186 | jnext.conf schema/precedence (host settings file) |
-| `audio_gain_config_test` | 27 | gain settings persistence (host settings file) |
+| `audio_gain_config_test` | 28 | gain settings persistence (host settings file) |
 | `audio_gain_preferences_test` | 20 | gain controls in the Preferences dialog (host GUI) |
 | `mouse_release_test` | 22 | captured-mouse release gesture in the Qt window (host UI, GH #365) |
 | `present_count_test` | 27 | host present accounting (wall-clock, not core timing) |
@@ -2139,14 +2139,16 @@ Notes and rationale: [AUDIO-TEST-PLAN-DESIGN.md](AUDIO-TEST-PLAN-DESIGN.md).
 | DM-HU-06 | the DAC and master volumes multiply with it; the debugger's DAC and channel mutes still silence | — | pass | test/audio/audio_test.cpp:4271 |
 | DM-HU-07 | an idle DAC is exact digital zero at any setting, and overload clips | — | pass | test/audio/audio_test.cpp:4288 |
 | DM-HU-08 | Mixer::reset() keeps the setting, other channel numbers are ignored, and oversampling mixes the same level | — | pass | test/audio/audio_test.cpp:4308 |
-| AS-HU-01 | off by default; off again after on, the output is the machine's | — | pass | test/audio/audio_test.cpp:4377 |
-| AS-HU-02 | every override of every machine setting sounds as the machine set that way; a mono of the machine's stays | — | pass | test/audio/audio_test.cpp:4403 |
-| AS-HU-03 | the hardware sum stays the un-overridden machine's | — | pass | test/audio/audio_test.cpp:4405 |
-| AS-HU-04 | pan and TurboSound off are never overridden | — | pass | test/audio/audio_test.cpp:4423 |
-| AS-HU-05 | setting and clearing it is heard on the next PSG tick | — | pass | test/audio/audio_test.cpp:4436 |
-| AS-HU-06 | composes with the chip mute, the channel mutes and the stems' latch, and none of them clears another | — | pass | test/audio/audio_test.cpp:4466 |
-| AS-HU-07 | not machine state: a saved state is byte-identical, reset() and load_state() keep it in force | — | pass | test/audio/audio_test.cpp:4485 |
-| AS-HU-08 | the mixer hears it at 0 dB and with a chip volume set | — | pass | test/audio/audio_test.cpp:4508 |
+| DM-HU-09 | any place between left and right shares the channel linearly; a value beyond an end is that end | — | pass | test/audio/audio_test.cpp:4330 |
+| DM-HU-10 | a muted channel is silent at any place and gain, the others play on, and unmuted the machine's routing is back | — | pass | test/audio/audio_test.cpp:4349 |
+| AS-HU-01 | off by default; off again after on, the output is the machine's | — | pass | test/audio/audio_test.cpp:4417 |
+| AS-HU-02 | every override of every machine setting sounds as the machine set that way; a mono of the machine's stays | — | pass | test/audio/audio_test.cpp:4443 |
+| AS-HU-03 | the hardware sum stays the un-overridden machine's | — | pass | test/audio/audio_test.cpp:4445 |
+| AS-HU-04 | pan and TurboSound off are never overridden | — | pass | test/audio/audio_test.cpp:4463 |
+| AS-HU-05 | setting and clearing it is heard on the next PSG tick | — | pass | test/audio/audio_test.cpp:4476 |
+| AS-HU-06 | composes with the chip mute, the channel mutes and the stems' latch, and none of them clears another | — | pass | test/audio/audio_test.cpp:4506 |
+| AS-HU-07 | not machine state: a saved state is byte-identical, reset() and load_state() keep it in force | — | pass | test/audio/audio_test.cpp:4525 |
+| AS-HU-08 | the mixer hears it at 0 dB and with a chip volume set | — | pass | test/audio/audio_test.cpp:4548 |
 | AUD-NR-01 | NR 0x06 bits[1:0] handler forwards to TurboSound::ay_mode [zxnext.vhd:5170, :6389] | zxnext.vhd:5170,6389 | pass | test/audio/audio_nextreg_test.cpp:160 |
 | AUD-NR-02 | psg_mode=00 sinks to YM mode [zxnext.vhd:6389] | zxnext.vhd:6389 | pass | test/audio/audio_nextreg_test.cpp:172 |
 | AUD-NR-03 | psg_mode=01 sinks to AY mode [zxnext.vhd:6389] | zxnext.vhd:6389 | pass | test/audio/audio_nextreg_test.cpp:183 |

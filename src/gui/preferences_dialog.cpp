@@ -25,9 +25,7 @@
 #include <QHBoxLayout>
 #include <QTabWidget>
 #include <QAbstractButton>
-#include <QButtonGroup>
 #include <QGroupBox>
-#include <QRadioButton>
 #include <QSignalBlocker>
 #include <QSpacerItem>
 #include <QTimer>
@@ -151,6 +149,7 @@ PreferencesDialog::PreferencesDialog(const AppConfigData& current, QWidget* pare
     for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch)
         dac_channel_slider_[ch]->setValue(static_cast<int>(std::lround(current.audio_channels.dac_gain_db[ch])));
     set_dac_layout(current.audio_channels.dac_pan);
+    for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) dac_mute_check_[ch]->setChecked(current.audio_channels.dac_mute[ch]);
     esp_enabled_check_->setChecked(current.esp_enabled);
     {
         QStringList hosts;
@@ -603,74 +602,111 @@ void PreferencesDialog::refresh_ay_layouts() {
     }
 }
 
-// hungarian-ui - Audio > DAC channels: volume and place of each Soundrive channel.
+// hungarian-ui - Audio > DAC channels: mute, volume and place of each Soundrive channel.
 QWidget* PreferencesDialog::build_dac_channels_group(QWidget* parent) {
     auto* group = new QGroupBox(tr("DAC channels"), parent);
-    auto* grid = new QGridLayout(group);
+    auto* outer = new QVBoxLayout(group);
 
+    // Outside the grid, so the letters' column is only as wide as a letter.
+    auto* top = new QHBoxLayout;
     dac_layout_combo_ = new QComboBox(group);
     dac_layout_combo_->setObjectName(QStringLiteral("dacLayoutCombo"));
     dac_layout_combo_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    dac_layout_combo_->setProperty("derived", true);   // the buttons below are the setting
+    dac_layout_combo_->setProperty("derived", true);   // the pan sliders below are the setting
     dac_layout_combo_->addItem(tr("As the machine (A, B left; C, D right)"));
     dac_layout_combo_->addItem(tr("Left, centre, right (A left; B, C centre; D right)"));
     dac_layout_combo_->addItem(tr("Mono"));
     dac_layout_combo_->addItem(tr("Custom"));
-    dac_layout_combo_->setToolTip(tr("Sets the places of the four channels below. Their gains are not changed."));
-    grid->addWidget(new QLabel(tr("Layout:"), group), 0, 0);
-    grid->addWidget(dac_layout_combo_, 0, 1, 1, 2, Qt::AlignLeft);
+    dac_layout_combo_->setToolTip(tr("Sets the places of the four channels below. Their gains and mutes are not changed."));
+    top->addWidget(new QLabel(tr("Layout:"), group));
+    top->addWidget(dac_layout_combo_);
+    top->addStretch(1);
+    outer->addLayout(top);
 
-    const QString places[3] = {tr("Left"), tr("Centre"), tr("Right")};
-    const char* const place_names[3] = {"Left", "Centre", "Right"};
+    auto* grid = new QGridLayout;
+    outer->addLayout(grid);
+    const auto heading = [group](const QString& text) {
+        auto* l = new QLabel(text, group);
+        QFont f = l->font();
+        f.setPointSizeF(f.pointSizeF() * 0.85);
+        l->setFont(f);
+        return l;
+    };
+    grid->addWidget(heading(tr("Mute")), 0, 0, 1, 2);
+    grid->addWidget(heading(tr("Gain")), 0, 2);
+    grid->addWidget(heading(tr("Pan")), 0, 4, Qt::AlignHCenter);
+    const int pan_width = group->fontMetrics().averageCharWidth() * 24;
+    int value_width = 0;
+    for (const QString& t : {dac_pan_text(DacPan::Left), dac_pan_text(DacPan::Centre), dac_pan_text(DacPan::Right)})
+        value_width = qMax(value_width, group->fontMetrics().horizontalAdvance(t));
     for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
         const QChar letter = QLatin1Char(static_cast<char>('A' + ch));
-        grid->addWidget(new QLabel(QStringLiteral("%1:").arg(letter), group), 1 + ch, 0);
+        const int row = 1 + ch;
+        dac_mute_check_[ch] = new QCheckBox(group);
+        dac_mute_check_[ch]->setObjectName(QStringLiteral("dac%1MuteCheck").arg(letter));
+        dac_mute_check_[ch]->setToolTip(tr("Mute DAC channel %1.").arg(letter));
+        grid->addWidget(dac_mute_check_[ch], row, 0);
+        grid->addWidget(new QLabel(QStringLiteral("%1:").arg(letter), group), row, 1);
         grid->addWidget(make_gain_slider(group, QStringLiteral("audioDac%1GainDbSlider").arg(letter),
                                          tr("Host gain of DAC channel %1, on top of the DAC gain.").arg(letter),
-                                         dac_channel_slider_[ch]), 1 + ch, 1);
-        auto* row = new QWidget(group);
-        auto* h = new QHBoxLayout(row);
-        h->setContentsMargins(row->fontMetrics().height() / 2, 0, 0, 0);
-        dac_pan_group_[ch] = new QButtonGroup(row);
-        for (int place = 0; place < 3; ++place) {
-            auto* button = new QRadioButton(places[place], row);
-            button->setObjectName(QStringLiteral("dac%1%2Radio").arg(letter).arg(QLatin1String(place_names[place])));
-            button->setToolTip(tr("Where DAC channel %1 is heard. Centre gives half of it to each side.").arg(letter));
-            dac_pan_group_[ch]->addButton(button, place);
-            h->addWidget(button);
-            connect(button, &QRadioButton::toggled, this, &PreferencesDialog::sync_dac_layout_combo);
-        }
-        grid->addWidget(row, 1 + ch, 2);
+                                         dac_channel_slider_[ch]), row, 2);
+        auto* pan = new QSlider(Qt::Horizontal, group);
+        pan->setObjectName(QStringLiteral("dac%1PanSlider").arg(letter));
+        pan->setRange(DacPan::Left, DacPan::Right);
+        pan->setSingleStep(1);
+        pan->setPageStep(50);
+        pan->setTickPosition(QSlider::TicksBelow);
+        pan->setTickInterval(50);
+        pan->setFixedWidth(pan_width);
+        pan->setToolTip(tr("Where DAC channel %1 is heard, from left to right. Centre gives half of it to each side.").arg(letter));
+        dac_pan_slider_[ch] = pan;
+        auto* value = new QLabel(dac_pan_text(pan->value()), group);
+        value->setObjectName(QStringLiteral("dac%1PanValue").arg(letter));
+        value->setMinimumWidth(value_width + group->fontMetrics().averageCharWidth());
+        connect(pan, &QSlider::valueChanged, this, [this, value](int p) {
+            value->setText(dac_pan_text(p));
+            sync_dac_layout_combo();
+        });
+        grid->addItem(new QSpacerItem(group->fontMetrics().height(), 0), row, 3);
+        grid->addWidget(pan, row, 4);
+        grid->addWidget(value, row, 5);
     }
-    grid->setColumnStretch(1, 1);
+    grid->setColumnStretch(2, 1);
 
     connect(dac_layout_combo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int index) {
         using P = DacPan;
-        static constexpr DacPan presets[3][DAC_MIX_CHANNELS] = {
+        static constexpr int presets[3][DAC_MIX_CHANNELS] = {
             {dac_machine_pan(0), dac_machine_pan(1), dac_machine_pan(2), dac_machine_pan(3)},
             {P::Left, P::Centre, P::Centre, P::Right},
             {P::Centre, P::Centre, P::Centre, P::Centre},
         };
         if (index >= 0 && index < 3) set_dac_layout(presets[index]);
-        sync_dac_layout_combo();   // "Custom" is no layout to pick: the list goes back to what the buttons show
+        sync_dac_layout_combo();   // "Custom" is no layout to pick: the list goes back to what the sliders show
     });
     return group;
 }
 
-void PreferencesDialog::set_dac_layout(const DacPan (&pans)[DAC_MIX_CHANNELS]) {
-    for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch)
-        dac_pan_group_[ch]->button(static_cast<int>(pans[ch]))->setChecked(true);
+QString PreferencesDialog::dac_pan_text(int pan) {
+    if (pan == DacPan::Centre) return tr("Centre");
+    return pan < 0 ? tr("L %1").arg(-pan) : tr("R %1").arg(pan);
+}
+
+void PreferencesDialog::set_dac_layout(const int (&pans)[DAC_MIX_CHANNELS]) {
+    for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) dac_pan_slider_[ch]->setValue(pans[ch]);
 }
 
 void PreferencesDialog::sync_dac_layout_combo() {
-    int code = 0;   // the four places as a base-3 number, A first
+    int p[DAC_MIX_CHANNELS];
     for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
-        const int id = dac_pan_group_[ch] ? dac_pan_group_[ch]->checkedId() : -1;
-        if (id < 0) return;   // still being filled
-        code = code * 3 + id;
+        if (!dac_pan_slider_[ch]) return;   // still being built
+        p[ch] = dac_pan_slider_[ch]->value();
     }
-    const QSignalBlocker block(dac_layout_combo_);   // it follows the buttons here, it does not set them
-    dac_layout_combo_->setCurrentIndex(code == 8 ? 0 : code == 14 ? 1 : code == 40 ? 2 : 3);
+    const auto is = [&p](int a, int b, int c, int d) { return p[0] == a && p[1] == b && p[2] == c && p[3] == d; };
+    using P = DacPan;
+    const QSignalBlocker block(dac_layout_combo_);   // it follows the sliders here, it does not set them
+    dac_layout_combo_->setCurrentIndex(is(P::Left, P::Left, P::Right, P::Right)     ? 0
+                                       : is(P::Left, P::Centre, P::Centre, P::Right) ? 1
+                                       : is(P::Centre, P::Centre, P::Centre, P::Centre) ? 2 : 3);
 }
 
 QWidget* PreferencesDialog::build_network_tab() {
@@ -1068,7 +1104,8 @@ AppConfigData PreferencesDialog::collect() const {
     for (int chip = 0; chip < 3; ++chip) cfg.audio_channels.ay_mono[chip] = ay_mono_check_[chip]->isChecked();
     for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
         cfg.audio_channels.dac_gain_db[ch] = static_cast<float>(dac_channel_slider_[ch]->value());
-        cfg.audio_channels.dac_pan[ch] = static_cast<DacPan>(dac_pan_group_[ch]->checkedId());
+        cfg.audio_channels.dac_pan[ch] = dac_pan_slider_[ch]->value();
+        cfg.audio_channels.dac_mute[ch] = dac_mute_check_[ch]->isChecked();
     }
     QComboBox* const joy_combo[2] = { joy1_source_combo_, joy2_source_combo_ };
     for (int i = 0; i < 2; ++i) {

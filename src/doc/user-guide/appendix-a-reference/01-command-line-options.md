@@ -1743,10 +1743,15 @@ use the key: the Qt window, the SDL-only build (both interactive) or
 :   The gain of each Soundrive DAC channel in dB, on top of
     `audio.gain_dac_db`. Default 0. All frontends.
 
-`audio.dac_a_pan`, `audio.dac_b_pan`, `audio.dac_c_pan`, `audio.dac_d_pan` *left\|centre\|right*
-:   Where each DAC channel is heard; *centre* gives half of it to each
-    side. The default is the machine’s own: A and B left, C and D right.
-    All frontends.
+`audio.dac_a_pan`, `audio.dac_b_pan`, `audio.dac_c_pan`, `audio.dac_d_pan` *-100..100*
+:   Where each DAC channel is heard: -100 left, 0 centre, 100 right. The
+    share is linear, so the centre gives half of the channel to each
+    side. The default is the machine’s own: A and B -100, C and D 100. A
+    file of an earlier version that says *left*, *centre* or *right* is
+    read as -100, 0 or 100. All frontends.
+
+`audio.dac_a_mute`, `audio.dac_b_mute`, `audio.dac_c_mute`, `audio.dac_d_mute` *true\|false*
+:   Silence that DAC channel. Default false. All frontends.
 
 `audio.ay_stereo` *machine\|abc\|acb*
 :   The stereo layout of the three AY chips. Default *machine*: as the

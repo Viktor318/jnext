@@ -4697,11 +4697,13 @@ default. A <strong>Mono</strong> box (<code>audio.ay0_mono</code> to <code>audio
 mono; a chip the program put in mono stays mono without it. <strong>Machine now</strong> shows
 what the running program has set for each chip (and <em>silent</em> for one that is not
 in the mix), <strong>As heard</strong> the same with your settings applied.</p>
-<p><strong>DAC channels</strong> gives each of the four Soundrive DAC channels its own gain
-(<code>audio.dac_a_gain_db</code> and so on, on top of the DAC slider) and its own place:
-left, centre or right (<code>audio.dac_a_pan</code> and so on). Centre gives half of the
-channel to each side. <strong>Layout</strong> sets the four places at once; the default is the
-machine's own, A and B left, C and D right.</p>
+<p><strong>DAC channels</strong> gives each of the four Soundrive DAC channels a <strong>Mute</strong> box
+(<code>audio.dac_a_mute</code> and so on), its own <strong>Gain</strong> (<code>audio.dac_a_gain_db</code> and so on,
+on top of the DAC slider) and its own place, the <strong>Pan</strong> slider from left to right
+(<code>audio.dac_a_pan</code> and so on, -100 to 100). The share is linear: the centre gives
+half of the channel to each side. <strong>Layout</strong> sets the four places at once (as the
+machine, left-centre-right, mono) and shows <em>Custom</em> for any other; the default is
+the machine's own, A and B left, C and D right.</p>
 <p>Both groups change only what you hear and what a recording of it holds: programs,
 snapshots and the debugger's scopes and stems see the machine as it is.</p>
 <p><strong>Network</strong> holds the emulated ESP-01 WiFi module: an <strong>Enable</strong> checkbox and

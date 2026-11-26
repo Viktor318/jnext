@@ -607,7 +607,7 @@ SGP-HU-01..03 (`audio_gain_preferences_test`: the checkbox, live apply) cover th
 
 ### 5.6 DAC channel mixer (hungarian-ui)
 
-`audio/dac_mixer.h`: a volume and a place (left / centre / right) per Soundrive channel, the machine's routing
+`audio/dac_mixer.h`: a volume, a place (-100 left .. 100 right, linear) and a mute per Soundrive channel, the machine's routing
 (`soundrive.vhd:112-113`) by default. A host feature: it changes only the audible mix.
 
 | ID       | Test                                                   | Verification                                              |
@@ -620,6 +620,8 @@ SGP-HU-01..03 (`audio_gain_preferences_test`: the checkbox, live apply) cover th
 | DM-HU-06 | DAC group volume, master volume, debugger mutes        | The volumes multiply; both mutes silence                  |
 | DM-HU-07 | Idle DAC at loud settings, overload                    | Exact 0 (oversampled too); clips, never wraps             |
 | DM-HU-08 | `Mixer::reset()`, bad channel numbers, oversampling    | Setting kept, ignored, same level                         |
+| DM-HU-09 | Places between left and right, beyond the ends         | Linear share (100 - p) / 200 and (100 + p) / 200; clamped |
+| DM-HU-10 | Mute                                                   | Silent at any place and gain, others untouched, undone    |
 
 ### 5.7 AY stereo override (hungarian-ui)
 

@@ -19,7 +19,6 @@ class QLineEdit;
 class QPlainTextEdit;
 class QPushButton;
 class QLabel;
-class QButtonGroup;
 class QFormLayout;
 class QTimer;
 class ShortcutCaptureButton;
@@ -74,7 +73,8 @@ private:
     QWidget* build_ay_channels_group(QWidget* parent);    // hungarian-ui
     QWidget* build_dac_channels_group(QWidget* parent);
     QWidget* make_gain_slider(QWidget* parent, const QString& object_name, const QString& tooltip, QSlider*& slider);
-    void set_dac_layout(const DacPan (&pans)[DAC_MIX_CHANNELS]);
+    void set_dac_layout(const int (&pans)[DAC_MIX_CHANNELS]);
+    static QString dac_pan_text(int pan);   ///< "L 40", "Centre", "R 100"
     void sync_dac_layout_combo();   ///< the list names the places the buttons show
     void refresh_ay_layouts();
     static QString ay_layout_text(const AyChipLayout& chip);
@@ -152,7 +152,8 @@ private:
     QLabel*    ay_heard_label_[3] = {nullptr, nullptr, nullptr};
     QComboBox*    dac_layout_combo_ = nullptr;
     QSlider*      dac_channel_slider_[DAC_MIX_CHANNELS] = {};
-    QButtonGroup* dac_pan_group_[DAC_MIX_CHANNELS] = {};   // ids are DacPan
+    QSlider*      dac_pan_slider_[DAC_MIX_CHANNELS] = {};   // DacPan::Left .. DacPan::Right
+    QCheckBox*    dac_mute_check_[DAC_MIX_CHANNELS] = {};
     std::function<AyLayouts()> ay_layout_source_;
     QTimer*    ay_layout_timer_ = nullptr;
 

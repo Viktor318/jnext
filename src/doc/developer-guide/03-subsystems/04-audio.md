@@ -377,7 +377,7 @@ single average in `emit_sample()`. It removes the images of stepped DAC signals 
 box filter's roll-off. Like the gains it is a host setting.
 
 `AudioChannels` (`src/audio/audio_channels.h`) holds two more host settings. `DacMixer` (`src/audio/dac_mixer.h`) gives each
-DAC channel a gain and a place; at its defaults, the machine's routing, `mix()` takes its integer path and never calls it.
+DAC channel a gain, a mute and a place (-100..100, a linear share); at its defaults, the machine's routing, `mix()` takes its integer path and never calls it.
 `TurboSound::set_stereo_override()` replaces ABC/ACB and forces mono per chip in the audible sum only, on the cold path of
 the debugger's channel mutes (one more bit of the same test). The hardware sum, the source tap and the stems see neither.
 

@@ -60,11 +60,13 @@ mono; a chip the program put in mono stays mono without it. **Machine now** show
 what the running program has set for each chip (and *silent* for one that is not
 in the mix), **As heard** the same with your settings applied.
 
-**DAC channels** gives each of the four Soundrive DAC channels its own gain
-(`audio.dac_a_gain_db` and so on, on top of the DAC slider) and its own place:
-left, centre or right (`audio.dac_a_pan` and so on). Centre gives half of the
-channel to each side. **Layout** sets the four places at once; the default is the
-machine's own, A and B left, C and D right.
+**DAC channels** gives each of the four Soundrive DAC channels a **Mute** box
+(`audio.dac_a_mute` and so on), its own **Gain** (`audio.dac_a_gain_db` and so on,
+on top of the DAC slider) and its own place, the **Pan** slider from left to right
+(`audio.dac_a_pan` and so on, -100 to 100). The share is linear: the centre gives
+half of the channel to each side. **Layout** sets the four places at once (as the
+machine, left-centre-right, mono) and shows *Custom* for any other; the default is
+the machine's own, A and B left, C and D right.
 
 Both groups change only what you hear and what a recording of it holds: programs,
 snapshots and the debugger's scopes and stems see the machine as it is.

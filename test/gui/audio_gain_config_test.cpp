@@ -139,11 +139,12 @@ int main(int argc, char** argv)
     {
         const QString ch_path = dir.filePath(QStringLiteral("channels.conf"));
         AudioChannels c;
-        const DacPan pans[4] = {DacPan::Right, DacPan::Centre, DacPan::Left, DacPan::Centre};
+        const int pans[4] = {DacPan::Right, DacPan::Centre, DacPan::Left, -35};
         for (int ch = 0; ch < 4; ++ch) {
             c.dac_gain_db[ch] = static_cast<float>(ch + 1) * -2.0f;
             c.dac_pan[ch] = pans[ch];
         }
+        c.dac_mute[1] = true;
         c.ay_stereo = AyStereoOrder::Acb;
         c.ay_mono[1] = true;
         AppConfig w(ch_path);
@@ -156,7 +157,8 @@ int main(int argc, char** argv)
         };
         const bool spelled =
             is("dac_a_gain_db", "-2") && is("dac_b_gain_db", "-4") && is("dac_c_gain_db", "-6") && is("dac_d_gain_db", "-8") &&
-            is("dac_a_pan", "right") && is("dac_b_pan", "centre") && is("dac_c_pan", "left") && is("dac_d_pan", "centre") &&
+            is("dac_a_pan", "100") && is("dac_b_pan", "0") && is("dac_c_pan", "-100") && is("dac_d_pan", "-35") &&
+            is("dac_a_mute", "false") && is("dac_b_mute", "true") && is("dac_c_mute", "false") && is("dac_d_mute", "false") &&
             is("ay_stereo", "acb") && is("ay0_mono", "false") && is("ay1_mono", "true") && is("ay2_mono", "false");
         AppConfig r(ch_path);
         r.load();
@@ -170,15 +172,33 @@ int main(int argc, char** argv)
             raw.setValue(QStringLiteral("dac_a_gain_db"), 25.0);
             raw.setValue(QStringLiteral("dac_d_gain_db"), QStringLiteral("loud"));
             raw.setValue(QStringLiteral("dac_b_pan"), QStringLiteral("middle"));
-            raw.setValue(QStringLiteral("dac_c_pan"), QStringLiteral(" Centre "));
+            raw.setValue(QStringLiteral("dac_c_pan"), QStringLiteral("101"));
             raw.setValue(QStringLiteral("ay_stereo"), QStringLiteral("bca"));
             raw.endGroup();
         }
         AppConfig r(bad_path);
         r.load();
+        check("SGC-HU-05", r.data().audio_channels == AudioChannels());
+    }
+    {
+        // The first version wrote the places as words: they are read as -100, 0 and 100.
+        const QString old_path = dir.filePath(QStringLiteral("channels-words.conf"));
+        {
+            QSettings raw(old_path, QSettings::IniFormat);
+            raw.beginGroup(QStringLiteral("audio"));
+            raw.setValue(QStringLiteral("dac_a_pan"), QStringLiteral("right"));
+            raw.setValue(QStringLiteral("dac_b_pan"), QStringLiteral(" Centre "));
+            raw.setValue(QStringLiteral("dac_c_pan"), QStringLiteral("left"));
+            raw.setValue(QStringLiteral("dac_d_pan"), QStringLiteral("centre"));
+            raw.endGroup();
+        }
+        AppConfig r(old_path);
+        r.load();
         AudioChannels want;
-        want.dac_pan[2] = DacPan::Centre;
-        check("SGC-HU-05", r.data().audio_channels == want);
+        want.dac_pan[0] = DacPan::Right;
+        want.dac_pan[1] = want.dac_pan[3] = DacPan::Centre;
+        want.dac_pan[2] = DacPan::Left;
+        check("SGC-HU-06", r.data().audio_channels == want);
     }
 
     std::printf("Total: %d Passed: %d Failed: %d Skipped: 0\n",

@@ -3990,32 +3990,48 @@ Csak a módosított hozzárendelések kerülnek a beállításfájlba.</translat
         <translation>Egyéni</translation>
     </message>
     <message>
-        <source>Sets the places of the four channels below. Their gains are not changed.</source>
-        <translation>Beállítja az alábbi négy csatorna helyét. A hangerejük nem változik.</translation>
-    </message>
-    <message>
         <source>Layout:</source>
         <translation>Elrendezés:</translation>
-    </message>
-    <message>
-        <source>Left</source>
-        <translation>Bal</translation>
     </message>
     <message>
         <source>Centre</source>
         <translation>Közép</translation>
     </message>
     <message>
-        <source>Right</source>
-        <translation>Jobb</translation>
-    </message>
-    <message>
         <source>Host gain of DAC channel %1, on top of the DAC gain.</source>
         <translation>A(z) %1 DAC-csatorna hangereje, a DAC csúszkán felül.</translation>
     </message>
     <message>
-        <source>Where DAC channel %1 is heard. Centre gives half of it to each side.</source>
-        <translation>Hol szól a(z) %1 DAC-csatorna. Középen a jel fele-fele arányban jut a két oldalra.</translation>
+        <source>Sets the places of the four channels below. Their gains and mutes are not changed.</source>
+        <translation>Beállítja az alábbi négy csatorna helyét. A hangerejük és a némításuk nem változik.</translation>
+    </message>
+    <message>
+        <source>Mute</source>
+        <translation>Némítás</translation>
+    </message>
+    <message>
+        <source>Gain</source>
+        <translation>Hangerő</translation>
+    </message>
+    <message>
+        <source>Pan</source>
+        <translation>Panoráma</translation>
+    </message>
+    <message>
+        <source>Mute DAC channel %1.</source>
+        <translation>A(z) %1 DAC-csatorna némítása.</translation>
+    </message>
+    <message>
+        <source>Where DAC channel %1 is heard, from left to right. Centre gives half of it to each side.</source>
+        <translation>Hol szól a(z) %1 DAC-csatorna, balról jobbra. Középen a jel fele-fele arányban jut a két oldalra.</translation>
+    </message>
+    <message>
+        <source>L %1</source>
+        <translation>B %1</translation>
+    </message>
+    <message>
+        <source>R %1</source>
+        <translation>J %1</translation>
     </message>
 </context>
 <context>

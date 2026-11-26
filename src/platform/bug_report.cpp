@@ -373,6 +373,10 @@ ValueRule config_value_rule(config_keys::KeyId id)
         case K::AudioDacBPan:
         case K::AudioDacCPan:
         case K::AudioDacDPan:
+        case K::AudioDacAMute:
+        case K::AudioDacBMute:
+        case K::AudioDacCMute:
+        case K::AudioDacDMute:
         case K::AudioAyStereo:
         case K::AudioAy0Mono:
         case K::AudioAy1Mono:

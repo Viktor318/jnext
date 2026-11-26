@@ -4164,9 +4164,9 @@ Dac dm_dac(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
     return dac;
 }
 
-void dm_place(Mixer& m, DacMixer::Pan a, DacMixer::Pan b, DacMixer::Pan c, DacMixer::Pan d)
+void dm_place(Mixer& m, int a, int b, int c, int d)
 {
-    const DacMixer::Pan p[4] = {a, b, c, d};
+    const int p[4] = {a, b, c, d};
     for (int ch = 0; ch < 4; ++ch) m.dac_mixer().set_pan(ch, p[ch]);
 }
 
@@ -4309,6 +4309,46 @@ void g_dac_mixer()
               plain.dac_mixer().gain_db(0) == -6.0f && plain.dac_mixer().pan(3) == Pan::Left &&
               plain.dac_mixer().gain_db(1) == 0.0f && plain.dac_mixer().pan(0) == Pan::Left &&
               a.l == b.l && a.r == b.r && a.r == -16 * 16 && a.l > 64 * 16 + 800 && a.l < 64 * 16 + 950, no_vhdl);
+    }
+    {
+        // Any place between: linear, (100 - p) / 200 left and (100 + p) / 200 right; beyond the ends clamps.
+        bool ok = true;
+        std::string got;
+        const Dac dac = dm_dac(0xD0, 0x80, 0x80, 0x80);   // A +80, x16 = 1280
+        for (int p : {-100, -60, -25, 0, 1, 40, 99, 100}) {
+            Mixer m;
+            m.dac_mixer().set_pan(0, p);
+            const Stereo s = dm_sample(m, dac);
+            const int l = static_cast<int>(std::lround(80 * 4 * (100 - p) / 200.0)) * 4;
+            const int r = static_cast<int>(std::lround(80 * 4 * (100 + p) / 200.0)) * 4;
+            if (s.l != l || s.r != r) { ok = false; got += std::to_string(p) + ":" + std::to_string(s.l) + "/" + std::to_string(s.r) + " "; }
+        }
+        Mixer far;
+        far.dac_mixer().set_pan(0, 250);
+        far.dac_mixer().set_pan(3, -250);
+        ok = ok && far.dac_mixer().pan(0) == Pan::Right && far.dac_mixer().pan(3) == Pan::Left;
+        check("DM-HU-09", "any place between left and right shares the channel linearly; a value beyond an end is that end",
+              ok, got.empty() ? no_vhdl : got);
+    }
+    {
+        // A muted channel is silent wherever it is placed and however loud; the others are untouched; unmuted it is back.
+        const Dac dac = dm_dac(0xFF, 0x90, 0x70, 0xA0);   // +127, +16, -16, +32
+        Mixer m;
+        m.dac_mixer().set_mute(0, true);
+        const Stereo a = dm_sample(m, dac);
+        m.dac_mixer().set_pan(0, Pan::Centre);
+        m.dac_mixer().set_gain_db(0, 24.0f);
+        const Stereo b = dm_sample(m, dac);
+        const bool muted = m.dac_mixer().mute(0) && !m.dac_mixer().mute(1) && m.dac_mixer().active();
+        m.dac_mixer().set_mute(0, false);
+        m.dac_mixer().set_pan(0, Pan::Left);
+        m.dac_mixer().set_gain_db(0, 0.0f);
+        const bool back = !m.dac_mixer().active();
+        const Stereo c = dm_sample(m, dac);
+        m.dac_mixer().set_mute(5, true);
+        check("DM-HU-10", "a muted channel is silent at any place and gain, the others play on, and unmuted the machine's routing is back",
+              muted && back && a.l == 16 * 16 && a.r == 16 * 16 && b.l == a.l && b.r == a.r &&
+                  c.l == (127 + 16) * 16 && c.r == 16 * 16 && !m.dac_mixer().mute(5), no_vhdl);
     }
 }
 

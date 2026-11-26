@@ -20,11 +20,12 @@ namespace {
 AudioChannels odd_channels()
 {
     AudioChannels c;
-    const DacPan pans[4] = {DacPan::Right, DacPan::Centre, DacPan::Left, DacPan::Centre};
+    const int pans[4] = {DacPan::Right, DacPan::Centre, DacPan::Left, -35};
     for (int ch = 0; ch < 4; ++ch) {
         c.dac_gain_db[ch] = static_cast<float>(ch + 1) * -2.0f;
         c.dac_pan[ch] = pans[ch];
     }
+    c.dac_mute[2] = true;
     c.ay_stereo = AyStereoOrder::Acb;
     c.ay_mono[1] = true;
     return c;
@@ -272,6 +273,8 @@ void lifecycle_tests()
     const bool ch_init = ch_emu.init(ch_cfg) && ch_emu.audio_channels() == odd_channels() &&
                          ch_emu.mixer().dac_mixer().gain_db(2) == -6.0f &&
                          ch_emu.mixer().dac_mixer().pan(0) == DacPan::Right &&
+                         ch_emu.mixer().dac_mixer().pan(3) == -35 && ch_emu.mixer().dac_mixer().mute(2) &&
+                         !ch_emu.mixer().dac_mixer().mute(1) &&
                          ch_emu.turbosound().stereo_order() == AyStereoOrder::Acb &&
                          ch_emu.turbosound().mono_force() == 0x02;
     ch_emu.soft_reset();

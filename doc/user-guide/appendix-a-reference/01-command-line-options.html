@@ -6200,10 +6200,14 @@ include it. Default false. All frontends.</dd>
 <dt><code>audio.dac_a_gain_db</code>, <code>audio.dac_b_gain_db</code>, <code>audio.dac_c_gain_db</code>, <code>audio.dac_d_gain_db</code> <em>-24..24</em></dt>
 <dd>The gain of each Soundrive DAC channel in dB, on top of
 <code>audio.gain_dac_db</code>. Default 0. All frontends.</dd>
-<dt><code>audio.dac_a_pan</code>, <code>audio.dac_b_pan</code>, <code>audio.dac_c_pan</code>, <code>audio.dac_d_pan</code> <em>left|centre|right</em></dt>
-<dd>Where each DAC channel is heard; <em>centre</em> gives half of it to each
-side. The default is the machine’s own: A and B left, C and D right.
-All frontends.</dd>
+<dt><code>audio.dac_a_pan</code>, <code>audio.dac_b_pan</code>, <code>audio.dac_c_pan</code>, <code>audio.dac_d_pan</code> <em>-100..100</em></dt>
+<dd>Where each DAC channel is heard: -100 left, 0 centre, 100 right. The
+share is linear, so the centre gives half of the channel to each
+side. The default is the machine’s own: A and B -100, C and D 100. A
+file of an earlier version that says <em>left</em>, <em>centre</em> or <em>right</em> is
+read as -100, 0 or 100. All frontends.</dd>
+<dt><code>audio.dac_a_mute</code>, <code>audio.dac_b_mute</code>, <code>audio.dac_c_mute</code>, <code>audio.dac_d_mute</code> <em>true|false</em></dt>
+<dd>Silence that DAC channel. Default false. All frontends.</dd>
 <dt><code>audio.ay_stereo</code> <em>machine|abc|acb</em></dt>
 <dd>The stereo layout of the three AY chips. Default <em>machine</em>: as the
 program set it. Only the sound changes, never what a program reads.

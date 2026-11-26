@@ -711,6 +711,10 @@ static int run_main(int argc, char* argv[]) {
         case KeyId::AudioDacBPan:
         case KeyId::AudioDacCPan:
         case KeyId::AudioDacDPan:
+        case KeyId::AudioDacAMute:
+        case KeyId::AudioDacBMute:
+        case KeyId::AudioDacCMute:
+        case KeyId::AudioDacDMute:
         case KeyId::AudioAyStereo:
         case KeyId::AudioAy0Mono:
         case KeyId::AudioAy1Mono:

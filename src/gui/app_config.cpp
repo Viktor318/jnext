@@ -154,12 +154,25 @@ QString word_text(KeyId id, int index)
     return QString::fromLatin1(w.data(), static_cast<qsizetype>(w.size()));
 }
 
+// -100..100; the words of the first version (left, centre, right) are read as -100, 0, 100.
+void load_pan(QSettings& settings, KeyId id, int& target)
+{
+    const config_keys::Key& k = config_keys::info(id);
+    const QString text = settings.value(k.name).toString().trimmed().toLower();
+    if (text == QLatin1String("left")) { target = DacPan::Left; return; }
+    if (text == QLatin1String("centre")) { target = DacPan::Centre; return; }
+    if (text == QLatin1String("right")) { target = DacPan::Right; return; }
+    bool ok = false;
+    const int v = text.toInt(&ok);
+    if (ok && v >= k.lo && v <= k.hi) target = v;
+}
+
 void load_audio_channels(QSettings& settings, AudioChannels& c)
 {
     for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
         load_gain(settings, nth(KeyId::AudioDacAGainDb, ch), c.dac_gain_db[ch]);
-        c.dac_pan[ch] = static_cast<DacPan>(
-            load_word(settings, nth(KeyId::AudioDacAPan, ch), static_cast<int>(c.dac_pan[ch])));
+        load_pan(settings, nth(KeyId::AudioDacAPan, ch), c.dac_pan[ch]);
+        c.dac_mute[ch] = settings.value(config_keys::info(nth(KeyId::AudioDacAMute, ch)).name, c.dac_mute[ch]).toBool();
     }
     c.ay_stereo = static_cast<AyStereoOrder>(
         load_word(settings, KeyId::AudioAyStereo, static_cast<int>(c.ay_stereo)));
@@ -172,7 +185,8 @@ void save_audio_channels(QSettings& settings, const AudioChannels& c)
     for (int ch = 0; ch < DAC_MIX_CHANNELS; ++ch) {
         const KeyId gain = nth(KeyId::AudioDacAGainDb, ch), pan = nth(KeyId::AudioDacAPan, ch);
         settings.setValue(config_keys::info(gain).name, gain_text(c.dac_gain_db[ch]));
-        settings.setValue(config_keys::info(pan).name, word_text(pan, static_cast<int>(c.dac_pan[ch])));
+        settings.setValue(config_keys::info(pan).name, c.dac_pan[ch]);
+        settings.setValue(config_keys::info(nth(KeyId::AudioDacAMute, ch)).name, c.dac_mute[ch]);
     }
     settings.setValue(config_keys::info(KeyId::AudioAyStereo).name,
                       word_text(KeyId::AudioAyStereo, static_cast<int>(c.ay_stereo)));

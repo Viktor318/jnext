@@ -1746,10 +1746,15 @@ Default false. All frontends.
 The gain of each Soundrive DAC channel in dB, on top of
 `audio.gain_dac_db`. Default 0. All frontends.
 
-`audio.dac_a_pan`, `audio.dac_b_pan`, `audio.dac_c_pan`, `audio.dac_d_pan` *left\|centre\|right*  
-Where each DAC channel is heard; *centre* gives half of it to each side.
-The default is the machine’s own: A and B left, C and D right. All
-frontends.
+`audio.dac_a_pan`, `audio.dac_b_pan`, `audio.dac_c_pan`, `audio.dac_d_pan` *-100..100*  
+Where each DAC channel is heard: -100 left, 0 centre, 100 right. The
+share is linear, so the centre gives half of the channel to each side.
+The default is the machine’s own: A and B -100, C and D 100. A file of
+an earlier version that says *left*, *centre* or *right* is read as
+-100, 0 or 100. All frontends.
+
+`audio.dac_a_mute`, `audio.dac_b_mute`, `audio.dac_c_mute`, `audio.dac_d_mute` *true\|false*  
+Silence that DAC channel. Default false. All frontends.
 
 `audio.ay_stereo` *machine\|abc\|acb*  
 The stereo layout of the three AY chips. Default *machine*: as the
@@ -4132,72 +4137,72 @@ GUI configuration, in INI format. Written by **Settings \>
 Preferences**. Host gains are stored under `[audio]` as `gain_db`
 (master), `gain_beeper_db`, `gain_ay0_db`, `gain_ay1_db`, `gain_ay2_db`,
 and `gain_dac_db`; `oversample` (`true`/`false`) is the 4x oversampled
-sound. `dac_a_gain_db` to `dac_d_gain_db` and `dac_a_pan` to `dac_d_pan`
-are the DAC channel mixer, `ay_stereo` and `ay0_mono` to `ay2_mono` the
-AY stereo layout. The degradation policy is stored under `[startup]` as
-`when_slow_prefer` (`audio` or `video`, the persistent form of
-**--when-slow-prefer**); an unrecognised value keeps the default rather
-than changing how the emulator degrades. The emulated ESP-01 is stored
-under `[esp]` as `enabled` (`true`/`false`, the persistent form of
-**--esp**) and `allowed_hosts` (a comma-separated list, the persistent
-form of **--esp-allow**), both edited under **Settings \> Preferences \>
-Network**. Whenever `enabled` is set the status bar carries the ESP cell
-**NETWORKING** describes, so neither a config file nor that page can put
-the guest on the network without saying so. **--no-esp** overrides it
-for one run. NextPi is stored under `[nextpi]`, edited under **Settings
-\> Preferences \> NextPi**: `enabled` (`true`/`false`, the persistent
-form of **--nextpi**; **--no-nextpi** overrides it for one run), `dir`
-(the NextPi directory; empty means `~/.jnext/nextpi`), `release` (a
-NextPi release name on the mirror, or `latest` for the newest one listed
-there; empty means `1_93D`), `qemu_binary` (empty means
-`qemu-system-arm` on `PATH`) and `audio` (empty means the Next’s mixer,
-so NextREG 0xA2 controls it and `--record` captures it. `host` plays it
-on this computer’s default output, `coreaudio` on macOS, `dsound` on
-Windows and `pa` elsewhere; otherwise a QEMU `-audiodev` driver such as
-`coreaudio`, `pa` or `none` to play it straight to the host, or
-`wav:`*FILE* to record it on its own). Changing the release makes the
-next start offer to download it, replacing the installed one.
-`qemu_args` holds extra QEMU arguments (empty means none;
-**--nextpi-qemu-args** sets it for one run), added after jnext’s own
-when NextPi starts. It is split into arguments on spaces; `'...'` and
-`"..."` keep spaces in one argument; a backslash is an ordinary
-character; nothing is expanded and no shell is involved. An unterminated
-quote stops NextPi from starting, with a message. Set it in Preferences
-or with **--nextpi-qemu-args** rather than by hand: jnext writes the
-file value correctly itself. If you edit the file, remember that its INI
-reader (Qt’s) has its own rules, applied before the text above: write
-the whole value in double quotes, write each `\` as `\\` and each `"` as
-`\"`; otherwise a backslash is an escape (`C:\pi\x.img` reads as
-`C:i.img`), a bare `"` is swallowed, a `;` ends an unquoted value, and
-the spaces beside a comma are lost. The joystick ports are stored under
-`[input]`: `joy1_source` and `joy2_source` (`sdl`, `keys` or `none`),
-`joy1_device` and `joy2_device` (the controller’s id: 32 hex digits,
-optionally `#N`; empty means Automatic) and `joy1_device_name` and
-`joy2_device_name` (the name shown while that controller is not
-connected). **--joy1-device** and **--joy2-device** override the ids for
-one run. An id that is not valid is ignored, with its name. Also under
-`[input]`, `mouse_release` (`ctrl-alt`, `middle-click` or `esc`;
-**--mouse-release** overrides it for one run). The quick screenshot is
-stored under `[screenshot]` as `quick_dir` (empty means
-`~/.jnext/screenshots`) and `quick_format` (`png` or `scr`), edited
-under **Settings \> Preferences \> Paths**; an unrecognised format keeps
-the default. The Quick Save retention is stored under `[snapshot]` as
-`quick_keep` (a number from 1, or `unlimited`; default 20), edited under
-**Settings \> Preferences \> Paths**; **--quick-snapshot-keep**
-overrides it for one run, and an unrecognised value keeps the default.
-The debugger window’s layout is stored under `[debugger]`: `size`
-(`W, H`), `position` (`X, Y`, written only while the window is
-detached), `attached` (`true`/`false`) and `layout` (the arrangement of
-its panels, one line of plain text; deleting it, or Window \> Reset
-Layout, restores the default). An older `~/.jnext/Debugger.conf` is
-merged into this section once and removed. All section names are
-lowercase. CLI options always take precedence over saved values, and
-headless runs never read it. Every setting above can also be set for one
-run, without touching the file (the Recent Files history, the joystick
-controller names `joy1_device_name` and `joy2_device_name`,
-`[config] version` and the debugger window’s `size`, `position` and
-`layout` are refused), with **--set** *section.key=value* (see
-**Settings for --set**).
+sound. `dac_a_gain_db` to `dac_d_gain_db`, `dac_a_pan` to `dac_d_pan`
+and `dac_a_mute` to `dac_d_mute` are the DAC channel mixer, `ay_stereo`
+and `ay0_mono` to `ay2_mono` the AY stereo layout. The degradation
+policy is stored under `[startup]` as `when_slow_prefer` (`audio` or
+`video`, the persistent form of **--when-slow-prefer**); an unrecognised
+value keeps the default rather than changing how the emulator degrades.
+The emulated ESP-01 is stored under `[esp]` as `enabled`
+(`true`/`false`, the persistent form of **--esp**) and `allowed_hosts`
+(a comma-separated list, the persistent form of **--esp-allow**), both
+edited under **Settings \> Preferences \> Network**. Whenever `enabled`
+is set the status bar carries the ESP cell **NETWORKING** describes, so
+neither a config file nor that page can put the guest on the network
+without saying so. **--no-esp** overrides it for one run. NextPi is
+stored under `[nextpi]`, edited under **Settings \> Preferences \>
+NextPi**: `enabled` (`true`/`false`, the persistent form of
+**--nextpi**; **--no-nextpi** overrides it for one run), `dir` (the
+NextPi directory; empty means `~/.jnext/nextpi`), `release` (a NextPi
+release name on the mirror, or `latest` for the newest one listed there;
+empty means `1_93D`), `qemu_binary` (empty means `qemu-system-arm` on
+`PATH`) and `audio` (empty means the Next’s mixer, so NextREG 0xA2
+controls it and `--record` captures it. `host` plays it on this
+computer’s default output, `coreaudio` on macOS, `dsound` on Windows and
+`pa` elsewhere; otherwise a QEMU `-audiodev` driver such as `coreaudio`,
+`pa` or `none` to play it straight to the host, or `wav:`*FILE* to
+record it on its own). Changing the release makes the next start offer
+to download it, replacing the installed one. `qemu_args` holds extra
+QEMU arguments (empty means none; **--nextpi-qemu-args** sets it for one
+run), added after jnext’s own when NextPi starts. It is split into
+arguments on spaces; `'...'` and `"..."` keep spaces in one argument; a
+backslash is an ordinary character; nothing is expanded and no shell is
+involved. An unterminated quote stops NextPi from starting, with a
+message. Set it in Preferences or with **--nextpi-qemu-args** rather
+than by hand: jnext writes the file value correctly itself. If you edit
+the file, remember that its INI reader (Qt’s) has its own rules, applied
+before the text above: write the whole value in double quotes, write
+each `\` as `\\` and each `"` as `\"`; otherwise a backslash is an
+escape (`C:\pi\x.img` reads as `C:i.img`), a bare `"` is swallowed, a
+`;` ends an unquoted value, and the spaces beside a comma are lost. The
+joystick ports are stored under `[input]`: `joy1_source` and
+`joy2_source` (`sdl`, `keys` or `none`), `joy1_device` and `joy2_device`
+(the controller’s id: 32 hex digits, optionally `#N`; empty means
+Automatic) and `joy1_device_name` and `joy2_device_name` (the name shown
+while that controller is not connected). **--joy1-device** and
+**--joy2-device** override the ids for one run. An id that is not valid
+is ignored, with its name. Also under `[input]`, `mouse_release`
+(`ctrl-alt`, `middle-click` or `esc`; **--mouse-release** overrides it
+for one run). The quick screenshot is stored under `[screenshot]` as
+`quick_dir` (empty means `~/.jnext/screenshots`) and `quick_format`
+(`png` or `scr`), edited under **Settings \> Preferences \> Paths**; an
+unrecognised format keeps the default. The Quick Save retention is
+stored under `[snapshot]` as `quick_keep` (a number from 1, or
+`unlimited`; default 20), edited under **Settings \> Preferences \>
+Paths**; **--quick-snapshot-keep** overrides it for one run, and an
+unrecognised value keeps the default. The debugger window’s layout is
+stored under `[debugger]`: `size` (`W, H`), `position` (`X, Y`, written
+only while the window is detached), `attached` (`true`/`false`) and
+`layout` (the arrangement of its panels, one line of plain text;
+deleting it, or Window \> Reset Layout, restores the default). An older
+`~/.jnext/Debugger.conf` is merged into this section once and removed.
+All section names are lowercase. CLI options always take precedence over
+saved values, and headless runs never read it. Every setting above can
+also be set for one run, without touching the file (the Recent Files
+history, the joystick controller names `joy1_device_name` and
+`joy2_device_name`, `[config] version` and the debugger window’s `size`,
+`position` and `layout` are refused), with **--set** *section.key=value*
+(see **Settings for --set**).
 
 `~/.jnext/screenshots/`  
 Where **File \> Quick Screenshot** writes, unless

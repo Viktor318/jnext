@@ -14,7 +14,6 @@
 #include <QComboBox>
 #include <QElapsedTimer>
 #include <QLabel>
-#include <QRadioButton>
 #include <QTabWidget>
 #include <QTextDocument>
 
@@ -146,14 +145,19 @@ int main(int argc, char** argv)
         auto* layout = dlg.findChild<QComboBox*>(QStringLiteral("dacLayoutCombo"));
         auto* order = dlg.findChild<QComboBox*>(QStringLiteral("ayStereoCombo"));
         auto* apply = dlg.findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Apply);
-        const auto radio = [&dlg](const char* name) { return dlg.findChild<QRadioButton*>(QString::fromLatin1(name)); };
-        const auto places = [&radio]() {
+        const auto pan = [&dlg](int ch) {
+            return dlg.findChild<QSlider*>(QStringLiteral("dac%1PanSlider").arg(QLatin1Char(static_cast<char>('A' + ch))));
+        };
+        const auto pan_text = [&dlg](int ch) {
+            auto* l = dlg.findChild<QLabel*>(QStringLiteral("dac%1PanValue").arg(QLatin1Char(static_cast<char>('A' + ch))));
+            return l ? l->text() : QString();
+        };
+        const auto places = [&pan]() {
             QString s;
-            for (const char* ch : {"A", "B", "C", "D"})
-                for (const char* p : {"Left", "Centre", "Right"}) {
-                    auto* b = radio((std::string("dac") + ch + p + "Radio").c_str());
-                    if (b && b->isChecked()) s += QLatin1Char(p[0]);
-                }
+            for (int ch = 0; ch < 4; ++ch) {
+                const int v = pan(ch) ? pan(ch)->value() : 999;
+                s += v == -100 ? QLatin1Char('L') : v == 0 ? QLatin1Char('C') : v == 100 ? QLatin1Char('R') : QLatin1Char('?');
+            }
             return s;
         };
         const auto pick = [layout](int i) { layout->setCurrentIndex(i); };
@@ -162,8 +166,16 @@ int main(int argc, char** argv)
             QSlider* s = slider(dlg, n);
             sliders = sliders && s && s->minimum() == -24 && s->maximum() == 24 && s->value() == 0;
         }
-        check("SGP-HU-04", sliders && layout && order && layout->currentIndex() == 0 && order->currentIndex() == 0 &&
-                               places() == QStringLiteral("LLRR") && !apply->isEnabled());
+        bool pans = true, mutes = true;
+        for (int ch = 0; ch < 4; ++ch) {
+            pans = pans && pan(ch) && pan(ch)->minimum() == -100 && pan(ch)->maximum() == 100;
+            auto* m = dlg.findChild<QCheckBox*>(QStringLiteral("dac%1MuteCheck").arg(QLatin1Char(static_cast<char>('A' + ch))));
+            mutes = mutes && m && !m->isChecked();
+        }
+        check("SGP-HU-04", sliders && pans && mutes && layout && order && layout->currentIndex() == 0 &&
+                               order->currentIndex() == 0 && places() == QStringLiteral("LLRR") &&
+                               pan_text(0) == QStringLiteral("L 100") && pan_text(3) == QStringLiteral("R 100") &&
+                               !apply->isEnabled());
 
         // The list sets the four places and follows them; "Custom" is not a layout to pick.
         pick(1);
@@ -174,15 +186,20 @@ int main(int argc, char** argv)
         const bool machine = places() == QStringLiteral("LLRR") && !apply->isEnabled();
         pick(3);
         const bool snap = places() == QStringLiteral("LLRR") && layout->currentIndex() == 0 && !apply->isEnabled();
-        radio("dacBRightRadio")->setChecked(true);
-        const bool custom = places() == QStringLiteral("LRRR") && layout->currentIndex() == 3 && apply->isEnabled();
-        radio("dacBLeftRadio")->setChecked(true);
-        check("SGP-HU-05", lcr && mono && machine && snap && custom && layout->currentIndex() == 0 && !apply->isEnabled());
+        pan(1)->setValue(-40);
+        const bool custom = places() == QStringLiteral("L?RR") && layout->currentIndex() == 3 && apply->isEnabled() &&
+                            pan_text(1) == QStringLiteral("L 40");
+        pan(1)->setValue(0);
+        const bool centre_text = pan_text(1) == QStringLiteral("Centre") && layout->currentIndex() == 3;
+        pan(1)->setValue(-100);
+        check("SGP-HU-05", lcr && mono && machine && snap && custom && centre_text && layout->currentIndex() == 0 && !apply->isEnabled());
 
         // Everything is collected, shown again and applied live; Apply greys out again.
         AppConfigData got;
         QObject::connect(&dlg, &PreferencesDialog::apply_requested, [&got](const AppConfigData& c) { got = c; });
         pick(1);
+        pan(3)->setValue(65);
+        dlg.findChild<QCheckBox*>(QStringLiteral("dacCMuteCheck"))->setChecked(true);
         slider(dlg, "audioDacAGainDbSlider")->setValue(-3);
         slider(dlg, "audioDacDGainDbSlider")->setValue(4);
         order->setCurrentIndex(2);
@@ -192,6 +209,8 @@ int main(int argc, char** argv)
         want.dac_gain_db[0] = -3.0f;
         want.dac_gain_db[3] = 4.0f;
         want.dac_pan[1] = want.dac_pan[2] = DacPan::Centre;
+        want.dac_pan[3] = 65;
+        want.dac_mute[2] = true;
         want.ay_stereo = AyStereoOrder::Acb;
         want.ay_mono[1] = true;
         const bool collected_ok = got.audio_channels == want && !apply->isEnabled();
@@ -200,7 +219,7 @@ int main(int argc, char** argv)
         QObject::connect(&again, &PreferencesDialog::apply_requested, [&got2](const AppConfigData& c) { got2 = c; });
         again.findChild<QDialogButtonBox*>()->button(QDialogButtonBox::Ok)->click();
         check("SGP-HU-06", collected_ok && got2.audio_channels == want &&
-                               again.findChild<QComboBox*>(QStringLiteral("dacLayoutCombo"))->currentIndex() == 1);
+                               again.findChild<QComboBox*>(QStringLiteral("dacLayoutCombo"))->currentIndex() == 3);
         window.apply_startup_config(got);
         check("SGP-HU-07", emulator.audio_channels() == want);
 
