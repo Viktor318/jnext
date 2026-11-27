@@ -2171,10 +2171,6 @@ Lásd: https://ffmpeg.org/download.html</translation>
         <translation>&amp;Mágikus töréspont</translation>
     </message>
     <message>
-        <source>Enable magic breakpoints (ED FF / FD 00 / DD 01)</source>
-        <translation>Mágikus töréspontok engedélyezése (ED FF / FD 00 / DD 01)</translation>
-    </message>
-    <message>
         <source>&amp;View</source>
         <translation>&amp;Nézet</translation>
     </message>
@@ -3077,6 +3073,10 @@ Ne használja tovább ezt a kártyát, és a fájlokat inkább a Fájl &gt; SD-k
     <message>
         <source>SD card image changed</source>
         <translation>Az SD-kártyakép megváltozott</translation>
+    </message>
+    <message>
+        <source>Enable magic breakpoints (ED FF / FD 00)</source>
+        <translation>Mágikus töréspontok bekapcsolása (ED FF / FD 00)</translation>
     </message>
 </context>
 <context>
