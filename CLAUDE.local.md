@@ -41,14 +41,14 @@ Ez a fájl a tároló `CLAUDE.md`-je mellett érvényes, a helyi (WSL, `~/jnext`
 
 ## Ahol tartunk (2026-11-27)
 
-Alap: upstream 1.4.8 (2026-11-27). Kész a `hungarian-ui`-n:
+Alap: upstream 1.4.15 (2026-11-27). Kész a `hungarian-ui`-n:
 
 - magyar felület: főablak, menük, Beállítások, párbeszédablakok (`1532a59c5`), nyelvválasztás (`17f3d198a`), hibakereső (`77f57b40f`);
 - 1.5x nagyítás (`53dbe28`);
 - Csak a kép / Shift+F11 (`c313eff`);
 - Windows-fordítás WSL-ből: `tools/hu/build-windows-cross.sh` (`a109030f6`);
 - a NextZXOS 26.11a az alapértelmezett letöltés (előbb saját beállítással, `a4ffecba6`; az 1.3.57 óta az upstreamben is);
-- upstream beolvasztva: 1.4.8 (2026-11-27; előtte 1.4.1, 1.3.78, 1.3.72, 1.3.66, 1.3.57, 1.3.43);
+- upstream beolvasztva: 1.4.15 (2026-11-27; előtte 1.4.8, 1.4.1, 1.3.78, 1.3.72, 1.3.66, 1.3.57, 1.3.43);
 - kézi GitHubos unit-teszt: `hu-tests.yml` (`77a02cb06`);
 - windowsos magyar billentyűzet (karakter szerinti gépelés, bal Alt + számjegy; `1263eb4`, `c743724`, `3f109af`), Viktor Windowson kipróbálta (2026-11-22);
 - a címsorra kattintás nem akasztja az emulációt (Windows, `gui/window_stalls.h`);
